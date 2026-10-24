@@ -15,6 +15,6 @@ PY
 )
 python3 build/build.py
 git add -A
-git commit -q -m "$MSG" -m "Version $V"
+git commit -q -m "$MSG" -m "Version $V" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 git push -q origin main
 echo "Version $V poussée. Suivi : gh run watch \$(gh run list -L1 --json databaseId -q '.[0].databaseId')"
