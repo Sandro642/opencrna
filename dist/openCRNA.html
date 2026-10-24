@@ -283,7 +283,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
     <h2>Pertes de contact radio (COMLOSS)</h2>
     <p>Certains équipages ne répondent pas : soit ils n'appellent jamais après le transfert (strip « sans appel »), soit ils deviennent muets en cours de route. Sans réponse, l'avion garde sa clairance puis suit son plan de vol. Un <b>Radio check</b> (commande <code>RC</code>) vérifie le contact : un équipage qui répond « 2 sur 5, très haché » risque de perdre la radio. Procédure : relancez-le ou faites un radio check, essayez <b>Appel 121.5</b> (fréquence de détresse), puis <b>Alertez la défense aérienne</b> depuis la fiche vol (commande <code>ALERTE</code>). La PO de Mont-de-Marsan fait décoller deux Rafale qui interceptent l'avion et se présentent devant le cockpit. Écartez le trafic autour du vol muet. Selon le réglage, plusieurs vols peuvent être muets en même temps. Une alerte rapide rapporte des points, une alerte sur un vol qui répond est une fausse alerte, et un vol muet qui quitte votre secteur sans alerte coûte cher.</p>
     <h2>Coordinations ATC</h2>
-    <p>Les secteurs et centres voisins (Brest, Paris, Marseille, Madrid…) peuvent demander à vous passer un vol pré-annoncé à un autre niveau ou en cap. La demande apparaît dans la catégorie <b>Coordinations ATC</b> en haut des strips : <b>Accepter</b> ou <b>Refuser</b> dans la minute (sans réponse : pénalité, le vol arrive comme prévu). Un vol accepté en cap devra être remis en navigation (<code>RES</code> ou direct). Pendant une alerte COMLOSS, la PO demande les <b>infos de vol</b> de l'avion (bouton <b>Transmettre</b>, ou <b>Infos vol → PO</b> dans la fiche vol à tout moment), puis votre <b>autorisation</b> pour se présenter au cockpit et communiquer avec l'équipage : tant que vous n'avez pas autorisé, la patrouille reste en escorte.</p>
+    <p>Les secteurs et centres voisins (Brest, Paris, Marseille, Madrid…) peuvent demander à vous passer un vol pré-annoncé à un autre niveau ou en cap. La demande apparaît dans la catégorie <b>Coordinations ATC</b> en haut des strips : <b>Accepter</b> ou <b>Refuser</b> dans la minute (sans réponse : pénalité, le vol arrive comme prévu). Un vol accepté en cap devra être remis en navigation (<code>RES</code> ou direct). Dans l'autre sens, pour un vol sous contrôle, demandez au secteur suivant un autre <b>niveau de sortie</b> (fiche vol → <b>Coordination sortie</b>, ou commande <code>XFL 350</code>) : il accepte ou refuse selon son trafic, le sens de vol et sa charge ; si c'est accepté, le nouveau XFL compte pour le transfert. Pendant une alerte COMLOSS, la PO demande les <b>infos de vol</b> de l'avion (bouton <b>Transmettre</b>, ou <b>Infos vol → PO</b> dans la fiche vol à tout moment), puis votre <b>autorisation</b> pour se présenter au cockpit et communiquer avec l'équipage : tant que vous n'avez pas autorisé, la patrouille reste en escorte.</p>
     <h2>Avions convergents</h2>
     <p>Selon le réglage, le simulateur injecte des vols dont la route croise celle d'un autre vol au même niveau, au même moment, dans votre secteur. Utilisez l'outil Trajectoires pour les repérer tôt.</p>
     <h2>Étiquette radar</h2>
@@ -311,6 +311,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
       <tr><td>RES</td><td>Reprendre la navigation (direct prochain point de la route)</td></tr>
       <tr><td>M78 · S280 · SN</td><td>Mach 0,78 · 280 kt indiqués · vitesse libre</td></tr>
       <tr><td>A · T · REP</td><td>Assumer · Transférer (avec confirmation) · Reprendre un vol transféré tant qu'il est encore dans votre secteur</td></tr>
+      <tr><td>XFL 350</td><td>Demander au secteur suivant de prendre le vol à un autre niveau de sortie</td></tr>
       <tr><td>RC · GUARD · ALERTE</td><td>Radio check sur la fréquence · Appel sur 121.5 · Alerter la défense aérienne (COMLOSS)</td></tr>
     </table></div>
     <h2>Écran</h2>
@@ -746,6 +747,27 @@ function maybeCoord(a,now){
    SIM.queue.push({t:SIM.t+rnd(2,4),a,fn:()=>coordLog(from,'Merci, '+a.cs+(req.kind==='lvl'?' au FL'+pad3(req.fl):' en cap '+pad3(req.hdg))+'.')})},
   onNo:()=>{coordMe(from+', négatif pour '+a.cs+', comme prévu s\'il vous plaît.');SIM.queue.push({t:SIM.t+rnd(2,4),a,fn:()=>coordLog(from,'Bien reçu, '+a.cs+' comme prévu.')})},
   onLate:()=>{coordLog(from,'Pas de réponse, je vous passe '+a.cs+' comme prévu.');penalty(a,'co',-5,a.cs+' : coordination sans réponse')}});
+}
+// Coordination dans l'autre sens : je demande au secteur suivant un autre niveau de sortie (XFL)
+function cmdAskXfl(a,fl){
+ if(a.state!=='assumed'||!a.next){log('sys',a.cs+' n\'est pas sous votre contrôle');return}
+ const pf=PERF[a.type]||{ceil:410},to=a.next.sh;fl=Math.round(fl);
+ if(fl===a.xfl){log('sys',a.cs+' : XFL déjà FL'+pad3(fl));return}
+ if(fl<50||fl>Math.min(pf.ceil,490)){log('bad',a.cs+' : FL'+pad3(fl)+' impossible pour un '+a.type);return}
+ if(SIM.coords.some(c=>c.a===a&&c.kind==='xfl')){log('sys','Coordination déjà en cours pour '+a.cs);return}
+ const old=a.xfl;coordMe(to+', '+a.cs+', je peux vous le passer au FL'+pad3(fl)+' au lieu du FL'+pad3(old)+' ?');
+ addCoord({a,kind:'xfl',mine:true,from:'→ '+to,text:'Demande à '+to+' : sortie FL'+pad3(fl)+' au lieu du FL'+pad3(old)+'. En attente de réponse…',deadline:SIM.t+rnd(8,18),valid:()=>a.state==='assumed',
+  onLate:()=>{
+   const exitAt=SIM.t+(a.tte??300);
+   const busy=SIM.acs.some(b=>b!==a&&b.concerned&&b.next&&b.next.code===a.next.code&&b.xfl===fl&&b.exitT&&Math.abs((b.state==='assumed'&&b.tte!=null?SIM.t+b.tte:b.exitT)-exitAt)<240);
+   let why=null;
+   if(a.exitKind==='lat'&&a.next.code.length===2&&!semiOK(fl,a.trk<180))why='FL'+pad3(fl)+' n\'est pas un niveau de croisière dans ce sens';
+   else if(busy)why='j\'ai déjà un trafic au FL'+pad3(fl)+' à cet endroit';
+   else if(Math.random()>Math.max(.25,.85-Math.abs(fl-old)/100))why=pick(['secteur chargé','j\'ai du trafic opposé à ce niveau','ça me gêne pour la suite'])+', comme prévu s\'il vous plaît';
+   if(why){coordLog(to,'Négatif pour '+a.cs+', '+why+'. FL'+pad3(old)+' comme prévu.');log('sys','Coordination refusée : '+a.cs+' reste XFL FL'+pad3(old))}
+   else{a.xfl=fl;a.xflKind='level';a.xflCoord=true;coordLog(to,'OK pour '+a.cs+' au FL'+pad3(fl)+'.');log('good','Coordination acceptée : '+a.cs+' sortie FL'+pad3(fl))}
+   if(sel===a)renderPanel(true)}});
+ if(sel===a)renderPanel(true);
 }
 // Infos de vol transmises à la PO (position relative à la patrouille)
 function poInfo(al,auto){const a=al.a,f=al.lead;if(!f||!SIM.acs.includes(a))return;const p=a.pts[a.leg];
@@ -1317,6 +1339,7 @@ function renderPanel(force){
   h+='</dl>';
   if(ctl){
    h+='<div class="ctl"><h4>Niveau <span data-v="cfl"></span></h4><div class="row"><input id="pFl" inputmode="numeric" maxlength="3" placeholder="370"><button id="pFlGo">Autoriser</button><button id="pFlX">XFL '+a.xfl+'</button>'+(a.rfl!==a.xfl?'<button id="pFlR">RFL '+a.rfl+'</button>':'')+'</div></div>';
+   if(a.state==='assumed'&&a.next)h+='<div class="ctl"><h4>Coordination sortie → '+a.next.sh+'</h4>'+(SIM.coords.some(c=>c.a===a&&c.kind==='xfl')?'<p class="hint">Demande en cours…</p>':'<div class="row"><input id="pXc" inputmode="numeric" maxlength="3" placeholder="'+a.xfl+'"><button id="pXcGo">Demander XFL</button></div>')+'</div>';
    h+='<div class="ctl"><h4>Cap <span data-v="hdg"></span></h4><div class="row"><button data-r="-20">G20</button><button data-r="-10">G10</button><button data-r="10">D10</button><button data-r="20">D20</button><input id="pHd" inputmode="numeric" maxlength="3" placeholder="270" style="width:56px"><button id="pHdGo">Cap</button></div><div class="row"><button id="pRes">Reprendre nav</button><select id="pDct">'+a.pts.slice(a.leg).map(p=>'<option>'+p.id+'</option>').join('')+'</select><button id="pDctGo">Direct</button></div></div>';
    h+='<div class="ctl"><h4>Vitesse <span data-v="spdR"></span></h4><div class="row"><button data-m="-2">−M.02</button><button data-m="2">+M.02</button><input id="pSp" placeholder="M78 / 280" style="width:86px"><button id="pSpGo">OK</button><button id="pSpA">Libre</button></div></div>';
   }
@@ -1336,6 +1359,7 @@ function renderPanel(force){
    panelEl.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const cur=a.spdMode==='mach'?Math.round(a.spdVal*100):Math.round(a.tas/sos(a.alt)*100);cmdSpeed(a,'mach',cur+(+b.dataset.m))});
    const goS=()=>{const v=$('#pSp').value.trim().toUpperCase();if(v)runTokens(a,[v]);$('#pSp').value=''};$('#pSpGo').onclick=goS;$('#pSp').onkeydown=e=>{if(e.key==='Enter')goS()};$('#pSpA').onclick=()=>cmdSpeed(a,'auto');
   }
+  if($('#pXcGo')){const goX=()=>{const v=+$('#pXc').value;if(v)cmdAskXfl(a,v<50?v*10:v)};$('#pXcGo').onclick=goX;$('#pXc').onkeydown=e=>{if(e.key==='Enter')goX()}}
   if($('#pGuard')){$('#pRc').onclick=()=>cmdRadioCheck(a);$('#pGuard').onclick=()=>cmdGuard(a);$('#pAlert').onclick=()=>askAlert(a);if($('#pPoInfo'))$('#pPoInfo').onclick=()=>{const al=SIM.alerts.find(x=>x.a===a&&x.stage<9&&x.lead);if(al){const c=SIM.coords.find(c=>c.a===a&&c.kind==='poInfo');if(c)answerCoord(c.id,true);else poInfo(al)}}}
   if($('#pSepClr'))$('#pSepClr').onclick=()=>{sepA=sepB=null;renderPanel(true)};
  }
@@ -1364,7 +1388,7 @@ function renderStrips(){
  const als=SIM.alerts.filter(x=>x.stage<9);
  let h=als.length?'<div class="secHead"><span>Défense aérienne</span><span>'+als.length+'</span></div>'+als.map(x=>'<div class="strip alert" data-id="'+x.a.id+'"><span class="cs">'+x.a.cs+'</span><span class="r">COMLOSS</span><span>'+ALSTAGE[x.stage]+'</span><span class="r">'+(x.lead?x.lead.cs:'')+'</span></div>').join(''):'';
  const co=SIM.coords;
- if(co.length)h+='<div class="secHead"><span>Coordinations ATC</span><span>'+co.length+'</span></div>'+co.map(c=>'<div class="strip coord" data-id="'+c.a.id+'"><span class="cs">'+c.a.cs+'</span><span class="r">'+c.from+'</span><span class="ctxt">'+c.text+'</span><span class="cbtn"><button class="primary" data-co="'+c.id+'" data-ok="1">'+c.ok+'</button>'+(c.no?'<button data-co="'+c.id+'" data-ok="0">'+c.no+'</button>':'')+'</span><span class="r">'+fmtT(Math.max(0,c.deadline-SIM.t))+'</span></div>').join('');
+ if(co.length)h+='<div class="secHead"><span>Coordinations ATC</span><span>'+co.length+'</span></div>'+co.map(c=>'<div class="strip coord" data-id="'+c.a.id+'"><span class="cs">'+c.a.cs+'</span><span class="r">'+c.from+'</span><span class="ctxt">'+c.text+'</span>'+(c.mine?'':'<span class="cbtn"><button class="primary" data-co="'+c.id+'" data-ok="1">'+c.ok+'</button>'+(c.no?'<button data-co="'+c.id+'" data-ok="0">'+c.no+'</button>':'')+'</span><span class="r">'+fmtT(Math.max(0,c.deadline-SIM.t))+'</span>')+'</div>').join('');
  h+='<div class="secHead s-in"><span>Entrants</span><span>'+inc.length+'</span></div>'+(inc.length?inc.map(a=>strip(a,'in')).join(''):'<div class="empty">Aucun vol pré-annoncé</div>');
  h+='<div class="secHead s-ctl"><span>Sous contrôle</span><span>'+ctl.length+'</span></div>'+(ctl.length?ctl.map(a=>strip(a,'ctl')).join(''):'<div class="empty">Aucun vol assumé</div>');
  h+='<div class="secHead s-x"><span>Transférés</span><span></span></div>'+(xf.length?xf.map(a=>strip(a,'x')).join(''):'<div class="empty">—</div>');
@@ -1391,6 +1415,7 @@ function runTokens(a,toks){
   else if(/^(T|TFR|TRF|TRANSFER|X)$/.test(t))askTransfer(a);
   else if(/^(REP|REPRENDRE|UNDO|RT)$/.test(t))askRetake(a);
   else if(/^(RC|RADIO|RCHECK|RADIOCHECK)$/.test(t))cmdRadioCheck(a);
+  else if((m=t.match(/^(?:XFL|CX)(\d{2,3})?$/))){const v=m[1]||toks[++i];if(v&&/^\d{2,3}$/.test(v))cmdAskXfl(a,+v<50?+v*10:+v);else log('bad','XFL : niveau manquant')}
   else if(/^(GUARD|121\.5|1215)$/.test(t))cmdGuard(a);
   else if(/^(ALERTE|ALERT|COMLOSS|NORDO)$/.test(t))askAlert(a);
   else if((m=t.match(/^(?:FL|C|D)?(\d{2,3})$/)))cmdLevel(a,+m[1]<50?+m[1]*10:+m[1]);
