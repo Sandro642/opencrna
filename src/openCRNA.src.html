@@ -564,15 +564,17 @@ function analyze(a,S){
  let i=-1;for(let k=0;k<S.length;k++)if(inVol(S[k].x,S[k].y,S[k].alt)){i=k;break}
  if(i<=0)return i===0?{start:true}:null;
  let j=-1;for(let k=i+1;k<S.length;k++)if(!inVol(S[k].x,S[k].y,S[k].alt)){j=k;break}
- if(j<0)j=S.length-1;
+ // sortie non trouvée dans l'horizon de prédiction : on garde le niveau prévu en fin de prédiction (pas une sortie par le plafond)
+ const found=j>=0;if(j<0)j=S.length-1;
  const si=S[i],sp=S[i-1],sj=S[j],sq=S[j-1];
  const r={entryT:si.t,exitT:sj.t,iEntry:i,iExit:j};
  if(latIn(sp.x,sp.y)){if(sp.alt<VOL.floor*100){r.entryKind='below';r.efl=floor10(VOL.floor);r.eflKind='climb'}else{r.entryKind='above';r.efl=Math.ceil(VOL.ceil/10)*10;if(r.efl<=VOL.ceil)r.efl+=10;r.eflKind='desc'}}
  else{r.entryKind='lat';const dz=si.alt-sp.alt;if(Math.abs(dz)<150){r.efl=Math.round(si.alt/100);r.eflKind='level'}else{r.efl=Math.round(si.alt/1000)*10;r.eflKind=dz>0?'climb':'desc'}
   if(r.efl<VOL.floor){r.efl=Math.ceil(VOL.floor/10)*10;if(r.efl<VOL.floor)r.efl+=10}if(r.efl>=VOL.ceil)r.efl=floor10(VOL.ceil-1);
   if(r.eflKind==='climb'&&r.efl>=a.rfl){r.efl=a.rfl;r.eflKind='level'}}
- if(latIn(sj.x,sj.y)){if(sj.alt<VOL.floor*100){r.exitKind='down';r.xfl=floor10(VOL.floor);r.xflKind='desc'}else{r.exitKind='up';r.xfl=Math.ceil(VOL.ceil/10)*10;if(r.xfl<=VOL.ceil)r.xfl+=10;r.xflKind='climb'}}
+ if(found&&latIn(sj.x,sj.y)){if(sj.alt<VOL.floor*100){r.exitKind='down';r.xfl=floor10(VOL.floor);r.xflKind='desc'}else{r.exitKind='up';r.xfl=Math.ceil(VOL.ceil/10)*10;if(r.xfl<=VOL.ceil)r.xfl+=10;r.xflKind='climb'}}
  else{r.exitKind='lat';const dz=sj.alt-sq.alt;if(Math.abs(dz)<150){r.xfl=Math.round(sq.alt/1000)*10;if(Math.abs(sq.alt-a.rfl*100)<200)r.xfl=a.rfl;r.xflKind='level'}else{r.xfl=Math.round(sj.alt/1000)*10;r.xflKind=dz>0?'climb':'desc';if(r.xflKind==='climb'&&r.xfl>=a.rfl){r.xfl=a.rfl;r.xflKind='level'}}}
+ const cap=Math.min((a.pf||PERF[a.type]||{ceil:410}).ceil,Math.max(a.rfl||0,Math.round(sq.alt/1000)*10));if(r.xfl>cap){r.xfl=cap;r.xflKind='level'}
  r.prev=unitAt(sp.x,sp.y,sp.alt,a);r.next=unitAt(sj.x,sj.y,sj.alt,a);
  r.entryPt=nearestRoutePt(a,si.x,si.y);r.exitPt=nearestRoutePt(a,sj.x,sj.y);
  return r;
@@ -613,7 +615,7 @@ function spawnConflict(a,limitT){
 function trySpawn(kind,tau){
  // kind: 'c' concerné, 'b' fond ; tau : décalage par rapport à l'entrée (s)
  for(let n=0;n<70;n++){
-  const flow=wpick(FLOWS.map(f=>[f,f.w]));const a=makeFlight(flow);const S=predict(a,3200);if(S.length<4)continue;
+  const flow=wpick(FLOWS.map(f=>[f,f.w]));const a=makeFlight(flow);const S=predict(a,5400);if(S.length<4)continue;
   const an=analyze(a,S);
   if(kind==='c'&&(!an||an.start))continue;
   if(kind==='b'&&an)continue;
@@ -651,14 +653,14 @@ function spawnConverging(){
   const inA=A.pred.filter(s=>s.t>=Math.max(A.entryT+60,SIM.t+240)&&s.t<=A.exitT-60&&inVol(s.x,s.y,s.alt));
   if(inA.length<4)continue;
   for(let n=0;n<60;n++){
-   const flow=wpick(FLOWS.map(f=>[f,f.w]));const B=makeFlight(flow);const S=predict(B,3200);
+   const flow=wpick(FLOWS.map(f=>[f,f.w]));const B=makeFlight(flow);const S=predict(B,5400);
    let best=null;
    for(const sb of S){if(Math.abs(sb.x-inA[0].x)>250)continue;for(const sa of inA){const d=Math.abs(sa.x-sb.x)+Math.abs(sa.y-sb.y);if(d<2.5&&(!best||d<best.d))best={d,sa,sb}}}
    if(!best)continue;
    const ang=Math.abs(angDiff(best.sa.hdg,best.sb.hdg));if(ang<20||(n<40&&ang>155))continue;
    const fl=Math.round(best.sa.alt/1000)*10;if(fl>B.pf.ceil||fl<150||fl*100<VOL.floor*100||fl*100>=VOL.ceil*100)continue;
    B.rfl=fl;B.cfl=fl;if(!B.depAp){B.alt=fl*100;B.tas=Math.min(B.pf.cr*sos(B.alt),casToTas(310,B.alt))}
-   const S2=predict(B,3200);let i=-1,bd=1e9;for(let q=0;q<S2.length;q++){const d=dist(S2[q].x,S2[q].y,best.sb.x,best.sb.y);if(d<bd){bd=d;i=q}}
+   const S2=predict(B,5400);let i=-1,bd=1e9;for(let q=0;q<S2.length;q++){const d=dist(S2[q].x,S2[q].y,best.sb.x,best.sb.y);if(d<bd){bd=d;i=q}}
    if(i<0||bd>3||Math.abs(S2[i].alt-best.sa.alt)>700)continue;
    const lead=best.sa.t-SIM.t+rnd(-20,20);const k=Math.round((S2[i].t-lead)/10);if(k<0||k>=i)continue;
    const an=analyze(B,S2);if(!an||an.start)continue;if(S2[k].t>an.entryT-90||inVol(S2[k].x,S2[k].y,S2[k].alt))continue;
