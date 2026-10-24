@@ -1,7 +1,7 @@
 {
   "name": "opencrna",
   "productName": "openCRNA",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Simulateur de contr\u00f4le a\u00e9rien en route (CRNA)",
   "main": "main.js",
   "author": "openCRNA",

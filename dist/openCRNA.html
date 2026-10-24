@@ -671,7 +671,19 @@ function initialCfl(a){let c=a.xfl;if(a.xflKind==='climb'&&c*100<a.alt)c=Math.ro
 const logEl=document.getElementById('log');
 function utc(t){const s=Math.floor(SIM.startUTC+t)%86400;const h=Math.floor(s/3600),m=Math.floor(s/60)%60,ss=s%60;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0')}
 function log(cls,txt){const d=document.createElement('div');d.innerHTML='<span class="t">'+utc(SIM.t)+'</span><span class="'+cls+'"></span>';d.lastChild.textContent=txt;logEl.appendChild(d);while(logEl.children.length>120)logEl.firstChild.remove();logEl.scrollTop=logEl.scrollHeight}
-function speak(txt,fr){if(!SIM.voice||!window.speechSynthesis)return;try{const u=new SpeechSynthesisUtterance(txt);u.lang=fr?'fr-FR':'en-GB';u.rate=1.12;speechSynthesis.speak(u)}catch(e){}}
+// Synthèse vocale : Chromium (et donc Electron) laisse parfois la file bloquée ou « en pause » après une perte
+// de focus ou une pause du jeu. On garde une référence aux énoncés (sinon onend peut ne jamais arriver),
+// on relance la synthèse avant chaque message et on vide la file si elle ne progresse plus.
+const VOICE={keep:new Set(),act:0};
+function voiceReset(){VOICE.keep.clear();VOICE.act=performance.now();try{if(window.speechSynthesis){speechSynthesis.cancel();speechSynthesis.resume()}}catch(e){}}
+function speak(txt,fr){if(!SIM.voice||!window.speechSynthesis)return;try{const ss=speechSynthesis,now=performance.now();
+ if((ss.speaking||ss.pending)&&now-VOICE.act>15000)voiceReset();
+ if(ss.paused)ss.resume();if(!ss.speaking&&!ss.pending)VOICE.act=now;
+ const u=new SpeechSynthesisUtterance(txt);u.lang=fr?'fr-FR':'en-GB';u.rate=1.12;
+ u.onstart=u.onboundary=()=>{VOICE.act=performance.now()};u.onend=u.onerror=()=>{VOICE.act=performance.now();VOICE.keep.delete(u)};
+ VOICE.keep.add(u);ss.speak(u)}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)voiceReset()});
+window.addEventListener('focus',()=>voiceReset());
 function pilot(a,txt){log('plt','◂ '+txt);speak(txt,a.fr)}
 function atc(txt){log('atc','▸ '+txt)}
 const flTxt=(fl,fr)=>fr?'niveau '+fl:'flight level '+fl;
@@ -1449,7 +1461,7 @@ document.addEventListener('keydown',e=>{const tag=document.activeElement&&docume
  else if(/^[a-zA-Z0-9]$/.test(e.key)&&SIM.running&&document.getElementById('startModal').hidden){cmdEl.focus()}});
 
 /* ===================== Barre d'état & réglages ===================== */
-function setSpeed(s){if(s>0)SIM.prevSpeed=s;SIM.speed=s;document.querySelectorAll('#speedSeg button').forEach(b=>b.classList.toggle('on',+b.dataset.s===s))}
+function setSpeed(s){if((s>0)!==(SIM.speed>0))voiceReset();if(s>0)SIM.prevSpeed=s;SIM.speed=s;document.querySelectorAll('#speedSeg button').forEach(b=>b.classList.toggle('on',+b.dataset.s===s))}
 document.querySelectorAll('#speedSeg button').forEach(b=>b.onclick=()=>setSpeed(+b.dataset.s));
 document.getElementById('btnStrips').onclick=()=>{stripsEl.classList.toggle('closed');panelEl.classList.add('closed')};
 document.getElementById('btnPanel').onclick=()=>{panelEl.classList.toggle('closed');stripsEl.classList.add('closed')};
