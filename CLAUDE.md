@@ -68,6 +68,8 @@ Dans la page, l'état est global : `SIM`, `VOL`, `sel`, fonctions `stepAc`, `tic
 - **États d'un vol** : `bg` (non concerné) → `pre` (pré-annoncé, `preT`) → `offered` (transféré vers moi, `offerT`) → `assumed` → `transferred` ; `missed` si jamais pris. Annulation de transfert possible (`canRetake` : encore dans le volume ou < 90 s, pas un transfert auto).
 - **Radio** : `atc()`, `pilot()`, `queue(a,delay,fn)` (réponse pilote différée ; si `a.silent` → `noResponse`).
 - **COMLOSS / défense aérienne** : `a.nordo {kind:'never'|'mid', onset}`, `a.silent`, `cmdGuard` (121.5, 40 % de réussite une fois), `askAlert/cmdAlert`, `processAlerts` (étapes 0→5, 9 = terminé), chasseurs `SIM.mil` avec `stepFighter` (poursuite, supersonique, escorte, retour Mont-de-Marsan LFBM).
+- **Coordinations ATC** (`SIM.coords`, `addCoord`/`answerCoord`/`tickCoords`) : demandes en attente affichées en tête des strips avec boutons. `maybeCoord` : un voisin propose un autre niveau d'entrée (`a.coordFl`, respecté par `autoControl`) ou un cap (`a.coordHdg`) ; réglage `selCoord`. PO : `poAskInfo`/`poInfo` (infos de vol), `poAskComm` (autorisation de contacter l'équipage, sinon escorte à distance). Sans réponse : pénalité.
+- **Radio check** : `cmdRadioCheck` (commande `RC`) ; réponse « 2 sur 5 » si une panne radio `mid` est programmée. Plusieurs COMLOSS simultanés (max `ceil(nordoRate/4)`).
 - **Clairances** : `cmdLevel`, `cmdHdg`, `cmdDirect`, `cmdResume`, `cmdSpeed`, `cmdAssume`, `askTransfer/cmdTransfer` (confirmation), `askRetake/cmdRetake`.
 - **Boucle** : pas physique 0,5 s ; `tick1s` (états, pénalités, demandes pilotes, séparation, génération) ; balayage radar toutes les 4 s (`radarSweep`, positions affichées = `a.plot`) ; `autoLabels` place les étiquettes.
 - **Séparation** : `checkSeparation` (perte < 5 NM et < 950 ft, STCA par extrapolation à 120 s) ; ne compte que si un des vols est « à moi » (`isMine`).
@@ -90,4 +92,4 @@ Dans la page, l'état est global : `SIM`, `VOL`, `sel`, fonctions `stepAc`, `tic
 - Autres profils : LFMM, LFRR, LFFF, LFEE (déjà annoncés « à venir » dans le menu de démarrage) — il faudrait des FLOWDEF et points par centre et un sélecteur de profil réel.
 - Vraie base de points/routes (AIRAC) au lieu des points fictifs.
 - Build Intel (x64) ou universel ; signature/notarisation Apple avec un compte développeur.
-- Coordination téléphonique avec les secteurs voisins (demander un niveau de sortie différent).
+- Coordination dans l'autre sens : demander soi-même au voisin un niveau de sortie différent.

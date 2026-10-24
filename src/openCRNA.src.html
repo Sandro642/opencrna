@@ -59,6 +59,11 @@ canvas#scope{position:absolute;inset:0;width:100%;height:100%;display:block;curs
 .strip.assumed{border-left-color:var(--ok)}
 .strip.transferred{border-left-color:var(--xfer);opacity:.7}
 .strip.alert{border-left-color:var(--crit);background:#2e1717}
+.strip.coord{border-left-color:var(--accent);cursor:default}
+.strip.coord .ctxt{grid-column:1/-1;color:var(--text);font-family:var(--f-ui,inherit);font-size:12px;line-height:1.35;white-space:normal}
+.strip.coord .cbtn{display:flex;gap:6px;margin-top:3px}
+.strip.coord .cbtn button{font-size:11px;padding:2px 8px}
+#log .coord{color:#d0d0d0}
 .empty{color:var(--dim);font-size:12px;padding:4px 12px 10px}
 #panel{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
 .fpHead{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
@@ -252,6 +257,9 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
       <label>Pertes de contact radio
         <select id="selNordo"><option value="0">Aucune</option><option value="2" selected>Occasionnelles · ≈2/h</option><option value="5">Fréquentes · ≈5/h</option><option value="10">Très fréquentes · ≈10/h</option><option value="20">Intenses · ≈20/h</option></select>
       </label>
+      <label>Demandes des centres voisins
+        <select id="selCoord"><option value="0">Aucune</option><option value="0.2" selected>Occasionnelles · ≈1 vol sur 5</option><option value="0.45">Fréquentes · ≈1 vol sur 2</option></select>
+      </label>
       <label>Avions convergents
         <select id="selConv"><option value="0">Trafic naturel seulement</option><option value="420" selected>Quelques convergences · ≈1 / 7 min</option><option value="200">Fréquentes · ≈1 / 3 min</option></select>
       </label>
@@ -274,6 +282,8 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
     <p>Normes : 5 NM en horizontal ou 1 000 ft en vertical (RVSM FL290–FL410). Règle semi-circulaire : route vraie 000–179° niveaux impairs (FL310, 330…), 180–359° niveaux pairs (FL300, 320…).</p>
     <h2>Pertes de contact radio (COMLOSS)</h2>
     <p>Certains équipages ne répondent pas : soit ils n'appellent jamais après le transfert (strip « sans appel »), soit ils deviennent muets en cours de route. Sans réponse, l'avion garde sa clairance puis suit son plan de vol. Un <b>Radio check</b> (commande <code>RC</code>) vérifie le contact : un équipage qui répond « 2 sur 5, très haché » risque de perdre la radio. Procédure : relancez-le ou faites un radio check, essayez <b>Appel 121.5</b> (fréquence de détresse), puis <b>Alertez la défense aérienne</b> depuis la fiche vol (commande <code>ALERTE</code>). La PO de Mont-de-Marsan fait décoller deux Rafale qui interceptent l'avion et se présentent devant le cockpit. Écartez le trafic autour du vol muet. Selon le réglage, plusieurs vols peuvent être muets en même temps. Une alerte rapide rapporte des points, une alerte sur un vol qui répond est une fausse alerte, et un vol muet qui quitte votre secteur sans alerte coûte cher.</p>
+    <h2>Coordinations ATC</h2>
+    <p>Les secteurs et centres voisins (Brest, Paris, Marseille, Madrid…) peuvent demander à vous passer un vol pré-annoncé à un autre niveau ou en cap. La demande apparaît dans la catégorie <b>Coordinations ATC</b> en haut des strips : <b>Accepter</b> ou <b>Refuser</b> dans la minute (sans réponse : pénalité, le vol arrive comme prévu). Un vol accepté en cap devra être remis en navigation (<code>RES</code> ou direct). Pendant une alerte COMLOSS, la PO demande les <b>infos de vol</b> de l'avion (bouton <b>Transmettre</b>, ou <b>Infos vol → PO</b> dans la fiche vol à tout moment), puis votre <b>autorisation</b> pour se présenter au cockpit et communiquer avec l'équipage : tant que vous n'avez pas autorisé, la patrouille reste en escorte.</p>
     <h2>Avions convergents</h2>
     <p>Selon le réglage, le simulateur injecte des vols dont la route croise celle d'un autre vol au même niveau, au même moment, dans votre secteur. Utilisez l'outil Trajectoires pour les repérer tôt.</p>
     <h2>Étiquette radar</h2>
@@ -477,7 +487,7 @@ const WX={dir:280,jet:80,on:true};
 function windAt(h){if(!WX.on)return{dir:0,spd:0,vx:0,vy:0};const f=clamp(h/35000,0,1);let s=6+(WX.jet-6)*Math.pow(f,1.4);if(h>37000)s*=Math.max(.6,1-(h-37000)/25000);const dir=WX.dir-25*(1-f);const to=(dir+180)*D2R;return{dir,spd:s,vx:s*Math.sin(to),vy:s*Math.cos(to)}}
 
 /* ===================== État de la simulation ===================== */
-const SIM={mil:[],alerts:[],nordoRate:0,convInt:0,nextConv:1e9,t:0,speed:1,running:false,acs:[],cfg:null,vol:null,lambda:30,startUTC:0,score:0,done:0,sepLoss:0,pen:[],events:[],sepPairs:new Map(),stca:new Set(),acc:0,last1s:0,lastRadar:-99,voice:false,queue:[],seq:0};
+const SIM={mil:[],alerts:[],coords:[],coordRate:0,coordSeq:0,nordoRate:0,convInt:0,nextConv:1e9,t:0,speed:1,running:false,acs:[],cfg:null,vol:null,lambda:30,startUTC:0,score:0,done:0,sepLoss:0,pen:[],events:[],sepPairs:new Map(),stca:new Set(),acc:0,last1s:0,lastRadar:-99,voice:false,queue:[],seq:0};
 let VOL=null;
 function setupVolume(cfg){sepA=sepB=null;
  const polys=cfg.sec[0]==='*'?[LFBB]:cfg.sec.map(k=>SECT[k]);
@@ -671,6 +681,7 @@ function pilotCall(a){
  const fl=Math.round(a.alt/100),c=a.cfl;let s;
  if(a.fr)s=myName(1)+' '+greet(1)+', '+a.say+', '+(Math.abs(a.alt-c*100)>300?(a.vs>0?'en montée ':'en descente ')+'niveau '+c+', passant '+fl:'niveau '+fl);
  else s=myName(0)+', '+greet(0)+', '+a.say+', '+(Math.abs(a.alt-c*100)>300?'passing FL'+fl+(a.vs>0?' climbing ':' descending ')+'FL'+c:'FL'+fl);
+ if(a.mode==='hdg'&&a.coordHdg)s+=a.fr?', cap '+pad3(a.hdgSel||360):', heading '+pad3(a.hdgSel||360);
  pilot(a,s);
 }
 function queue(a,delay,fn){SIM.queue.push({t:SIM.t+delay,a,fn:()=>{if(a.silent){noResponse(a);return}fn()}})}
@@ -710,6 +721,46 @@ function cmdAlert(a){
  SIM.alerts.push({a,stage:0,tAck:SIM.t+rnd(25,45),tUp:SIM.t+rnd(120,180)});
  if(sel===a)renderPanel(true);
 }
+/* ===================== Coordinations ATC (centres voisins, PO) ===================== */
+// Une coordination = demande en attente de réponse : {id,a,kind,from,text,ok,no,deadline,onOk,onNo,onLate}
+function addCoord(c){c.id=++SIM.coordSeq;c.t=SIM.t;SIM.coords.push(c);return c}
+function answerCoord(id,yes){const i=SIM.coords.findIndex(c=>c.id===id);if(i<0)return;const c=SIM.coords.splice(i,1)[0];(yes?c.onOk:c.onNo)&&(yes?c.onOk:c.onNo)();renderStrips()}
+function tickCoords(now){
+ for(const c of SIM.coords.slice()){
+  if(!SIM.acs.includes(c.a)||(c.valid&&!c.valid())){SIM.coords.splice(SIM.coords.indexOf(c),1);continue}
+  if(now>=c.deadline){SIM.coords.splice(SIM.coords.indexOf(c),1);c.onLate&&c.onLate()}}
+}
+const coordLog=(from,txt)=>log('coord','☎ '+from+' : '+txt),coordMe=txt=>log('coord','☎ '+myName(1)+' : '+txt);
+// Demande d'un secteur/centre voisin pour un vol pré-annoncé : autre niveau d'entrée ou vol en cap
+function maybeCoord(a,now){
+ if(a.coordDone||!SIM.coordRate||a.state!=='pre'||now<a.preT||a.entryT-now<200||a.entryT-now>540||a.silent)return;
+ a.coordDone=true;if(Math.random()>=SIM.coordRate)return;
+ const from=a.prev?a.prev.sh:'Secteur voisin',pf=PERF[a.type]||{ceil:410};let req=null;
+ if(a.entryKind==='lat'&&a.eflKind==='level'){const fls=[a.efl-20,a.efl+20].filter(f=>f>VOL.floor&&f<VOL.ceil&&f<=pf.ceil&&f<=Math.max(a.rfl,a.efl));
+  if(fls.length&&Math.random()<.65){const fl=pick(fls);req={kind:'lvl',fl,text:a.cs+', je peux vous le passer au FL'+pad3(fl)+' au lieu du FL'+pad3(a.efl)+' ? J\'ai un trafic au niveau chez moi.'}}}
+ if(!req){const h=norm(Math.round((a.trk+(Math.random()<.5?-1:1)*rnd(10,25))/5)*5)||360;req={kind:'hdg',hdg:h,text:a.cs+', je peux vous le passer en cap '+pad3(h)+' ? Il reprendra sa route chez vous.'}}
+ coordLog(from,req.text);
+ addCoord({a,kind:req.kind,from,text:req.text,ok:'Accepter',no:'Refuser',deadline:now+60,valid:()=>a.state==='pre',
+  onOk:()=>{coordMe(from+', '+a.cs+(req.kind==='lvl'?' au FL'+pad3(req.fl):' en cap '+pad3(req.hdg))+', accepté.');
+   if(req.kind==='lvl'){a.coordFl=req.fl;a.efl=req.fl;a.eflKind='level'}else{a.mode='hdg';a.hdgSel=req.hdg%360;a.turnDir=null;a.coordHdg=req.hdg}
+   SIM.queue.push({t:SIM.t+rnd(2,4),a,fn:()=>coordLog(from,'Merci, '+a.cs+(req.kind==='lvl'?' au FL'+pad3(req.fl):' en cap '+pad3(req.hdg))+'.')})},
+  onNo:()=>{coordMe(from+', négatif pour '+a.cs+', comme prévu s\'il vous plaît.');SIM.queue.push({t:SIM.t+rnd(2,4),a,fn:()=>coordLog(from,'Bien reçu, '+a.cs+' comme prévu.')})},
+  onLate:()=>{coordLog(from,'Pas de réponse, je vous passe '+a.cs+' comme prévu.');penalty(a,'co',-5,a.cs+' : coordination sans réponse')}});
+}
+// Infos de vol transmises à la PO (position relative à la patrouille)
+function poInfo(al,auto){const a=al.a,f=al.lead;if(!f||!SIM.acs.includes(a))return;const p=a.pts[a.leg];
+ log('mil','▸ '+myName(1)+' → '+f.cs+' : '+a.cs+', '+a.type+', FL'+pad3(a.alt/100)+', route '+pad3(a.trk)+'°, '+Math.round(a.gs)+' kt, prochain point '+(p?p.id:'—')+', à '+Math.round(dist(f.x,f.y,a.x,a.y))+' NM au '+pad3(brg(f.x,f.y,a.x,a.y))+'° de vous.');
+ al.infoT=SIM.t;if(!auto&&!al.infoPts){al.infoPts=1;SIM.score+=5;log('good','Infos de vol transmises à la PO (+5)')}}
+function poAskInfo(al){const a=al.a;
+ addCoord({a,kind:'poInfo',from:al.lead.cs,text:'PO '+al.lead.cs+' : demande les infos de vol de '+a.cs+' (niveau, route, vitesse, position).',ok:'Transmettre',deadline:SIM.t+90,valid:()=>al.stage<9,
+  onOk:()=>poInfo(al),onLate:()=>{penalty(a,'poi',-5,a.cs+' : infos de vol non transmises à la PO');log('mil','◂ '+al.lead.cs+' : sans infos, on poursuit au radar de bord.')}});
+ log('mil','◂ '+al.lead.cs+' : demandons les infos de vol de '+a.cs+'.')}
+function poAskComm(al){const a=al.a;
+ addCoord({a,kind:'poComm',from:al.lead.cs,text:'PO '+al.lead.cs+' : en position près de '+a.cs+'. Demande l\'autorisation de se présenter au cockpit et de communiquer avec l\'équipage (signaux, 121.5).',ok:'Autoriser',no:'Refuser',deadline:SIM.t+60,valid:()=>al.stage===3,
+  onOk:()=>{log('mil','▸ '+myName(1)+' → '+al.lead.cs+' : autorisé à vous présenter et à contacter '+a.cs+', demandez-lui de contacter '+myName(1)+' sur '+VOL.freq+'.');al.tRes=SIM.t+rnd(20,40);SIM.queue.push({t:SIM.t+rnd(4,8),a,fn:()=>log('mil','◂ '+al.lead.cs+' : on se présente côté gauche du cockpit.')})},
+  onNo:()=>{log('mil','▸ '+myName(1)+' → '+al.lead.cs+' : négatif, restez en escorte à distance pour le moment.');al.reask=SIM.t+90},
+  onLate:()=>{penalty(a,'poc',-5,a.cs+' : demande de la PO restée sans réponse');log('mil','◂ '+al.lead.cs+' : toujours en attente de votre autorisation.');al.reask=SIM.t+30}});
+ log('mil','◂ '+al.lead.cs+' : demande autorisation de contacter l\'équipage de '+a.cs+'.')}
 /* ===================== Défense aérienne / PO ===================== */
 const PO_CS=['RAMEX','VADOR','COBRA','FANGIO','TIGRE'];
 const ALSTAGE=['Alerte transmise','PO en préparation','PO en vol','Interception','Contact visuel','Escorte'];
@@ -724,10 +775,12 @@ function processAlerts(now){
    al.lead=mkFighter(nm+' '+(n0+1),a,0);al.wing=mkFighter(nm+' '+(n0+2),a,1);al.wing.lead=al.lead;SIM.mil.push(al.lead,al.wing);
    const d=dist(PTS.LFBM.x,PTS.LFBM.y,a.x,a.y);
    log('mil','◂ PO Mont-de-Marsan : '+al.lead.cs+' et '+al.wing.cs+', patrouille de deux Rafale, décollés. Interception de '+a.cs+' estimée dans '+fmtT(90+d/12*60)+'.');
-   log('mil','◂ Défense aérienne : merci de garder le trafic à 10 NM ou 2 000 ft de '+a.cs+'.')}
-  if(al.stage===2&&al.lead&&al.lead.phase==='escort'){al.stage=3;al.tRes=now+rnd(50,100);
-   log('mil','◂ '+al.lead.cs+' : en patrouille avec '+a.cs+', '+(PERF[a.type]?PERF[a.type].n:a.type)+', FL'+pad3(a.alt/100)+'. On se présente côté gauche du cockpit.')}
-  if(al.stage===3&&now>=al.tRes){
+   log('mil','◂ Défense aérienne : merci de garder le trafic à 10 NM ou 2 000 ft de '+a.cs+'.');al.tInfo=now+rnd(15,30)}
+  if(al.stage===2&&al.tInfo&&now>=al.tInfo){al.tInfo=0;poAskInfo(al)}
+  if(al.stage===2&&al.lead&&al.lead.phase==='escort'){al.stage=3;al.tRes=0;al.reask=now+rnd(5,10);
+   log('mil','◂ '+al.lead.cs+' : en patrouille avec '+a.cs+', '+(PERF[a.type]?PERF[a.type].n:a.type)+', FL'+pad3(a.alt/100)+', en escorte à distance.')}
+  if(al.stage===3&&!al.tRes&&al.reask&&now>=al.reask){al.reask=0;poAskComm(al)}
+  if(al.stage===3&&al.tRes&&now>=al.tRes){
    if(alive&&a.silent&&Math.random()<.8){al.stage=4;al.tRec=now+rnd(8,16);log('mil','◂ '+al.lead.cs+' : l\'équipage nous a vus et répond par signaux, il devrait vous rappeler.')}
    else{al.stage=5;log('mil','◂ '+al.lead.cs+' : pas de réaction de l\'équipage, on reste en escorte.')}}
   if(al.stage===4&&now>=al.tRec){al.stage=9;if(alive&&a.silent)recoverNordo(a,'radio');log('mil','◂ '+al.lead.cs+' : on dégage, retour Mont-de-Marsan.');rtb(al)}
@@ -865,7 +918,7 @@ function penalty(a,key,pts,msg){if(a&&a.flags['p_'+key])return;if(a)a.flags['p_'
 /* ===================== Boucle principale ===================== */
 function autoControl(a){
  let tgt=plannedCfl(a);
- if(a.concerned&&(a.state==='pre'||a.state==='offered')){if(tgt*100>a.alt)tgt=Math.min(tgt,a.efl);else tgt=Math.max(tgt,a.efl)}
+ if(a.concerned&&(a.state==='pre'||a.state==='offered')){if(a.coordFl)tgt=a.coordFl;else if(tgt*100>a.alt)tgt=Math.min(tgt,a.efl);else tgt=Math.max(tgt,a.efl)}
  if(a.state==='transferred'){
   const out=!a.inv;
   if(a.exitKind==='lat'&&!out)tgt=a.cfl;else if(a.mode==='hdg')resumeAuto(a);
@@ -887,6 +940,7 @@ function tick1s(){
    if(a.silent&&a.state==='assumed'&&now-(a.nordo.onset??now)>180){if(a.mode==='hdg')resumeAuto(a);a.cfl=plannedCfl(a)}
    if(a.silent&&!a.alerted&&a.wasIn&&!a.inv&&a.state!=='pre')penalty(a,'cl',-30,a.cs+' : perte de contact radio non signalée à la défense aérienne');
   }
+  if(a.concerned)maybeCoord(a,now);
   if(a.concerned){
    if(a.needCall&&a.state==='offered'){a.needCall=false;pilotCall(a)}
    if(a.state==='pre'&&now>=a.offerT){a.state='offered';a.offeredAt=now;pilotCall(a)}
@@ -903,7 +957,7 @@ function tick1s(){
   }
   if(a.state!=='assumed')autoControl(a);
  }
- processAlerts(now);SIM.mil=SIM.mil.filter(f=>!f.gone);
+ processAlerts(now);tickCoords(now);SIM.mil=SIM.mil.filter(f=>!f.gone);
  if(SIM.convInt&&now>=SIM.nextConv)SIM.nextConv=now+(spawnConverging()?SIM.convInt*rnd(.7,1.3):30);
  // retraits
  SIM.acs=SIM.acs.filter(a=>{const far=Math.hypot(a.x,a.y)>330;const gone=arrived(a)||far;if(gone){if(a.state==='assumed'){penalty(a,'tf',-10,a.cs+' : quitte la couverture sans transfert')}if(a===sel)selectAc(null);if(a===sepA||a===sepB){sepA=sepB=null}}return!gone});
@@ -1266,7 +1320,7 @@ function renderPanel(force){
    h+='<div class="ctl"><h4>Cap <span data-v="hdg"></span></h4><div class="row"><button data-r="-20">G20</button><button data-r="-10">G10</button><button data-r="10">D10</button><button data-r="20">D20</button><input id="pHd" inputmode="numeric" maxlength="3" placeholder="270" style="width:56px"><button id="pHdGo">Cap</button></div><div class="row"><button id="pRes">Reprendre nav</button><select id="pDct">'+a.pts.slice(a.leg).map(p=>'<option>'+p.id+'</option>').join('')+'</select><button id="pDctGo">Direct</button></div></div>';
    h+='<div class="ctl"><h4>Vitesse <span data-v="spdR"></span></h4><div class="row"><button data-m="-2">−M.02</button><button data-m="2">+M.02</button><input id="pSp" placeholder="M78 / 280" style="width:86px"><button id="pSpGo">OK</button><button id="pSpA">Libre</button></div></div>';
   }
-  if(a.concerned&&a.state!=='pre'&&a.state!=='transferred')h+='<div class="ctl"><h4>Contact radio <span data-v="rdo"></span></h4><div class="row"><button id="pRc">Radio check</button><button id="pGuard">Appel 121.5</button><button id="pAlert" class="alertBtn">Alerter la défense aérienne</button></div></div>';
+  if(a.concerned&&a.state!=='pre'&&a.state!=='transferred')h+='<div class="ctl"><h4>Contact radio <span data-v="rdo"></span></h4><div class="row"><button id="pRc">Radio check</button><button id="pGuard">Appel 121.5</button><button id="pAlert" class="alertBtn">Alerter la défense aérienne</button>'+(SIM.alerts.some(x=>x.a===a&&x.stage>=2&&x.stage<9&&x.lead)?'<button id="pPoInfo">Infos vol → PO</button>':'')+'</div></div>';
   h+='<div class="ctl"><h4>Plan de vol</h4><div class="route" data-v="route"></div></div>';
   if(sepA&&sepB&&(a===sepA||a===sepB))h+='<button id="pSepClr">Fermer l\'analyse de trajectoires</button>';
   else h+='<p class="hint">Bouton Trajectoires puis clic sur un autre vol (ou clic droit dessus) : croisement, CPA et dangerosité des caps avec '+a.cs+'.</p>';
@@ -1282,7 +1336,7 @@ function renderPanel(force){
    panelEl.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const cur=a.spdMode==='mach'?Math.round(a.spdVal*100):Math.round(a.tas/sos(a.alt)*100);cmdSpeed(a,'mach',cur+(+b.dataset.m))});
    const goS=()=>{const v=$('#pSp').value.trim().toUpperCase();if(v)runTokens(a,[v]);$('#pSp').value=''};$('#pSpGo').onclick=goS;$('#pSp').onkeydown=e=>{if(e.key==='Enter')goS()};$('#pSpA').onclick=()=>cmdSpeed(a,'auto');
   }
-  if($('#pGuard')){$('#pRc').onclick=()=>cmdRadioCheck(a);$('#pGuard').onclick=()=>cmdGuard(a);$('#pAlert').onclick=()=>askAlert(a)}
+  if($('#pGuard')){$('#pRc').onclick=()=>cmdRadioCheck(a);$('#pGuard').onclick=()=>cmdGuard(a);$('#pAlert').onclick=()=>askAlert(a);if($('#pPoInfo'))$('#pPoInfo').onclick=()=>{const al=SIM.alerts.find(x=>x.a===a&&x.stage<9&&x.lead);if(al){const c=SIM.coords.find(c=>c.a===a&&c.kind==='poInfo');if(c)answerCoord(c.id,true);else poInfo(al)}}}
   if($('#pSepClr'))$('#pSepClr').onclick=()=>{sepA=sepB=null;renderPanel(true)};
  }
  const v=k=>panelEl.querySelector('[data-v="'+k+'"]');
@@ -1309,12 +1363,15 @@ function renderStrips(){
   return '<div class="strip '+a.state+(al?' alert':'')+(a===sel?' sel':'')+'" data-id="'+a.id+'"><span class="cs"><span class="dg" title="'+DCAT[destCat(a.arr)][1]+'">'+DCAT[destCat(a.arr)][0]+'</span> '+a.cs+'</span><span class="r">'+a.type+'/'+a.wake+'</span><span>'+lv+'</span><span class="r">'+(kind==='in'?a.prev.code+'›':'›'+a.next.code)+'</span><span class="m">'+a.dep+'→'+a.arr+'</span><span class="r">'+t+'</span></div>'};
  const als=SIM.alerts.filter(x=>x.stage<9);
  let h=als.length?'<div class="secHead"><span>Défense aérienne</span><span>'+als.length+'</span></div>'+als.map(x=>'<div class="strip alert" data-id="'+x.a.id+'"><span class="cs">'+x.a.cs+'</span><span class="r">COMLOSS</span><span>'+ALSTAGE[x.stage]+'</span><span class="r">'+(x.lead?x.lead.cs:'')+'</span></div>').join(''):'';
+ const co=SIM.coords;
+ if(co.length)h+='<div class="secHead"><span>Coordinations ATC</span><span>'+co.length+'</span></div>'+co.map(c=>'<div class="strip coord" data-id="'+c.a.id+'"><span class="cs">'+c.a.cs+'</span><span class="r">'+c.from+'</span><span class="ctxt">'+c.text+'</span><span class="cbtn"><button class="primary" data-co="'+c.id+'" data-ok="1">'+c.ok+'</button>'+(c.no?'<button data-co="'+c.id+'" data-ok="0">'+c.no+'</button>':'')+'</span><span class="r">'+fmtT(Math.max(0,c.deadline-SIM.t))+'</span></div>').join('');
  h+='<div class="secHead s-in"><span>Entrants</span><span>'+inc.length+'</span></div>'+(inc.length?inc.map(a=>strip(a,'in')).join(''):'<div class="empty">Aucun vol pré-annoncé</div>');
  h+='<div class="secHead s-ctl"><span>Sous contrôle</span><span>'+ctl.length+'</span></div>'+(ctl.length?ctl.map(a=>strip(a,'ctl')).join(''):'<div class="empty">Aucun vol assumé</div>');
  h+='<div class="secHead s-x"><span>Transférés</span><span></span></div>'+(xf.length?xf.map(a=>strip(a,'x')).join(''):'<div class="empty">—</div>');
  if(h!==stripsKey){stripsKey=h;stripsEl.innerHTML=h}
 }
-stripsEl.addEventListener('click',e=>{const s=e.target.closest('.strip');if(!s)return;const a=SIM.acs.find(q=>q.id===+s.dataset.id);if(a){selectAc(a);if(a.plot){VIEW.cx=a.plot.x;VIEW.cy=a.plot.y}}});
+stripsEl.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-co]');if(!b)return;e.preventDefault();e.stopPropagation();answerCoord(+b.dataset.co,b.dataset.ok==='1')});
+stripsEl.addEventListener('click',e=>{if(e.target.closest('[data-co]'))return;const s=e.target.closest('.strip');if(!s)return;const a=SIM.acs.find(q=>q.id===+s.dataset.id);if(a){selectAc(a);if(a.plot){VIEW.cx=a.plot.x;VIEW.cy=a.plot.y}}});
 stripsEl.addEventListener('dblclick',e=>{const s=e.target.closest('.strip');if(!s)return;const a=SIM.acs.find(q=>q.id===+s.dataset.id);if(!a)return;if(a.state==='offered')cmdAssume(a);else if(a.state==='assumed')askTransfer(a,e.clientX,e.clientY);else if(a.state==='transferred')askRetake(a,e.clientX,e.clientY)});
 function updateUI(){
  document.getElementById('hdClock').textContent=utc(SIM.t);
@@ -1383,9 +1440,9 @@ document.getElementById('btnHelp').onclick=openHelp;document.getElementById('btn
 document.getElementById('btnCloseHelp').onclick=()=>document.getElementById('helpModal').hidden=true;
 document.getElementById('helpModal').addEventListener('click',e=>{if(e.target.id==='helpModal')e.target.hidden=true});
 
-function saveSettings(){try{localStorage.setItem('opencrna.v1',JSON.stringify({nordo:selNordo.value,conv:selConv.value,cfg:selCfg.value,den:selDen.value,wind:chkWind.checked,voice:chkVoice.checked,lay:LAY}))}catch(e){}}
-function loadSettings(){try{const s=JSON.parse(localStorage.getItem('opencrna.v1')||'null');if(!s)return;if(s.cfg)selCfg.value=s.cfg;if(s.nordo!=null)selNordo.value=s.nordo;if(s.conv!=null)selConv.value=s.conv;if(s.den)selDen.value=s.den;chkWind.checked=s.wind!==false;chkVoice.checked=!!s.voice;if(s.lay)Object.assign(LAY,s.lay)}catch(e){}}
-const selNordo=document.getElementById('selNordo'),selConv=document.getElementById('selConv'),selCfg=document.getElementById('selConfig'),selDen=document.getElementById('selDensity'),chkWind=document.getElementById('chkWind'),chkVoice=document.getElementById('chkVoice');
+function saveSettings(){try{localStorage.setItem('opencrna.v1',JSON.stringify({nordo:selNordo.value,conv:selConv.value,coord:selCoord.value,cfg:selCfg.value,den:selDen.value,wind:chkWind.checked,voice:chkVoice.checked,lay:LAY}))}catch(e){}}
+function loadSettings(){try{const s=JSON.parse(localStorage.getItem('opencrna.v1')||'null');if(!s)return;if(s.cfg)selCfg.value=s.cfg;if(s.nordo!=null)selNordo.value=s.nordo;if(s.conv!=null)selConv.value=s.conv;if(s.coord!=null)selCoord.value=s.coord;if(s.den)selDen.value=s.den;chkWind.checked=s.wind!==false;chkVoice.checked=!!s.voice;if(s.lay)Object.assign(LAY,s.lay)}catch(e){}}
+const selNordo=document.getElementById('selNordo'),selConv=document.getElementById('selConv'),selCoord=document.getElementById('selCoord'),selCfg=document.getElementById('selConfig'),selDen=document.getElementById('selDensity'),chkWind=document.getElementById('chkWind'),chkVoice=document.getElementById('chkVoice');
 selCfg.innerHTML=CONFIGS.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');selCfg.value='US';
 function cfgInfo(){const c=CONFIGS.find(q=>q.id===selCfg.value);document.getElementById('cfgInfo').textContent='Volume : '+(c.sec[0]==='*'?'toute la région LFBB':'secteur'+(c.sec.length>1?'s ':' ')+c.sec.join(', '))+' · FL'+c.floor+' à '+(c.ceil>=660?'FL660':'FL'+c.ceil)+'. '+(c.floor>=300?'Secteur supérieur : survols en croisière, montées des départs Toulouse/Bordeaux et descentes des arrivées.':'Secteur inférieur : beaucoup de montées et descentes, transferts aux approches de Bordeaux, Toulouse, Biarritz, Pau.')}
 selCfg.onchange=cfgInfo;
@@ -1393,7 +1450,7 @@ loadSettings();syncLayers();cfgInfo();
 
 function startGame(){
  const cfg=CONFIGS.find(q=>q.id===selCfg.value);setupVolume(cfg);saveSettings();
- Object.assign(SIM,{t:0,acs:[],score:0,done:0,sepLoss:0,pen:[],sepPairs:new Map(),stca:new Set(),acc:0,last1s:0,lastRadar:-99,queue:[],lambda:+selDen.value,voice:chkVoice.checked,running:true,mil:[],alerts:[],nordoRate:+selNordo.value,convInt:+selConv.value});SIM.nextConv=SIM.convInt?rnd(60,150):1e9;
+ Object.assign(SIM,{t:0,acs:[],score:0,done:0,sepLoss:0,pen:[],sepPairs:new Map(),stca:new Set(),acc:0,last1s:0,lastRadar:-99,queue:[],lambda:+selDen.value,voice:chkVoice.checked,running:true,mil:[],alerts:[],nordoRate:+selNordo.value,convInt:+selConv.value,coords:[],coordRate:+selCoord.value});SIM.nextConv=SIM.convInt?rnd(60,150):1e9;
  SIM.startUTC=(Math.floor(rnd(7,19))*3600+Math.floor(rnd(0,59))*60);
  WX.on=chkWind.checked;WX.dir=Math.round(rnd(250,300));WX.jet=Math.round(rnd(45,115));
  const w=windAt(35000);document.getElementById('hdWind').innerHTML='<span class="k">Vent FL350</span>'+(WX.on?pad3(w.dir)+'°/'+Math.round(w.spd)+' kt':'calme');
