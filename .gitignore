@@ -1,0 +1,6 @@
+data/raw/
+mac/dist/
+mac/app/index.html
+tests/_page.html
+tests/_screenshot.png
+node_modules/

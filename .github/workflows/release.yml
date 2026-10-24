@@ -1,0 +1,35 @@
+# À chaque push sur main : si la version de mac/app/package.json n'a pas encore de release,
+# construit l'app macOS (Apple Silicon) et publie la release vX.Y.Z (lue par l'updater de l'app).
+name: Release
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: macos-14
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Version
+        id: v
+        run: |
+          V=$(node -p "require('./mac/app/package.json').version")
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          if gh release view "v$V" >/dev/null 2>&1; then echo "exists=1" >> "$GITHUB_OUTPUT"; fi
+      - name: Build
+        if: steps.v.outputs.exists != '1'
+        run: ./mac/build_mac.sh
+      - name: Publier la release
+        if: steps.v.outputs.exists != '1'
+        run: |
+          git log -1 --pretty=%B | grep -v '^Co-Authored-By:' > notes.txt
+          gh release create "v${{ steps.v.outputs.version }}" \
+            mac/dist/openCRNA-macOS-AppleSilicon.zip dist/openCRNA.html \
+            --title "openCRNA ${{ steps.v.outputs.version }}" --notes-file notes.txt

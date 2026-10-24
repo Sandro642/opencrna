@@ -1,0 +1,1421 @@
+<title>openCRNA</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: console plein écran — barre d'état / [strips | scope radar | fiche vol] / radio + ligne de commande */
+:root{
+  --bg:#000000; --panel:#080808; --panel2:#101010; --line:#1f1f1f; --line2:#2f2f2f;
+  --text:#dcdcdc; --mute:#8c8c8c; --dim:#636363;
+  --accent:#c8c8c8; --amber:#d9a441; --call:#ffcf5c; --ok:#5fd38a; --warn:#e4e4e4; --crit:#ff5b52; --xfer:#5aa9e6;
+  --f-ui:'Barlow Semi Condensed','Arial Narrow',Arial,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--f-ui);font-size:14px;overflow:hidden;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box}
+*{box-sizing:border-box}
+button{font-family:var(--f-ui);font-size:13px;color:var(--text);background:var(--panel2);border:1px solid var(--line2);border-radius:3px;padding:4px 9px;cursor:pointer;line-height:1.2}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button.on{background:#2a2a2a;border-color:var(--accent);color:#fff}
+button.primary{background:#2e2e2e;border-color:#8a8a8a;color:#fff;font-weight:600}
+button.big{font-size:15px;padding:8px 12px;width:100%}
+input,select{font-family:var(--f-mono);font-size:13px;background:#050505;color:var(--text);border:1px solid var(--line2);border-radius:3px;padding:4px 6px}
+select{font-family:var(--f-ui)}
+#app{display:grid;grid-template-rows:auto 1fr auto;height:100%;padding-block:6px;gap:6px}
+header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
+.brand{font-weight:700;letter-spacing:.06em;font-size:17px;color:#fff}
+.brand b{color:var(--accent);font-weight:700}
+.chip{font-family:var(--f-mono);font-size:12px;padding:3px 7px;border:1px solid var(--line2);border-radius:3px;background:var(--panel);white-space:nowrap}
+.chip .k{color:var(--mute);font-family:var(--f-ui);font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin-right:5px}
+.chip.crit{border-color:var(--crit);color:#ffd0cc}
+.grow{flex:1}
+.seg{display:flex;gap:0}
+.seg button{border-radius:0;margin-left:-1px}
+.seg button:first-child{border-radius:3px 0 0 3px;margin-left:0}
+.seg button:last-child{border-radius:0 3px 3px 0}
+#main{display:grid;grid-template-columns:240px minmax(0,1fr) 290px;gap:6px;min-height:0}
+aside{background:var(--panel);border:1px solid var(--line);border-radius:4px;min-height:0;overflow:auto;min-width:0}
+#scopeWrap{position:relative;min-height:0;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#000;touch-action:none}
+canvas#scope{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
+.secHead{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);padding:8px 10px 4px;display:flex;justify-content:space-between;position:sticky;top:0;background:var(--panel);z-index:1}
+.strip{display:grid;grid-template-columns:1fr auto;gap:1px 8px;margin:3px 6px;padding:5px 7px 5px 9px;background:var(--panel2);border-left:4px solid var(--dim);border-radius:2px;cursor:pointer;font-family:var(--f-mono);font-size:11.5px}
+.strip:hover{background:#181818}
+.strip.sel{outline:1px solid var(--accent)}
+.strip .cs{font-weight:600;font-size:13px;color:#fff}
+.strip .r{text-align:right;color:var(--mute)}
+.strip .m{color:var(--mute)}
+.strip.pre{border-left-color:var(--amber)}
+.strip.offered{border-left-color:var(--call);background:#2a220f}
+.secHead.s-in span:first-child{color:var(--amber)}
+.secHead.s-ctl span:first-child{color:var(--ok)}
+.secHead.s-x span:first-child{color:var(--xfer)}
+.strip.pre .cs{color:var(--amber)}
+.strip.offered .cs{color:var(--call)}
+.strip.assumed .cs{color:var(--ok)}
+.strip.transferred .cs{color:var(--xfer)}
+.strip.assumed{border-left-color:var(--ok)}
+.strip.transferred{border-left-color:var(--xfer);opacity:.7}
+.strip.alert{border-left-color:var(--crit);background:#2e1717}
+.empty{color:var(--dim);font-size:12px;padding:4px 12px 10px}
+#panel{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
+.fpHead{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.fpCs{font-family:var(--f-mono);font-size:22px;font-weight:600;color:#fff}
+.state{font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:2px;border:1px solid}
+.state.pre{color:var(--amber);border-color:var(--amber)}
+.state.offered{color:var(--call);border-color:var(--call)}
+.state.assumed{color:var(--ok);border-color:var(--ok)}
+.state.transferred,.state.done{color:var(--xfer);border-color:var(--xfer)}
+.state.bg,.state.missed{color:var(--mute);border-color:var(--line2)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:13px}
+.kv dt{color:var(--mute)}
+.kv dd{margin:0;font-family:var(--f-mono);font-size:12.5px;text-align:right}
+.ctl{display:flex;flex-direction:column;gap:5px;border-top:1px solid var(--line);padding-top:8px}
+.ctl h4{margin:0;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:500;display:flex;justify-content:space-between}
+.ctl h4 span{font-family:var(--f-mono);color:var(--text);letter-spacing:0;text-transform:none;font-size:12px}
+.row{display:flex;gap:4px;flex-wrap:wrap}
+.row input{width:70px}
+.route{font-family:var(--f-mono);font-size:12px;line-height:1.7;word-break:break-word}
+.route span{margin-right:6px}
+.route .past{color:var(--dim)}
+.route .next{color:var(--accent);font-weight:600}
+.hint{color:var(--mute);font-size:12.5px;line-height:1.45}
+footer{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);gap:6px;min-height:0}
+#log{height:118px;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:5px 8px;font-family:var(--f-mono);font-size:12px;line-height:1.5}
+#log .t{color:var(--dim);margin-right:6px}
+#log .atc{color:#e2e2e2}
+#log .plt{color:#b0b0b0}
+#log .sys{color:var(--mute)}
+#log .bad{color:#ff9c95}
+#log .mil{color:#e6e6e6;font-style:italic}
+.alertBtn{border-color:#ff5b52!important;color:#ffd0cc!important}
+#log .good{color:var(--ok)}
+#cmdBox{display:flex;flex-direction:column;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px}
+#cmd{width:100%;font-size:15px;padding:8px;text-transform:uppercase}
+#cmdBox .hint{font-size:12px}
+#menu{position:fixed;z-index:50;background:#080808;border:1px solid var(--accent);border-radius:3px;box-shadow:0 6px 24px rgba(0,0,0,.5);max-height:320px;overflow:auto;min-width:120px;font-family:var(--f-mono);font-size:12.5px}
+#menu .mt{font-family:var(--f-ui);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);padding:5px 8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#080808}
+#menu .mi{padding:4px 10px;cursor:pointer;display:flex;justify-content:space-between;gap:12px}
+#menu .mi:hover,#menu .mi.cur{background:#262626}
+#menu .mi .tag{color:var(--mute)}
+#menu .mi.rfl{color:var(--ok)}
+#menu .mi.xfl{color:var(--call)}
+#menu .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:6px}
+#menu .grid button{font-family:var(--f-mono);font-size:12px;padding:4px 2px}
+.modal{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.86);display:flex;align-items:center;justify-content:center;padding:16px}
+.card{background:var(--panel);border:1px solid var(--line2);border-radius:6px;max-width:760px;width:100%;max-height:100%;overflow:auto;padding:22px 24px}
+.card h1{margin:0 0 4px;font-size:30px;letter-spacing:.04em;color:#fff;text-wrap:balance}
+.card h1 b{color:var(--accent)}
+.card h2{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin:18px 0 8px;font-weight:600}
+.card p{line-height:1.5;max-width:65ch;margin:6px 0}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute);letter-spacing:.04em}
+.form select,.form input{font-size:14px;padding:6px}
+.check{flex-direction:row!important;align-items:center;gap:8px!important;color:var(--text)!important;font-size:14px!important}
+table.cmds{border-collapse:collapse;width:100%;font-size:13px}
+table.cmds td{border-top:1px solid var(--line);padding:5px 8px;vertical-align:top}
+table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-space:nowrap}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px 14px;font-size:13px}
+.legend i{display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:2px;vertical-align:-1px}
+.tw{overflow-x:auto}
+#layers{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.92);border:1px solid var(--line2);border-radius:4px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;font-size:13px;z-index:5}
+#layers label{display:flex;gap:6px;align-items:center}
+#scopeTools{position:absolute;left:8px;bottom:8px;display:flex;gap:4px;z-index:4;flex-wrap:wrap}
+#scopeTools button{background:rgba(8,8,8,.92)}
+#toast{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#3a1414;border:1px solid var(--crit);color:#ffd6d2;padding:6px 12px;border-radius:3px;font-weight:600;z-index:6;pointer-events:none}
+.mobileOnly{display:none}
+@media (max-width:1100px){
+  #main{grid-template-columns:200px minmax(0,1fr) 250px}
+}
+@media (max-width:860px){
+  #main{grid-template-columns:minmax(0,1fr)}
+  aside{position:fixed;top:56px;bottom:200px;z-index:30;width:min(300px,88vw);box-shadow:0 8px 30px rgba(0,0,0,.6)}
+  #strips{left:max(16px,env(safe-area-inset-left,0px))}
+  #panel{right:max(16px,env(safe-area-inset-right,0px))}
+  aside.closed{display:none!important}
+  #cmdBox .hint{display:none}
+  .chip .k{display:none}
+  .mobileOnly{display:inline-block}
+  footer{grid-template-columns:minmax(0,1fr)}
+  #log{height:80px}
+  .hideNarrow{display:none}
+}
+#confCard{position:absolute;top:8px;left:8px;width:min(330px,calc(100% - 16px));background:rgba(5,5,5,.96);border:1px solid var(--line2);border-radius:4px;padding:10px 12px;z-index:6;font-size:13px;display:flex;flex-direction:column;gap:7px;max-height:calc(100% - 64px);overflow:auto}
+#confCard h3{margin:0;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+#confCard .verdict{font-weight:700;letter-spacing:.05em;padding:5px 8px;border-radius:3px;border:1px solid;font-size:14px}
+.verdict.danger{color:#ffd0cc;border-color:var(--crit);background:#2a0907}
+.verdict.warn{color:var(--call);border-color:var(--warn);background:#1a1a1a}
+.verdict.ok{color:var(--ok);border-color:#5a5a5a;background:#0d0d0d}
+#confCard .ac{font-family:var(--f-mono);font-size:12px;line-height:1.5}
+#confCard .ac b{color:#fff}
+#confCard .sug{display:flex;flex-direction:column;gap:4px}
+#confCard .sug button{text-align:left;font-family:var(--f-mono);font-size:12px}
+#legend{position:absolute;right:10px;bottom:40px;background:rgba(0,0,0,.82);border:1px solid var(--line);border-radius:3px;padding:6px 9px;font-size:12px;color:var(--mute);display:grid;grid-template-columns:auto auto;gap:2px 8px;z-index:4;pointer-events:none}
+#legend b{color:var(--text);font-weight:400;text-align:center;font-family:system-ui,sans-serif}
+#legend .lt{grid-column:1/-1;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
+.strip .dg{font-family:system-ui,sans-serif;font-weight:400;color:var(--mute)}
+#pickHint{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#111111;border:1px solid var(--accent);color:#ffffff;padding:6px 12px;border-radius:3px;z-index:7;font-weight:600;white-space:nowrap}
+#menu .mconf{padding:9px 10px;display:flex;flex-direction:column;gap:7px;font-family:var(--f-ui);font-size:13.5px;min-width:240px}
+#menu .mconf .row button{flex:1;font-size:14px;padding:6px 10px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div id="app">
+  <header>
+    <span class="brand">open<b>CRNA</b></span>
+    <span class="chip" id="hdSector"><span class="k">Position</span>—</span>
+    <span class="chip"><span class="k">UTC</span><span id="hdClock">--:--:--</span></span>
+    <div class="seg" id="speedSeg">
+      <button data-s="0" title="Pause (barre d'espace)">❚❚</button>
+      <button data-s="1" class="on">1×</button>
+      <button data-s="2">2×</button>
+      <button data-s="4">4×</button>
+    </div>
+    <span class="chip hideNarrow" id="hdWind"><span class="k">Vent FL350</span>—</span>
+    <span class="grow"></span>
+    <span class="chip"><span class="k">Sous contrôle</span><span id="hdCtl">0</span></span>
+    <span class="chip hideNarrow"><span class="k">Traités</span><span id="hdDone">0</span></span>
+    <span class="chip" id="hdSepChip"><span class="k">Pertes sép.</span><span id="hdSep">0</span></span>
+    <span class="chip"><span class="k">Score</span><span id="hdScore">0</span></span>
+    <button class="mobileOnly" id="btnStrips">Strips</button>
+    <button class="mobileOnly" id="btnPanel">Vol</button>
+    <button id="btnHelp">Aide</button>
+    <button id="btnEnd">Relève</button>
+  </header>
+
+  <div id="main">
+    <aside id="strips" class="closed"></aside>
+    <div id="scopeWrap">
+      <canvas id="scope"></canvas>
+      <div id="layers" hidden></div>
+      <div id="scopeTools">
+        <button id="zIn" title="Zoom avant">+</button>
+        <button id="zOut" title="Zoom arrière">−</button>
+        <button id="zFit" title="Recentrer sur le secteur">Secteur</button>
+        <button id="btnLayers">Couches</button>
+        <button id="btnMeasure" title="Outil mesure (ou clic droit + glisser)">Mesure</button>
+        <button id="btnConf" title="Calculer les trajectoires de deux avions et leur point de croisement">Trajectoires</button>
+        <select id="vecSel" title="Vecteurs vitesse">
+          <option value="0">Vecteur 0'</option><option value="1">1'</option><option value="2">2'</option><option value="3" selected>3'</option><option value="4">4'</option><option value="6">6'</option><option value="8">8'</option>
+        </select>
+      </div>
+      <div id="toast" hidden></div>
+      <div id="confCard" hidden></div>
+      <div id="pickHint" hidden></div>
+      <div id="legend"></div>
+    </div>
+    <aside id="panel" class="closed"></aside>
+  </div>
+
+  <footer>
+    <div id="log" aria-live="polite"></div>
+    <div id="cmdBox">
+      <input id="cmd" autocomplete="off" spellcheck="false" placeholder="AFR6142 370   ·   H270   ·   DCT LMG   ·   A / T">
+      <div class="hint" id="cmdHint">Cliquez sur une étiquette ou un strip pour sélectionner un vol. Entrée pour envoyer, Échap pour désélectionner.</div>
+    </div>
+  </footer>
+</div>
+
+<div id="menu" hidden></div>
+
+<div class="modal" id="startModal">
+  <div class="card">
+    <h1>open<b>CRNA</b></h1>
+    <p>Simulateur de contrôle en route. Vous tenez une position radar d'un CRNA : vous prenez les vols transférés par les secteurs voisins, vous les séparez (5 NM ou 1 000 ft) et vous les rendez au secteur suivant au niveau de sortie coordonné (XFL).</p>
+    <h2>Prise de position</h2>
+    <div class="form">
+      <label>Profil (centre)
+        <select id="selProfile">
+          <option value="LFBB" selected>LFBB · CRNA Sud-Ouest (Bordeaux)</option>
+          <option disabled>LFMM · Marseille (à venir)</option>
+          <option disabled>LFRR · Brest (à venir)</option>
+          <option disabled>LFFF · Paris (à venir)</option>
+          <option disabled>LFEE · Reims (à venir)</option>
+        </select>
+      </label>
+      <label>Secteur / regroupement
+        <select id="selConfig"></select>
+      </label>
+      <label>Charge de trafic
+        <select id="selDensity">
+          <option value="18">Calme · ≈18 vols/h</option>
+          <option value="30" selected>Normale · ≈30 vols/h</option>
+          <option value="44">Dense · ≈44 vols/h</option>
+          <option value="60">Pointe · ≈60 vols/h</option>
+        </select>
+      </label>
+      <label>Vitesse de départ
+        <select id="selSpeed"><option value="1" selected>Temps réel (1×)</option><option value="2">Accéléré 2×</option><option value="4">Accéléré 4×</option></select>
+      </label>
+      <label>Pertes de contact radio
+        <select id="selNordo"><option value="0">Aucune</option><option value="2" selected>Occasionnelles · ≈2/h</option><option value="5">Fréquentes · ≈5/h</option></select>
+      </label>
+      <label>Avions convergents
+        <select id="selConv"><option value="0">Trafic naturel seulement</option><option value="420" selected>Quelques convergences · ≈1 / 7 min</option><option value="200">Fréquentes · ≈1 / 3 min</option></select>
+      </label>
+      <label class="check"><input type="checkbox" id="chkWind" checked> Vent en altitude (courant-jet)</label>
+      <label class="check"><input type="checkbox" id="chkVoice"> Radio vocale (synthèse)</label>
+    </div>
+    <p class="hint" id="cfgInfo"></p>
+    <div class="row" style="margin-top:14px;gap:8px">
+      <button class="primary" id="btnStart" style="font-size:16px;padding:9px 18px">Prendre la position</button>
+      <button id="btnStartHelp">Commandes et règles</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="helpModal" hidden>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;align-items:center"><h1 style="font-size:24px">Commandes et règles</h1><button id="btnCloseHelp">Fermer</button></div>
+    <h2>Le métier</h2>
+    <p>Chaque vol qui traverse votre volume est <b>pré-annoncé</b> (strip ambre) puis <b>transféré</b> par le secteur amont : le pilote vous appelle et son indicatif clignote. Cliquez sur l'indicatif pour l'<b>assumer</b>. Vous seul pouvez alors lui donner des clairances. Avant qu'il quitte votre volume, amenez-le au <b>XFL</b> (niveau de sortie coordonné) puis cliquez à nouveau sur l'indicatif pour le <b>transférer</b> au secteur suivant affiché dans l'étiquette.</p>
+    <p>Normes : 5 NM en horizontal ou 1 000 ft en vertical (RVSM FL290–FL410). Règle semi-circulaire : route vraie 000–179° niveaux impairs (FL310, 330…), 180–359° niveaux pairs (FL300, 320…).</p>
+    <h2>Pertes de contact radio (COMLOSS)</h2>
+    <p>Certains équipages ne répondent pas : soit ils n'appellent jamais après le transfert (strip « sans appel »), soit ils deviennent muets en cours de route. Sans réponse, l'avion garde sa clairance puis suit son plan de vol. Procédure : relancez-le, essayez <b>Appel 121.5</b> (fréquence de détresse), puis <b>Alertez la défense aérienne</b> depuis la fiche vol (commande <code>ALERTE</code>). La PO de Mont-de-Marsan fait décoller deux Rafale qui interceptent l'avion et se présentent devant le cockpit. Écartez le trafic autour du vol muet. Une alerte rapide rapporte des points, une alerte sur un vol qui répond est une fausse alerte, et un vol muet qui quitte votre secteur sans alerte coûte cher.</p>
+    <h2>Avions convergents</h2>
+    <p>Selon le réglage, le simulateur injecte des vols dont la route croise celle d'un autre vol au même niveau, au même moment, dans votre secteur. Utilisez l'outil Trajectoires pour les repérer tôt.</p>
+    <h2>Étiquette radar</h2>
+    <div class="tw"><table class="cmds">
+      <tr><td>AFR6142 H</td><td>Indicatif (H = turbulence de sillage forte). Clic : assumer / transférer.</td></tr>
+      <tr><td>350↑370</td><td>Niveau actuel, tendance, niveau autorisé (CFL). Clic : menu niveaux.</td></tr>
+      <tr><td>45 X290 MM</td><td>Vitesse sol /10, niveau de sortie XFL (↑ au moins, ↓ au plus), secteur suivant. En pré-annonce : E = niveau d'entrée, puis secteur amont.</td></tr>
+      <tr><td>›LMG  M78</td><td>Prochain point (ou C270 si guidage radar) et restriction de vitesse. Clic : directs / caps / vitesses.</td></tr>
+    </table></div>
+    <div class="legend" style="margin-top:10px">
+      <span><i style="background:var(--amber)"></i>Pré-annoncé</span>
+      <span><i style="background:var(--call)"></i>Transféré vers vous : il appelle</span>
+      <span><i style="background:var(--ok)"></i>Sous votre contrôle</span>
+      <span><i style="background:var(--xfer)"></i>Transféré au suivant</span>
+      <span><i style="background:#6d6d6d"></i>Non concerné</span>
+      <span><i style="background:var(--crit)"></i>STCA / perte de séparation</span>
+      <span>Forme du symbole = destination : ▽ arrivée en région LFBB · ○ France · ◇ Espagne, Portugal, Canaries · □ Royaume-Uni, Irlande · ⬡ reste de l'Europe · ☆ long-courrier · ▲ Rafale de la PO. Point plein au centre = vol sous votre contrôle.</span>
+    </div>
+    <h2>Ligne de commande</h2>
+    <p class="hint">Format : <code>[indicatif] commande [commande…]</code>. L'indicatif peut être partiel (6142). Sans indicatif, la commande s'applique au vol sélectionné.</p>
+    <div class="tw"><table class="cmds">
+      <tr><td>370 · FL370</td><td>Monter ou descendre au niveau 370</td></tr>
+      <tr><td>H270 · L270 · R270</td><td>Cap 270 (le plus court · par la gauche · par la droite)</td></tr>
+      <tr><td>DCT LMG</td><td>Direct un point (sur la route ou n'importe quel point affiché)</td></tr>
+      <tr><td>RES</td><td>Reprendre la navigation (direct prochain point de la route)</td></tr>
+      <tr><td>M78 · S280 · SN</td><td>Mach 0,78 · 280 kt indiqués · vitesse libre</td></tr>
+      <tr><td>A · T · REP</td><td>Assumer · Transférer (avec confirmation) · Reprendre un vol transféré tant qu'il est encore dans votre secteur</td></tr>
+      <tr><td>GUARD · ALERTE</td><td>Appel sur 121.5 · Alerter la défense aérienne (COMLOSS)</td></tr>
+    </table></div>
+    <h2>Écran</h2>
+    <p class="hint">Molette ou pincement : zoom. Glisser : déplacer la carte. Glisser une étiquette : la déplacer. Clic droit + glisser (ou bouton Mesure) : relèvement et distance. Bouton Trajectoires (ou vol sélectionné puis clic droit sur un autre vol) : prolonge les routes des deux avions, calcule leur point de croisement, le rapprochement minimal (CPA) et l'écart vertical, puis indique si les caps actuels sont dangereux et propose un cap d'évitement. Le transfert demande toujours une confirmation. Barre d'espace : pause.</p>
+    <h2>Données</h2>
+    <p class="hint">Limites latérales des secteurs et des FIR voisines : VATSpy (VATSIM, approximation des limites réelles). VOR et terrains : OurAirports. Les points à 5 lettres (ORVEL, PERIX…), les fréquences et les limites verticales (inférieur FL115–FL345, supérieur au-dessus de FL345) sont simplifiés ou fictifs. Performances avions inspirées des ordres de grandeur réels (atmosphère ISA, croisement IAS/Mach, taux de montée selon l'altitude). Outil d'entraînement ludique, sans valeur opérationnelle.</p>
+  </div>
+</div>
+
+<div class="modal" id="endModal" hidden>
+  <div class="card" id="endCard"></div>
+</div>
+
+<script>
+'use strict';
+const GEO={"sectors":{"H":[[42.6564,1.6688],[43.9194,1.4722],[44.5167,2.625],[44.7169,3.0381],[44.8589,3.3692],[44.4317,4.2736],[44.085,4.2219],[43.95,4.1167],[43.6031,3.8419],[42.4333,3.1667],[42.5,3.0],[42.4583,2.8833],[42.3833,2.6],[42.4667,2.25],[42.4,2.05],[42.5,2.0],[42.5,1.8167],[42.5833,1.8167],[42.5953,1.7988],[42.65,1.7167],[42.6564,1.6688]],"L":[[47.1667,1.4667],[46.3708,2.3533],[46.1889,2.3631],[44.9597,2.4278],[44.7611,2.2806],[45.1933,1.0978],[45.8833,0.9067],[47.0042,0.9867],[47.1667,1.4667]],"N":[[43.9194,1.4722],[42.6564,1.6688],[42.6833,1.4667],[42.75,1.4167],[42.75,1.25],[42.8333,1.0],[42.8833,0.75],[42.7167,0.6333],[42.75,0.2],[42.7,-0.0667],[42.8167,-0.1333],[42.8485,-0.2605],[43.4922,0.6475],[43.9194,1.4722]],"P":[[46.1889,2.3631],[46.3708,2.3533],[47.1667,1.4667],[47.5503,1.6336],[47.7628,1.6767],[47.8317,1.6906],[47.9536,1.7153],[48.1103,1.7683],[48.1333,1.7822],[48.1333,2.6103],[47.7342,2.8317],[47.3139,3.065],[46.5667,3.5],[46.5242,3.3697],[46.5,3.2667],[46.3333,2.9167],[46.2597,2.5889],[46.1889,2.3631]],"R":[[44.8167,-1.72],[45.5611,-1.6781],[45.96,-1.6611],[45.9814,-1.66],[46.2133,-0.9419],[46.305,-0.7222],[46.5,-0.25],[47.0444,-0.25],[47.0833,0.3219],[47.0639,0.5744],[47.0042,0.9867],[45.8833,0.9067],[45.1933,1.0978],[45.0317,0.6567],[44.3967,0.0242],[44.3989,-0.2161],[44.8167,-0.7167],[44.8167,-1.72]],"T":[[46.5242,3.3697],[45.7778,3.6689],[45.6894,4.2294],[45.3583,4.4917],[44.8589,3.3692],[44.7169,3.0381],[44.5167,2.625],[44.7611,2.2806],[44.9597,2.4278],[46.1889,2.3631],[46.2597,2.5889],[46.3333,2.9167],[46.5,3.2667],[46.5242,3.3697]],"UN":[[44.8167,-1.72],[45.5611,-1.6781],[45.96,-1.6611],[45.9814,-1.66],[46.2133,-0.9419],[46.305,-0.7222],[46.5,-0.25],[47.0444,-0.25],[47.0833,0.3219],[47.0639,0.5744],[47.0042,0.9867],[47.1667,1.4667],[47.5503,1.6336],[47.7628,1.6767],[47.8317,1.6906],[47.9536,1.7153],[48.1103,1.7683],[48.1333,1.7822],[48.1333,2.6103],[47.7342,2.8317],[47.3139,3.065],[46.5667,3.5],[46.5242,3.3697],[45.7778,3.6689],[45.6894,4.2294],[45.3583,4.4917],[44.8589,3.3692],[44.7169,3.0381],[44.5167,2.625],[44.7611,2.2806],[45.1933,1.0978],[45.0317,0.6567],[44.3967,0.0242],[44.3989,-0.2161],[44.8167,-0.7167],[44.8167,-1.72]],"US":[[44.8167,-1.72],[44.8167,-0.7167],[44.3989,-0.2161],[44.3967,0.0242],[45.0317,0.6567],[45.1933,1.0978],[44.7611,2.2806],[44.5167,2.625],[44.7169,3.0381],[44.8589,3.3692],[44.4317,4.2736],[44.085,4.2219],[43.95,4.1167],[43.6031,3.8419],[42.4333,3.1667],[42.5,3.0],[42.4583,2.8833],[42.3833,2.6],[42.4667,2.25],[42.4,2.05],[42.5,2.0],[42.5,1.8167],[42.5833,1.8167],[42.5953,1.7988],[42.65,1.7167],[42.6833,1.4667],[42.75,1.4167],[42.75,1.25],[42.8333,1.0],[42.8833,0.75],[42.7167,0.6333],[42.75,0.2],[42.7,-0.0667],[42.8167,-0.1333],[42.8667,-0.3333],[42.8333,-0.5667],[42.9833,-0.75],[42.9833,-0.9],[43.0833,-1.25],[43.15,-1.25],[43.1,-1.3833],[43.2333,-1.3833],[43.2833,-1.5611],[43.3167,-1.6256],[43.3203,-1.7128],[43.3917,-1.7833],[43.5833,-1.7833],[43.6808,-2.0698],[44.0653,-1.7586],[44.8167,-1.72]],"X":[[43.4922,0.6475],[44.3967,0.0242],[45.0317,0.6567],[45.1933,1.0978],[44.7611,2.2806],[44.5167,2.625],[43.9194,1.4722],[43.4922,0.6475]],"Z":[[44.8167,-1.72],[44.8167,-0.7167],[44.3989,-0.2161],[44.3967,0.0242],[43.4922,0.6475],[42.8485,-0.2605],[42.8667,-0.3333],[42.8333,-0.5667],[42.9833,-0.75],[42.9833,-0.9],[43.0833,-1.25],[43.15,-1.25],[43.1,-1.3833],[43.2333,-1.3833],[43.2833,-1.5611],[43.3167,-1.6256],[43.3203,-1.7128],[43.3917,-1.7833],[43.5833,-1.7833],[43.6808,-2.0698],[44.0653,-1.7586],[44.8167,-1.72]]},"firs":{"LFRR":[[[50.0,-0.25],[50.0,-0.5333],[50.0,-1.1581],[50.0,-1.7169],[50.0,-1.7833],[50.0,-2.0],[49.9731,-2.1633],[49.9158,-2.5033],[49.8308,-3.0],[49.7973,-3.1712],[49.6219,-4.1606],[49.5667,-4.45],[49.4781,-4.9164],[49.5564,-6.9381],[49.5833,-8.0],[48.8333,-8.0],[48.4936,-8.0],[45.0,-8.0],[44.9026,-7.4127],[44.3725,-4.234],[44.3333,-4.0],[43.7145,-2.1689],[43.6808,-2.0698],[44.0653,-1.7586],[44.8167,-1.72],[45.5611,-1.6781],[45.96,-1.6611],[45.9814,-1.66],[46.2133,-0.9419],[46.305,-0.7222],[46.5,-0.25],[47.0444,-0.25],[47.0833,0.3219],[47.0639,0.5744],[47.0042,0.9867],[47.1667,1.4667],[47.5503,1.6336],[47.7628,1.6767],[47.8317,1.6906],[47.9536,1.7153],[48.1103,1.7683],[48.1333,1.7822],[48.1333,2.6103],[48.3953,2.7928],[48.5025,2.9203],[48.5833,3.0167],[49.6061,1.8094],[49.9219,1.4033],[49.9781,1.3289],[50.4014,0.7697],[50.0,-0.25]]],"LFFF":[[[49.45,6.0],[49.55,5.9167],[49.5,5.4833],[49.6083,5.4],[49.6167,5.3167],[49.6667,5.3],[49.6917,5.175],[49.7583,5.0667],[49.7833,4.85],[49.9167,4.8583],[49.95,4.8],[50.1158,4.8696],[50.1268,4.8702],[50.1402,4.8965],[50.1486,4.8814],[50.1561,4.8775],[50.1539,4.8586],[50.1586,4.8377],[50.1676,4.8245],[50.1658,4.8168],[50.1536,4.8075],[50.1377,4.7643],[50.1084,4.7439],[50.1093,4.7332],[50.0978,4.7154],[50.0,4.6833],[49.9333,4.4833],[49.95,4.1833],[50.0167,4.125],[50.1,4.2],[50.15,4.1167],[50.25,4.1667],[50.35,4.0167],[50.3167,3.9],[50.3333,3.7917],[50.2917,3.6833],[50.4833,3.6167],[50.4833,3.3833],[50.5167,3.2833],[50.6833,3.2333],[50.7833,3.1167],[50.7,2.9],[50.7167,2.7833],[50.8,2.7167],[50.8,2.6167],[51.0833,2.55],[51.1167,2.0],[51.0792,1.825],[51.065,1.7625],[51.0,1.4667],[50.9053,1.465],[50.7122,1.7347],[50.6569,1.6364],[50.6017,1.5383],[50.2294,1.9517],[50.1714,1.8586],[50.1164,1.7575],[50.0586,1.6517],[49.9489,1.4525],[49.9219,1.4033],[49.9781,1.3289],[50.4014,0.7697],[50.0,-0.25],[49.5267,-0.25],[49.1667,-0.25],[47.9331,-0.25],[47.5211,-0.6939],[47.1667,-0.25],[47.0444,-0.25],[47.0833,0.3219],[47.0639,0.5744],[47.0042,0.9867],[47.1667,1.4667],[46.8731,1.7953],[47.0648,2.1954],[46.75,2.8333],[46.3333,2.9167],[46.5,3.2667],[46.5242,3.3697],[46.5667,3.5],[46.2833,3.6833],[46.2833,4.05],[46.2833,4.5],[46.275,4.6],[46.2333,5.1333],[46.3938,5.1505],[46.5,5.1617],[46.7,5.1833],[46.7,5.5833],[46.8836,5.8119],[46.9833,5.9583],[46.9958,6.0008],[47.0667,6.3],[47.0656,6.5525],[47.0667,6.6833],[47.175,6.8458],[47.2428,6.9552],[47.2819,6.9408],[47.2922,6.9647],[47.343,7.0617],[47.3642,7.0431],[47.3719,7.3431],[47.4323,7.3845],[47.5,7.433],[47.483,7.5],[47.583,7.567],[47.6328,7.4995],[47.8049,7.5476],[47.9743,7.619],[48.0831,7.57],[48.2167,7.6583],[48.3281,7.7461],[48.3667,7.7333],[48.5061,7.7981],[48.5667,7.8],[48.6,7.8],[48.6667,7.9],[48.7667,7.9667],[48.8167,8.0833],[48.9667,8.2167],[49.0167,8.0],[49.0333,7.8833],[49.0667,7.8167],[49.05,7.6833],[49.1167,7.5167],[49.1667,7.4667],[49.1167,7.2167],[49.15,7.1167],[49.1167,7.05],[49.2333,7.0],[49.2,6.9],[49.2167,6.85],[49.15,6.85],[49.15,6.7333],[49.4167,6.5167],[49.4667,6.4167],[49.4667,6.35],[49.45,6.0]]],"LFMM":[[[42.0,4.6667],[42.0675,4.4336],[42.0953,4.3456],[42.1947,4.0411],[42.3575,3.5083],[42.3747,3.3756],[42.4333,3.1667],[43.6031,3.8419],[43.95,4.1164],[44.085,4.2217],[44.4314,4.2736],[44.8589,3.3692],[45.3583,4.4914],[45.6894,4.2294],[45.7778,3.6686],[46.5239,3.3697],[46.5667,3.5],[46.2833,3.6833],[46.2833,4.05],[46.2833,4.5],[46.2747,4.5997],[46.2333,5.1333],[46.1167,5.7],[46.0203,5.8267],[45.85,6.05],[45.8064,6.0964],[45.7719,6.1322],[45.6803,6.2306],[45.6528,6.2597],[45.5833,6.3333],[45.5722,6.3397],[45.4656,6.3992],[44.9903,6.6622],[44.8,6.7667],[44.8,7.0125],[44.8139,7.1281],[44.1422,7.2856],[44.1456,7.6253],[44.0231,7.7519],[43.9386,7.7533],[43.8194,7.7553],[43.7019,7.8375],[43.5703,8.3217],[43.5475,8.4067],[43.4375,8.8006],[43.4053,8.915],[43.1667,9.75],[42.9539,9.75],[42.3342,9.75],[41.9292,9.75],[41.7906,9.75],[41.6733,9.75],[41.3319,9.4981],[41.3333,9.3167],[41.3308,8.3319],[41.0,8.0],[40.7447,8.0],[40.35,8.0],[39.9986,8.0039],[39.2128,8.0003],[39.0,8.0],[39.0,5.0],[39.0,4.6667],[39.7167,4.6667],[40.0308,4.6667],[40.5,4.6667],[41.1417,4.6667],[42.0,4.6667]]],"LECM":[[[39.0314,-6.9522],[39.1167,-7.0167],[39.1007,-7.0986],[39.1167,-7.1667],[39.1333,-7.1333],[39.1694,-7.1333],[39.2,-7.225],[39.25,-7.2417],[39.2778,-7.2278],[39.3333,-7.3],[39.3889,-7.3278],[39.4083,-7.3],[39.4583,-7.2917],[39.4889,-7.375],[39.5361,-7.3972],[39.5444,-7.4333],[39.575,-7.4556],[39.5944,-7.4917],[39.6611,-7.5264],[39.6611,-7.0833],[39.6861,-7.0],[39.8,-6.9833],[39.8667,-6.9028],[40.0139,-6.8639],[40.1,-6.925],[40.1333,-7.0056],[40.2306,-7.0],[40.2667,-6.8556],[40.2972,-6.8583],[40.3333,-6.7889],[40.3667,-6.775],[40.45,-6.8389],[40.5333,-6.7875],[40.5694,-6.8361],[40.65,-6.7917],[40.7,-6.8083],[40.7528,-6.825],[40.8083,-6.8139],[40.8333,-6.8333],[40.85,-6.7972],[40.8833,-6.8083],[41.0333,-6.9333],[41.05,-6.8],[41.1097,-6.75],[41.1278,-6.7667],[41.2444,-6.6333],[41.2389,-6.5667],[41.3611,-6.3806],[41.3833,-6.3917],[41.3972,-6.3667],[41.3861,-6.3417],[41.5833,-6.2],[41.6611,-6.2833],[41.6889,-6.4333],[41.6611,-6.4889],[41.6917,-6.5444],[41.75,-6.5667],[41.8722,-6.5167],[41.8861,-6.5611],[41.9333,-6.5417],[41.9694,-6.5792],[41.95,-6.5861],[41.9417,-6.625],[41.9417,-6.7333],[41.9875,-6.7667],[41.9875,-6.8],[41.95,-6.8083],[41.9444,-6.9306],[41.9736,-6.9597],[41.9528,-6.9972],[41.9528,-7.0639],[41.9861,-7.1167],[41.9861,-7.1667],[41.9,-7.1833],[41.8417,-7.325],[41.8472,-7.3667],[41.8125,-7.4208],[41.8639,-7.45],[41.8694,-7.5],[41.85,-7.5083],[41.8306,-7.5667],[41.8431,-7.6069],[41.8806,-7.575],[41.8806,-7.6444],[41.9056,-7.6917],[41.8778,-7.8306],[41.8639,-7.8347],[41.8542,-7.8847],[41.925,-7.875],[41.925,-7.9056],[41.8833,-7.9111],[41.8667,-7.975],[41.8028,-8.0667],[41.8167,-8.15],[41.8833,-8.1667],[41.8833,-8.1917],[41.9056,-8.2083],[41.9833,-8.15],[42.0167,-8.0833],[42.0611,-8.0833],[42.0778,-8.1333],[42.0667,-8.1833],[42.1472,-8.1861],[42.0917,-8.3333],[42.0806,-8.5056],[42.0583,-8.5278],[42.05,-8.6222],[42.0028,-8.6583],[41.9806,-8.7],[41.9333,-8.7167],[41.8667,-8.9333],[42.0,-10.0],[43.0,-13.0],[45.0,-13.0],[45.0,-8.0],[44.3333,-4.0],[43.5833,-1.7833],[43.3917,-1.7833],[43.3203,-1.7128],[43.3167,-1.6256],[43.2833,-1.5611],[43.2333,-1.3833],[43.1,-1.3833],[43.15,-1.25],[43.0833,-1.25],[42.9833,-0.9],[42.9833,-0.75],[42.8333,-0.5667],[42.8667,-0.3333],[42.8167,-0.1333],[42.7,-0.0667],[39.7333,-1.1],[39.15,-1.25],[39.0314,-1.28],[39.0002,-1.7243],[39.0,-3.0999],[38.9918,-3.1012],[38.9917,-3.4195],[39.0087,-3.4144],[39.0083,-4.4569],[38.9101,-4.5745],[39.0084,-4.7608],[39.0082,-5.1608],[39.0,-5.1609],[39.0,-6.9729],[39.0314,-6.9522]]],"LECB":[[[42.7,-0.0667],[42.75,0.2],[42.7167,0.6333],[42.8833,0.75],[42.8333,1.0],[42.75,1.25],[42.75,1.4167],[42.6833,1.4667],[42.65,1.7167],[42.5833,1.8167],[42.5,1.8167],[42.5,2.0],[42.4,2.05],[42.4667,2.25],[42.3833,2.6],[42.4583,2.8833],[42.5,3.0],[42.4333,3.1667],[42.3747,3.3756],[42.3575,3.5083],[42.1947,4.0411],[42.0953,4.3456],[42.0675,4.4336],[42.0,4.6667],[39.0,4.6667],[38.3333,3.75],[36.4481,-1.007],[36.6378,-1.4989],[37.1199,-1.775],[38.8333,-1.3333],[39.0314,-1.28],[39.15,-1.25],[39.7333,-1.1],[42.7,-0.0667]]],"LFEE":[[[49.45,6.0],[49.55,5.9167],[49.5,5.4833],[49.6083,5.4],[49.6167,5.3167],[49.6667,5.3],[49.6917,5.175],[49.7583,5.0667],[49.7833,4.85],[49.9167,4.8583],[49.95,4.8],[50.1158,4.8696],[50.1268,4.8702],[50.1402,4.8965],[50.1486,4.8814],[50.1561,4.8775],[50.1539,4.8586],[50.1586,4.8377],[50.1676,4.8245],[50.1658,4.8168],[50.1536,4.8075],[50.1377,4.7643],[50.1084,4.7439],[50.1093,4.7332],[50.0978,4.7154],[50.0,4.6833],[49.9333,4.4833],[49.95,4.1833],[50.0167,4.125],[50.1,4.2],[50.15,4.1167],[50.25,4.1667],[50.35,4.0167],[50.3167,3.9],[50.3333,3.7917],[50.2917,3.6833],[50.4833,3.6167],[50.4833,3.3833],[50.5167,3.2833],[50.6833,3.2333],[50.7833,3.1167],[50.7,2.9],[50.7167,2.7833],[50.8,2.7167],[50.8,2.6167],[51.0833,2.55],[51.1167,2.0],[51.0792,1.825],[51.065,1.7625],[51.0,1.4667],[50.9053,1.465],[50.7122,1.7347],[50.6569,1.6364],[50.6017,1.5383],[50.2294,1.9517],[50.1714,1.8586],[50.1164,1.7575],[50.0586,1.6517],[49.9489,1.4525],[49.9219,1.4033],[49.6061,1.8094],[48.5833,3.0167],[48.5025,2.9203],[48.3953,2.7928],[47.9989,3.2353],[47.7953,3.3628],[47.5275,3.5286],[47.2675,4.0775],[47.3492,4.4889],[47.5047,4.7725],[47.7769,5.2694],[47.4667,5.7833],[46.9833,5.9583],[46.9958,6.0008],[47.0667,6.3],[47.0656,6.5525],[47.0667,6.6833],[47.175,6.8458],[47.2428,6.9552],[47.2819,6.9408],[47.2922,6.9647],[47.343,7.0617],[47.3642,7.0431],[47.3719,7.3431],[47.4323,7.3845],[47.5,7.433],[47.483,7.5],[47.583,7.567],[47.6328,7.4995],[47.8049,7.5476],[47.9743,7.619],[48.0831,7.57],[48.2167,7.6583],[48.3281,7.7461],[48.3667,7.7333],[48.5061,7.7981],[48.5667,7.8],[48.6,7.8],[48.6667,7.9],[48.7667,7.9667],[48.8167,8.0833],[48.9667,8.2167],[49.0167,8.0],[49.0333,7.8833],[49.0667,7.8167],[49.05,7.6833],[49.1167,7.5167],[49.1667,7.4667],[49.1167,7.2167],[49.15,7.1167],[49.1167,7.05],[49.2333,7.0],[49.2,6.9],[49.2167,6.85],[49.15,6.85],[49.15,6.7333],[49.4167,6.5167],[49.4667,6.4167],[49.4667,6.35],[49.45,6.0]]]},"lfbb":[[43.6808,-2.0698],[44.0653,-1.7586],[44.2,-1.7581],[44.8167,-1.72],[45.5611,-1.6781],[45.96,-1.6611],[45.9814,-1.66],[46.2133,-0.9419],[46.305,-0.7222],[46.5,-0.25],[47.0444,-0.25],[47.0833,0.3219],[47.0639,0.5744],[47.0042,0.9867],[47.1667,1.4667],[47.5503,1.6336],[47.7628,1.6767],[47.8317,1.6906],[47.9536,1.7153],[48.1103,1.7683],[48.1333,1.7822],[48.1333,2.6103],[47.7342,2.8317],[47.3139,3.065],[46.5667,3.5],[46.5242,3.3697],[45.7778,3.6689],[45.6894,4.2294],[45.3583,4.4917],[44.8589,3.3692],[44.4317,4.2736],[44.085,4.2219],[43.95,4.1167],[43.6031,3.8419],[42.4333,3.1667],[42.5,3.0],[42.4583,2.8833],[42.3833,2.6],[42.4667,2.25],[42.4,2.05],[42.5,2.0],[42.5,1.8167],[42.5833,1.8167],[42.5953,1.7988],[42.65,1.7167],[42.6833,1.4667],[42.75,1.4167],[42.75,1.25],[42.8333,1.0],[42.8833,0.75],[42.7167,0.6333],[42.75,0.2],[42.7,-0.0667],[42.8167,-0.1333],[42.8667,-0.3333],[42.8333,-0.5667],[42.9833,-0.75],[42.9833,-0.9],[43.0833,-1.25],[43.15,-1.25],[43.1,-1.3833],[43.2333,-1.3833],[43.2833,-1.5611],[43.3167,-1.6256],[43.3203,-1.7128],[43.3917,-1.7833],[43.5833,-1.7833],[43.6808,-2.0698]],"vors":[["AGN","Agen",43.888,0.8729,114.8],["AMB","Amboise",47.4289,1.0644,113.7],["ANG","Angers",47.5369,-0.8518,113.0],["ARE","Monts D Arree",48.3326,-3.6025,112.5],["ATN","Autun",46.8059,4.2591,114.9],["AVN","Avignon",43.9954,4.7464,112.3],["BAN","Barahona",41.3236,-2.6298,112.8],["BCN","Barcelona",41.3071,2.1078,116.7],["BGR","Bagur",41.9477,3.2089,112.2],["BLV","Bilbao",43.3044,-2.9359,115.9],["BMC","Bordeaux",44.8269,-0.7211,113.75],["BRY","Bray-sur-Seine",48.407,3.2948,114.1],["BSN","Boursonne",49.1883,3.0565,114.85],["BT","Le Bourget",48.9747,2.4552,116.1],["BTZ","Biarritz",43.4666,-1.5103,114.15],["CAN","Caen",49.1732,-0.4553,114.45],["CAV","Vatry",48.7811,4.1469,111.65],["CFA","Clermont",45.7875,3.1922,114.35],["CGN","Charles de Gaulle",49.0199,2.5001,115.35],["CHW","Chartres",48.48,0.9871,115.2],["CLE","Calella",41.64,2.6347,115.35],["CLM","Coulommiers",48.8446,3.0139,112.9],["CNA","Cognac",45.6596,-0.3116,114.65],["CTL","Ch\u00e2tillon-sur-Marne",49.1377,3.5777,117.6],["DGO","Domingo",42.4533,-2.8807,112.6],["DIN","Dinard",48.5861,-2.0823,114.3],["EPR","Epernon",48.6257,1.6566,115.65],["EVX","Evreux",49.0317,1.2209,112.4],["FJR","Mediterranee",43.5784,3.9747,114.45],["GAI","Gaillac",43.9541,1.8242,115.8],["GIR","Gerona",41.9312,2.772,114.1],["LCA","La Chatre",46.6914,2.1496,112.1],["LGL","L'Aigle",48.7906,0.5303,115.0],["LMG","Limoges",45.8159,1.0256,114.5],["LPA","Logrono",42.4605,-2.3269,115.45],["MBY","Moulins/Montbeugny",46.5413,3.4996,109.6],["MEN","Mende",44.6083,3.1624,115.3],["MLA","Maella",41.1296,0.1652,112.1],["MLN","Melun",48.4558,2.8133,113.6],["MOU","Moulins",46.7068,3.6317,116.7],["MTL","Montelimar",44.5549,4.7799,113.65],["NEA","Tabanera",42.0276,-4.1091,116.75],["NEV","Nevers",47.153,2.9294,113.4],["NTS","Nantes",47.1609,-1.613,115.5],["OL","Orly",48.7299,2.3864,111.2],["PAP","Pamplona",42.6884,-1.6608,113.55],["PGS","Charles de Gaulle",48.9995,2.6238,117.05],["POI","Poitiers",46.581,0.2982,113.3],["PON","Pontoise",49.0961,2.0359,111.6],["PPG","Perpignan",42.7505,2.8671,116.25],["PPN","Pamplona",42.7337,-1.702,112.3],["PRA","El Prat",41.2831,2.0819,114.3],["PTV","Pithiviers",48.1556,2.2648,116.5],["QPR","Quimper",47.9573,-4.1847,117.8],["RBT","Rambouillet",48.6539,1.9942,114.7],["REN","Rennes",48.0692,-1.7417,109.25],["RES","Reus",41.1497,1.1711,114.2],["ROA","Roanne",46.0592,3.9993,109.2],["SAU","Sauveterre",44.6768,-0.1529,116.8],["SFC","Saint Flour/Coltines",45.0665,2.9908,109.8],["SIE","Somosierra",41.1517,-3.6047,115.4],["SLL","Sabadell",41.5199,2.1098,112.0],["SNR","Santander",43.4498,-3.9024,115.3],["SSN","San Sebastian",43.3112,-1.8304,117.9],["TAN","Lahitte",43.4667,-0.0184,111.8],["TBO","Tarbes",43.3322,0.1458,113.9],["TIS","Thiers",45.8818,3.5536,117.5],["TOU","Toulouse",43.6808,1.3098,117.7],["TRO","Troyes",48.2512,3.9631,116.0],["TSU","Toussus",48.7537,2.1024,108.25],["VFD","Vitoria",42.8806,-2.7243,112.9],["VIA","Burgos",42.355,-3.6136,111.4],["VLA","Villafranca",41.3426,1.5477,113.15],["VMP","Ch\u00e2teaudun",48.0589,1.3889,117.2],["VRA","Vitoria",42.7319,-2.8656,116.6],["ZAR","Zaragoza",41.6579,-1.0309,113.0]],"airports":{"LFBD":["Bordeaux",44.8287,-0.7153],"LFBO":["Toulouse",43.6351,1.3679],"LFBZ":["Biarritz",43.4683,-1.5312],"LFBP":["Pau-Pyrenees",43.3799,-0.4185],"LFBT":["Tarbes",43.1855,-0.0029],"LFBH":["La Rochelle",46.1792,-1.1952],"LFBE":["Bergerac",44.8244,0.5205],"LFBA":["Agen",44.1747,0.5906],"LFBL":["Limoges",45.8608,1.1803],"LFBI":["Poitiers",46.5874,0.3068],"LFBG":["Cognac",45.6582,-0.3176],"LFBU":["Angouleme Brie Champniers",45.7295,0.2192],"LFBV":["Brive",45.1497,1.4744],"LFBX":["Perigueux",45.1975,0.8152],"LFCR":["Rodez",44.4075,2.4833],"LFBM":["Mont-De-Marsan",43.9114,-0.51],"LFBC":["Cazaux",44.5349,-1.1315],"LFBY":["Dax",43.6892,-1.0689],"LFCK":["Castres Mazamet",43.555,2.2906],"LFMK":["Carcassonne",43.2158,2.3085],"LFRS":["Nantes-Atlantique",47.157,-1.6078],"LFRN":["Rennes",48.0719,-1.7322],"LFPO":["Paris-Orly",48.7233,2.3796],"LFPG":["Paris-Charles de Gaulle (Roissy)",49.0097,2.5478],"LFLC":["Clermont-Ferrand",45.786,3.1625],"LFLL":["Lyon",45.7256,5.0811],"LFML":["Marseille",43.4366,5.2151],"LFMN":["Nice-Cote d'Azur",43.6654,7.215],"LFMT":["Montpellier-Mediterranee",43.5833,3.9614],"LFMP":["Perpignan",42.7408,2.8697],"LEBB":["Bilbao",43.3011,-2.9106],"LESO":["San Sebastian-Fuenterrabia",43.3565,-1.7906],"LEVT":["Vitoria",42.8828,-2.7245],"LEPP":["Pamplona",42.77,-1.6463],"LELL":["Sabadell",41.5167,2.1],"LEBL":["Barcelona- El Prat",41.2971,2.0785],"LEMD":["Adolfo Suarez Madrid-Barajas",40.4722,-3.5609],"LEZG":["Zaragoza",41.6662,-1.0416],"LEGE":["Girona",41.901,2.7605],"LEDA":["Lleida/Alguaire",41.7281,0.5353],"LEXJ":["Santander",43.4271,-3.82],"LEST":["Santiago",42.8963,-8.4151],"LELO":["Logrono-Agoncillo",42.45,-2.3331],"LFOT":["Tours",47.4319,0.7231],"LFLX":["Chateauroux",46.8603,1.7211],"LFMD":["Cannes",43.5464,6.9542],"LFKJ":["Ajaccio",41.9239,8.8024]}};
+
+/* ===================== Géométrie ===================== */
+const D2R=Math.PI/180,R2D=180/Math.PI;
+const LAT0=45.0,LON0=0.9,KX=Math.cos(LAT0*D2R);
+const P=(la,lo)=>({x:(lo-LON0)*60*KX,y:(la-LAT0)*60});
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const norm=h=>((h%360)+360)%360;
+const angDiff=(a,b)=>{let d=norm(a-b);if(d>180)d-=360;return d};
+const brg=(x1,y1,x2,y2)=>norm(Math.atan2(x2-x1,y2-y1)*R2D);
+const dist=(x1,y1,x2,y2)=>Math.hypot(x2-x1,y2-y1);
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function wpick(l){let s=0;for(const x of l)s+=x[1];let r=Math.random()*s;for(const x of l){if((r-=x[1])<=0)return x[0]}return l[l.length-1][0]}
+function pipXY(x,y,p){let ins=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const xi=p[i][0],yi=p[i][1],xj=p[j][0],yj=p[j][1];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)ins=!ins}return ins}
+function mkPoly(a){const p=a.map(([la,lo])=>{const q=P(la,lo);return[q.x,q.y]});let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9,sx=0,sy=0;for(const[x,y]of p){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);sx+=x;sy+=y}return{p,x0,x1,y0,y1,cx:sx/p.length,cy:sy/p.length}}
+const inPoly=(x,y,Q)=>x>=Q.x0&&x<=Q.x1&&y>=Q.y0&&y<=Q.y1&&pipXY(x,y,Q.p);
+const SECT={};for(const k in GEO.sectors)SECT[k]=mkPoly(GEO.sectors[k]);
+const LFBB=mkPoly(GEO.lfbb);
+const FIRS={};for(const k in GEO.firs)FIRS[k]=GEO.firs[k].map(mkPoly);
+const LOWER=['H','L','N','P','R','T','X','Z'],UPPER=['UN','US'];
+
+/* ===================== Atmosphère ISA ===================== */
+const isaT=h=>h<36089?288.15-0.0019812*h:216.65;
+const delta=h=>h<36089?Math.pow(isaT(h)/288.15,5.25588):0.223361*Math.exp(-(h-36089)/20806);
+const sos=h=>38.967854*Math.sqrt(isaT(h));
+function casToMach(c,h){const qc=Math.pow(1+0.2*Math.pow(c/661.4786,2),3.5)-1;return Math.sqrt(5*(Math.pow(qc/delta(h)+1,2/7)-1))}
+function machToCas(m,h){const qc=delta(h)*(Math.pow(1+0.2*m*m,3.5)-1);return 661.4786*Math.sqrt(5*(Math.pow(qc+1,2/7)-1))}
+const casToTas=(c,h)=>casToMach(c,h)*sos(h);
+
+/* ===================== Performances ===================== */
+const PERF={
+ A319:{n:'Airbus A319',w:'M',roc:[3000,2600,2100,1500,900,500],ceil:390,cl:[290,.77],cr:.78,ds:[290,.78]},
+ A320:{n:'Airbus A320',w:'M',roc:[2600,2300,1800,1200,700,300],ceil:390,cl:[290,.76],cr:.78,ds:[290,.78]},
+ A20N:{n:'Airbus A320neo',w:'M',roc:[2800,2400,1900,1300,800,400],ceil:390,cl:[290,.77],cr:.78,ds:[290,.78]},
+ A321:{n:'Airbus A321',w:'M',roc:[2300,2000,1500,1000,500,200],ceil:390,cl:[300,.76],cr:.78,ds:[300,.78]},
+ A21N:{n:'Airbus A321neo',w:'M',roc:[2500,2100,1600,1100,600,300],ceil:390,cl:[300,.77],cr:.78,ds:[300,.78]},
+ B738:{n:'Boeing 737-800',w:'M',roc:[2700,2300,1800,1300,800,400],ceil:410,cl:[290,.76],cr:.785,ds:[290,.78]},
+ B38M:{n:'Boeing 737 MAX 8',w:'M',roc:[2900,2500,1900,1400,900,500],ceil:410,cl:[290,.77],cr:.79,ds:[290,.78]},
+ E190:{n:'Embraer E190',w:'M',roc:[2900,2500,1900,1300,800,400],ceil:410,cl:[280,.75],cr:.78,ds:[290,.77]},
+ E195:{n:'Embraer E195',w:'M',roc:[2700,2300,1800,1200,700,350],ceil:410,cl:[280,.75],cr:.78,ds:[290,.77]},
+ CRJ9:{n:'Bombardier CRJ900',w:'M',roc:[3000,2600,2000,1400,800,400],ceil:410,cl:[290,.77],cr:.78,ds:[290,.77]},
+ A332:{n:'Airbus A330-200',w:'H',roc:[2300,1900,1500,1000,600,300],ceil:410,cl:[300,.80],cr:.82,ds:[300,.82]},
+ A359:{n:'Airbus A350-900',w:'H',roc:[2600,2200,1700,1200,800,500],ceil:430,cl:[300,.84],cr:.85,ds:[300,.85]},
+ B77W:{n:'Boeing 777-300ER',w:'H',roc:[2200,1800,1400,900,500,200],ceil:430,cl:[310,.83],cr:.84,ds:[310,.84]},
+ B789:{n:'Boeing 787-9',w:'H',roc:[2600,2200,1800,1300,900,500],ceil:430,cl:[300,.84],cr:.85,ds:[300,.85]},
+ C56X:{n:'Cessna Citation Excel',w:'M',roc:[3800,3200,2500,1800,1200,800],ceil:450,cl:[270,.70],cr:.74,ds:[280,.74]},
+};
+const ROCALT=[0,10000,20000,30000,37000,41000];
+function rocAt(pf,h){let r;if(h>=41000)r=pf.roc[5];else{let i=0;while(i<4&&h>=ROCALT[i+1])i++;const f=(h-ROCALT[i])/(ROCALT[i+1]-ROCALT[i]);r=pf.roc[i]+(pf.roc[i+1]-pf.roc[i])*f}
+ const c=pf.ceil*100;if(h>c-2500)r*=Math.max(.15,(c+500-h)/3000);return r}
+function rodAt(pf,h){const f=pf.w==='H'?.9:1;return(h<10000?1700:h<24000?2300:2700)*f}
+
+/* ===================== Compagnies ===================== */
+const AL={
+ AFR:{say:'Air France',fr:1,t:[['A320',4],['A321',2],['A319',2],['A20N',2],['A21N',1],['E190',1],['CRJ9',.6]],h:['B77W','A359','A332'],cs:['n4','n2a2']},
+ TVF:{say:'France Soleil',fr:1,t:[['B738',1]],cs:['n4','n3a']},
+ EZY:{say:'Easy',t:[['A320',4],['A20N',3],['A319',2],['A21N',1]],cs:['n2a2','n4','n3a']},
+ EJU:{say:'Alpine',t:[['A320',3],['A20N',2],['A319',1]],cs:['n2a2','n4']},
+ RYR:{say:'Ryanair',t:[['B738',5],['B38M',3]],cs:['n1a2','n4','n2a2','n3a']},
+ VLG:{say:'Vueling',t:[['A320',4],['A20N',3],['A321',1]],cs:['n4']},
+ IBE:{say:'Iberia',t:[['A320',3],['A20N',3],['A21N',2],['A321',1]],h:['A359','A332'],cs:['n4','n2a2']},
+ IBS:{say:'Iberexpres',t:[['A320',2],['A21N',1]],cs:['n4']},
+ AEA:{say:'Europa',t:[['B738',3]],h:['B789'],cs:['n4']},
+ BAW:{say:'Speedbird',t:[['A320',3],['A321',2],['A20N',2],['A319',1]],cs:['n3','n2a','n3a']},
+ TAP:{say:'Air Portugal',t:[['A20N',3],['A21N',2],['A320',1]],h:['A332'],cs:['n3','n4']},
+ DLH:{say:'Lufthansa',t:[['A20N',3],['A321',2],['A320',2]],h:['A359'],cs:['n3','n4','n2a']},
+ EWG:{say:'Eurowings',t:[['A320',3],['A319',2]],cs:['n4','n3a']},
+ SWR:{say:'Swiss',t:[['A20N',2],['A21N',1],['A320',2]],cs:['n3','n2a']},
+ KLM:{say:'KLM',t:[['B738',3],['E195',2],['E190',1]],cs:['n4','n3']},
+ VOE:{say:'Volotea',t:[['A320',2],['A319',2]],cs:['n4']},
+ EXS:{say:'Channex',t:[['B738',3],['A321',1]],cs:['n3','n2a']},
+ TOM:{say:'Tomson',t:[['B38M',3],['B738',1]],h:['B789'],cs:['n3','n4']},
+ ITY:{say:'Itarrow',t:[['A20N',3],['A320',2]],cs:['n3','n4']},
+ TRA:{say:'Transavia',t:[['B738',1]],cs:['n4']},
+ TAM:{say:'TAM',t:[['B77W',1]],h:['B77W','B789'],cs:['n4']},
+ NJE:{say:'Fraction',t:[['C56X',1]],cs:['n3a']},
+};
+const LET='ABCDEFGHJKLMNPQRSTUVWXYZ';
+function genCs(code){const f=pick(AL[code].cs);const d=n=>{let s=String(1+Math.floor(Math.random()*9));for(let i=1;i<n;i++)s+=Math.floor(Math.random()*10);return s};const l=n=>{let s='';for(let i=0;i<n;i++)s+=pick(LET);return s};
+ const m=f.match(/n(\d)(?:a(\d))?/);return code+d(+m[1])+(m[2]?l(+m[2]):'')}
+
+/* ===================== Points ===================== */
+const PTS={};
+for(const[id,name,la,lo,fq]of GEO.vors){const q=P(la,lo);PTS[id]={id,name,type:'vor',x:q.x,y:q.y,freq:fq}}
+for(const id in GEO.airports){const[name,la,lo]=GEO.airports[id];const q=P(la,lo);PTS[id]={id,name,type:'apt',x:q.x,y:q.y}}
+const FIXDEF={PELIX:[47.95,2.00],ORVEL:[47.55,1.85],VIERX:[46.95,1.35],CORVA:[45.25,1.65],FIGOL:[44.45,1.55],LANDO:[44.20,-1.25],SOLAN:[43.85,-2.35],ORDAX:[42.90,-4.40],MEDIX:[45.05,-1.20],OLONE:[46.35,-0.85],RUFAX:[45.95,0.25],PERIX:[45.15,0.80],CAHIX:[44.45,1.20],ANDOX:[42.95,1.55],BOURX:[46.30,2.55],DORDX:[45.30,0.15],GUERX:[46.10,1.95],CASTX:[43.70,2.45],ORTHX:[43.40,-0.85],MONTX:[43.95,-0.55],MILAX:[44.10,2.55],AURIX:[44.70,2.10],NORAX:[48.60,0.60]};
+for(const id in FIXDEF){const q=P(...FIXDEF[id]);PTS[id]={id,name:id,type:'fix',x:q.x,y:q.y}}
+
+/* ===================== Unités voisines ===================== */
+const UNITS={
+ LFFF:{code:'FF',name:'Paris Contrôle',en:'Paris Control',sh:'Paris',freq:'128.105'},
+ LFRR:{code:'RR',name:'Brest Contrôle',en:'Brest Control',sh:'Brest',freq:'124.855'},
+ LFMM:{code:'MM',name:'Marseille Contrôle',en:'Marseille Control',sh:'Marseille',freq:'125.380'},
+ LECM:{code:'CM',name:'Madrid Control',en:'Madrid Control',sh:'Madrid',freq:'133.950'},
+ LECB:{code:'CB',name:'Barcelona Control',en:'Barcelona Control',sh:'Barcelone',freq:'134.705'},
+ LFEE:{code:'EE',name:'Reims Contrôle',en:'Reims Control',sh:'Reims',freq:'126.285'},
+};
+const SECFREQ={H:'123.855',L:'126.255',N:'125.105',P:'128.455',R:'133.505',T:'127.680',X:'129.355',Z:'124.505',UN:'132.555',US:'134.880'};
+const APPS={LFBD:['A.BOD','Bordeaux Approche','Bordeaux Approach','118.605'],LFBO:['A.TLS','Toulouse Approche','Toulouse Approach','121.105'],LFBZ:['A.BIQ','Biarritz Approche','Biarritz Approach','119.205'],LFBP:['A.PUF','Pau Approche','Pau Approach','124.205'],LFBT:['A.LDE','Tarbes Approche','Tarbes Approach','121.305'],LFBE:['A.EGC','Bergerac Approche','Bergerac Approach','124.805'],LFBL:['A.LIG','Limoges Approche','Limoges Approach','120.805'],LFBA:['A.AGF','Agen Approche','Agen Approach','119.005'],LFBI:['A.PIS','Poitiers Approche','Poitiers Approach','124.405'],LFBG:['A.CNG','Cognac Approche','Cognac Approach','122.505']};
+function appUnit(icao){const a=APPS[icao];return{code:a[0],name:a[1],en:a[2],sh:a[1],freq:a[3]}}
+
+/* ===================== Configurations de secteurs ===================== */
+const SECNAME={R:'Poitou-Charentes',Z:'Landes / Côte basque',N:'Pyrénées',X:'Quercy / Agenais',H:'Haut-Languedoc / Roussillon',L:'Limousin',T:'Auvergne',P:'Berry',UN:'Supérieur Nord',US:'Supérieur Sud'};
+const CONFIGS=[
+ {id:'US',name:'US · Supérieur Sud',sec:['US'],floor:345,ceil:660},
+ {id:'UN',name:'UN · Supérieur Nord',sec:['UN'],floor:345,ceil:660},
+ {id:'UNUS',name:'UN + US · Regroupement supérieur',sec:['UN','US'],floor:345,ceil:660},
+ {id:'INFS',name:'Z+N+X+H · Inférieur Sud',sec:['Z','N','X','H'],floor:115,ceil:345},
+ {id:'INFN',name:'R+L+P+T · Inférieur Nord',sec:['R','L','P','T'],floor:115,ceil:345},
+ ...LOWER.map(k=>({id:k,name:k+' · '+SECNAME[k],sec:[k],floor:115,ceil:345})),
+ {id:'ALL',name:'LFBB · Regroupement total (nuit)',sec:['*'],floor:115,ceil:660},
+];
+
+/* ===================== Flux de trafic ===================== */
+const AP_UK=['EGLL','EGKK','EGSS','EGGW','EGCC','EGBB','EGPH','EIDW','EGGD'],AP_BNL=['EHAM','EBBR','EHEH','EBCI'];
+const AP_DE=['EDDF','EDDM','EDDL','EDDS','EDDH','EDDB','LSZH','LOWW','EPWA'],AP_ITA=['LIMC','LIML','LIRF','LIPZ','LIMF'];
+const AP_IBW=['LPPT','LPPR','LPFR','GCLP','GCTS','GCRR','LEST','LEVX','GMMN'],AP_ESE=['LEVC','LEAL','LEPA','LEIB','LEMI'],AP_BCN=['LEBL','LEGE','LERS'],AP_SAM=['SBGR','SBGL','SCEL','SAEZ'];
+const FLOWDEF=[
+ {r:'LFPO ORVEL VIERX POI CNA BMC LANDO BTZ PPN SIE',to:['LEMD','LEMG','LEZL','LEMD'],al:[['AFR',3],['IBE',3],['VLG',3],['TVF',2],['EZY',2],['AEA',1],['IBS',1]],rfl:[340,400],w:3},
+ {r:'LFPG ORVEL VIERX POI CNA BMC LANDO BTZ PPN SIE',to:['LEMD','LEMG','LEZL'],al:[['AFR',4],['IBE',3],['VLG',2],['EZY',1]],rfl:[340,400],w:2},
+ {r:'NORAX AMB POI CNA BMC LANDO BTZ PPN SIE',from:AP_UK.concat(AP_BNL),to:['LEMD','LEMG','LEZL','LEMD'],al:[['BAW',3],['EZY',4],['RYR',4],['EXS',2],['TOM',1],['IBE',2],['VLG',2],['KLM',1],['TRA',1],['NJE',.4]],rfl:[340,400],w:5},
+ {r:'NORAX AMB POI CNA MEDIX SOLAN ORDAX',from:AP_UK.concat(AP_BNL),to:AP_IBW,al:[['TAP',3],['BAW',2],['EZY',3],['RYR',3],['TOM',2],['EXS',2],['KLM',1],['TRA',1]],rfl:[340,400],w:5},
+ {r:'LFPO ORVEL VIERX POI CNA MEDIX SOLAN ORDAX',to:['LPPT','LPPR','GCLP','GCTS','LPFR'],al:[['TAP',3],['AFR',2],['TVF',3],['EZY',2]],rfl:[340,400],w:3},
+ {r:'LFPG ORVEL VIERX POI CNA MEDIX SOLAN ORDAX',to:AP_SAM,al:[['AFR',3],['TAM',2]],heavy:1,rfl:[320,360],w:1.2},
+ {r:'LFPO PELIX LCA CORVA FIGOL LFBO',al:[['AFR',6],['EZY',3]],rfl:[300,380],w:4},
+ {r:'LFPG PELIX LCA CORVA FIGOL LFBO',al:[['AFR',5],['EZY',1]],rfl:[300,380],w:2},
+ {r:'LFPO ORVEL VIERX POI CNA LFBD',al:[['AFR',6],['EZY',3]],rfl:[280,360],w:3},
+ {r:'LFPG ORVEL VIERX POI CNA LFBD',al:[['AFR',5],['EZY',1]],rfl:[280,360],w:1.5},
+ {r:'LFPO ORVEL VIERX POI CNA BMC LANDO LFBZ',al:[['AFR',4],['EZY',2]],rfl:[300,380],w:1.2},
+ {r:'LFPO ORVEL VIERX POI CNA BMC MONTX LFBP',al:[['AFR',4]],rfl:[300,380],w:1},
+ {r:'NORAX AMB POI CNA LFBD',from:AP_UK.concat(AP_BNL),al:[['EZY',4],['BAW',2],['RYR',2],['KLM',1],['VLG',.5]],rfl:[280,380],w:2},
+ {r:'NORAX AMB POI RUFAX LFBE',from:['EGSS','EGGD','EGCC','EGBB'],al:[['RYR',4],['EZY',1]],rfl:[280,380],w:.8},
+ {r:'NORAX AMB POI LFBL',from:['EGSS','EGGD','EGCC'],al:[['RYR',4]],rfl:[260,360],w:.6},
+ {r:'NTS OLONE RUFAX PERIX CAHIX TOU ANDOX VLA',from:AP_UK.concat(['LFRS','LFRB','LFRN']),to:AP_ESE,al:[['EZY',3],['RYR',3],['BAW',1],['EXS',2],['TOM',1],['VLG',2],['AEA',1]],rfl:[340,400],w:4},
+ {r:'NTS OLONE RUFAX PERIX CAHIX LFBO',from:AP_UK.concat(['EIDW']),al:[['EZY',3],['BAW',2],['RYR',1],['AFR',1]],rfl:[300,380],w:1.5},
+ {r:'NTS OLONE RUFAX PERIX CAHIX GAI PPG GIR',from:AP_UK.concat(['LFRS','EIDW']),to:AP_BCN,al:[['VLG',4],['EZY',3],['RYR',3],['BAW',1]],rfl:[340,400],w:3},
+ {r:'MOU BOURX LMG DORDX LFBD',from:AP_DE.concat(['LFSB']),al:[['EZY',2],['DLH',2],['SWR',1],['EWG',1]],rfl:[310,380],w:1.5},
+ {r:'ROA TIS CFA LMG DORDX LFBD',from:['LSGG','LFLL','LIMC','LIML','LSZH'],al:[['EZY',3],['AFR',3],['ITY',1],['SWR',1]],rfl:[300,380],w:2},
+ {r:'MOU BOURX LMG DORDX BMC LANDO SOLAN ORDAX',from:AP_DE,to:['LPPT','LPPR','LPFR','LEST','GCLP'],al:[['DLH',4],['EWG',3],['SWR',2],['TAP',2],['RYR',2],['IBE',1],['EZY',1],['NJE',.4]],rfl:[350,400],w:3},
+ {r:'MOU BOURX LMG DORDX BMC LANDO BTZ PPN SIE',from:AP_DE,to:['LEMD','LEMG','LEZL'],al:[['DLH',3],['IBE',3],['EWG',2],['SWR',2],['RYR',1]],rfl:[340,400],w:3},
+ {r:'MOU BOURX LMG DORDX BMC LANDO BTZ PPN SIE',from:['EDDF','EDDM','LSZH'],to:AP_SAM,al:[['DLH',3],['TAM',1]],heavy:1,rfl:[320,370],w:.8},
+ {r:'FJR CASTX TOU TAN ORTHX SSN',from:AP_ITA.concat(['LFML','LFMN']),to:['LEBB','LPPR','LEST','LEVX'],al:[['VLG',2],['ITY',2],['EZY',2],['RYR',2],['TAP',1],['IBE',1]],rfl:[330,390],w:2.5},
+ {r:'FJR CASTX GAI AGN LFBD',from:['LFMN','LFML','LIML','LIRF','LIMC'],al:[['AFR',3],['EZY',3],['VOE',2],['ITY',1]],rfl:[300,380],w:2},
+ {r:'FJR CASTX LFBO',from:['LFMN','LIRF','LIML','LIMC'],al:[['AFR',3],['EZY',3],['ITY',1]],rfl:[280,360],w:1.5},
+ {r:'ROA SFC MILAX LFBO',from:['LSGG','LFLL','LSZH','EDDF','EDDM'],al:[['EZY',3],['AFR',2],['SWR',1],['DLH',1]],rfl:[300,380],w:2},
+ {r:'ROA SFC AURIX AGN TAN PPN SIE',from:['LSGG','LSZH','LFLL','LIMC','EDDM','LOWW'],to:['LEMD','LEMG','LEZL'],al:[['IBE',3],['EZY',2],['SWR',2],['VLG',2],['AEA',1]],rfl:[330,400],w:2.5},
+ {r:'ROA TIS CFA GUERX POI NTS',from:['LSGG','LSZH','LFLL','LIMC','LIML','EDDM','LOWW'],to:['LFRS','EIDW','EGLL','EGKK','EGCC'],al:[['EZY',3],['RYR',2],['AFR',1],['BAW',1],['SWR',1]],rfl:[330,400],w:2.5},
+ {r:'LFBD LANDO BTZ PPN SIE',to:['LEMG','LEZL','LEMD','LEAL'],al:[['VOE',3],['RYR',2],['IBE',1]],rfl:[280,360],w:.8},
+];
+const FLOWS=[];
+for(const f of FLOWDEF){FLOWS.push(f);FLOWS.push({...f,r:f.r.split(' ').reverse().join(' '),from:f.to,to:f.from,rev:1})}
+for(const f of FLOWS){f.tok=f.r.split(' ');f.pts=f.tok.map(t=>PTS[t]);if(f.pts.some(p=>!p))console.warn('point inconnu',f.r)}
+const AIRWAYS=(()=>{const s=new Map();for(const f of FLOWDEF){const t=f.r.split(' ');for(let i=0;i<t.length-1;i++){const a=t[i],b=t[i+1];const k=a<b?a+'|'+b:b+'|'+a;if(!s.has(k))s.set(k,{a:PTS[a],b:PTS[b],apt:PTS[a].type==='apt'||PTS[b].type==='apt'})}}return[...s.values()]})();
+const ROUTEPTS=new Set(FLOWDEF.flatMap(f=>f.r.split(' ')));
+
+/* ===================== Vent ===================== */
+const WX={dir:280,jet:80,on:true};
+function windAt(h){if(!WX.on)return{dir:0,spd:0,vx:0,vy:0};const f=clamp(h/35000,0,1);let s=6+(WX.jet-6)*Math.pow(f,1.4);if(h>37000)s*=Math.max(.6,1-(h-37000)/25000);const dir=WX.dir-25*(1-f);const to=(dir+180)*D2R;return{dir,spd:s,vx:s*Math.sin(to),vy:s*Math.cos(to)}}
+
+/* ===================== État de la simulation ===================== */
+const SIM={mil:[],alerts:[],nordoRate:0,convInt:0,nextConv:1e9,t:0,speed:1,running:false,acs:[],cfg:null,vol:null,lambda:30,startUTC:0,score:0,done:0,sepLoss:0,pen:[],events:[],sepPairs:new Map(),stca:new Set(),acc:0,last1s:0,lastRadar:-99,voice:false,queue:[],seq:0};
+let VOL=null;
+function setupVolume(cfg){sepA=sepB=null;
+ const polys=cfg.sec[0]==='*'?[LFBB]:cfg.sec.map(k=>SECT[k]);
+ const fr=SECFREQ[cfg.sec[0]]||'132.555';
+ VOL={cfg,polys,floor:cfg.floor,ceil:cfg.ceil,freq:fr,layer:cfg.sec[0]==='*'?LOWER:(cfg.floor>=300?UPPER:LOWER)};
+}
+function polyCentroid(p){let A=0,cx=0,cy=0;for(let i=0,j=p.length-1;i<p.length;j=i++){const f=p[j][0]*p[i][1]-p[i][0]*p[j][1];A+=f;cx+=(p[j][0]+p[i][0])*f;cy+=(p[j][1]+p[i][1])*f}A*=.5;return{x:cx/(6*A),y:cy/(6*A),A:Math.abs(A)}}
+function volCenter(){let A=0,x=0,y=0,big=null;for(const Q of VOL.polys){const c=polyCentroid(Q.p);A+=c.A;x+=c.x*c.A;y+=c.y*c.A;if(!big||c.A>big.A)big=c}let c={x:x/A,y:y/A};if(!latIn(c.x,c.y))c=big;return c}
+const latIn=(x,y)=>VOL.polys.some(Q=>inPoly(x,y,Q));
+const inVol=(x,y,alt)=>alt>=VOL.floor*100&&alt<VOL.ceil*100&&latIn(x,y);
+const floor10=fl=>Math.floor(fl/10)*10, ceilUp10=fl=>Math.ceil((fl+1)/10)*10;
+
+function unitAt(x,y,alt,a){
+ if(inPoly(x,y,LFBB)){
+  if(alt<11500){let best=null,bd=1e9;for(const ic of [a.arr,a.dep]){if(ic&&APPS[ic]){const p=PTS[ic];const d=dist(x,y,p.x,p.y);if(d<bd&&d<80){bd=d;best=ic}}}
+   if(!best){for(const ic in APPS){const p=PTS[ic];const d=dist(x,y,p.x,p.y);if(d<bd){bd=d;best=ic}}}return appUnit(best)}
+  const layer=alt>=34500?UPPER:LOWER;
+  for(const k of layer)if(inPoly(x,y,SECT[k]))return{code:k,name:'Bordeaux Contrôle',en:'Bordeaux Control',sh:'Bordeaux '+k,freq:SECFREQ[k]};
+  return{code:'BB',name:'Bordeaux Contrôle',en:'Bordeaux Control',sh:'Bordeaux',freq:'132.555'};
+ }
+ for(const k of ['LFMM','LECB','LECM','LFFF','LFRR','LFEE'])if(FIRS[k]&&FIRS[k].some(Q=>inPoly(x,y,Q)))return UNITS[k];
+ if(y>100)return UNITS.LFFF; if(y<-150)return UNITS.LECM; if(x<-120)return UNITS.LFRR; return UNITS.LFMM;
+}
+
+/* ===================== Modèle avion ===================== */
+function remDist(a){let d=0;const w=a.pts[a.leg];if(!w)return 0;d=dist(a.x,a.y,w.x,w.y);for(let i=a.leg;i<a.pts.length-1;i++)d+=dist(a.pts[i].x,a.pts[i].y,a.pts[i+1].x,a.pts[i+1].y);return d}
+function plannedCfl(a){
+ if(a.arrAp){if(a.tod)return 40;const need=(a.alt/1000)*3.1+14;if(remDist(a)<=need){a.tod=true;return 40}}
+ return a.rfl;
+}
+function stepAc(a,dt){
+ const pf=a.pf;
+ // Vertical
+ const tgt=a.cfl*100,diff=tgt-a.alt;let vsT=0;
+ if(Math.abs(diff)>1){let r=diff>0?rocAt(pf,a.alt)*a.pfac:rodAt(pf,a.alt);r=Math.min(r,Math.max(400,Math.abs(diff)*1.4));vsT=Math.sign(diff)*r}
+ a.vs+=clamp(vsT-a.vs,-280*dt,280*dt);
+ let na=a.alt+a.vs*dt/60;
+ if(diff>=0&&a.vs>0&&na>tgt){na=tgt;a.vs=0}else if(diff<=0&&a.vs<0&&na<tgt){na=tgt;a.vs=0}
+ a.alt=na;
+ // Vitesse
+ let tasT;const mx=(pf.cr+.04)*sos(a.alt);
+ if(a.spdMode==='ias')tasT=Math.min(casToTas(a.spdVal,a.alt),mx);
+ else if(a.spdMode==='mach')tasT=a.spdVal*sos(a.alt);
+ else{let c,m;if(a.vs>400){c=pf.cl[0];m=pf.cl[1]}else if(a.vs<-400){c=pf.ds[0];m=pf.ds[1]}else{c=310;m=pf.cr}
+  if(a.alt<10000)c=Math.min(c,250);if(a.arrAp&&a.alt<6000)c=Math.min(c,220);tasT=Math.min(casToTas(c,a.alt),m*sos(a.alt))}
+ a.tas+=clamp(tasT-a.tas,-1.2*dt,1.2*dt);
+ // Latéral
+ const wv=windAt(a.alt);let hc;
+ if(a.mode==='nav'){const w=a.pts[a.leg];if(w){const dt2=brg(a.x,a.y,w.x,w.y);const wTo=wv.dir+180;const cross=wv.spd*Math.sin((wTo-dt2)*D2R);hc=norm(dt2-Math.asin(clamp(cross/a.tas,-.6,.6))*R2D)}else hc=a.hdg}
+ else hc=a.hdgSel;
+ let d=angDiff(hc,a.hdg);
+ if(a.mode==='hdg'&&a.turnDir){if(Math.abs(d)<1.5)a.turnDir=null;else if(a.turnDir==='L'&&d>0)d-=360;else if(a.turnDir==='R'&&d<0)d+=360}
+ const rate=Math.min(3,1091*Math.tan(25*D2R)/Math.max(a.tas,120));
+ a.hdg=norm(a.hdg+clamp(d,-rate*dt,rate*dt));
+ const vx=a.tas*Math.sin(a.hdg*D2R)+wv.vx,vy=a.tas*Math.cos(a.hdg*D2R)+wv.vy;
+ a.x+=vx*dt/3600;a.y+=vy*dt/3600;a.gs=Math.hypot(vx,vy);a.trk=norm(Math.atan2(vx,vy)*R2D);
+ if(a.mode==='nav'){const w=a.pts[a.leg];if(w){const dd=dist(a.x,a.y,w.x,w.y);let ant=1;const nx=a.pts[a.leg+1];
+   if(nx){const turn=Math.abs(angDiff(brg(w.x,w.y,nx.x,nx.y),a.trk));const R=a.gs/(rate*62.83);ant=clamp(R*Math.tan(Math.min(turn,120)/2*D2R),.8,9)}
+   if(dd<ant){if(a.leg<a.pts.length-1)a.leg++;else a.routeEnd=true}}}
+}
+function arrived(a){if(a.routeEnd)return true;if(a.arrAp){const p=a.pts[a.pts.length-1];return dist(a.x,a.y,p.x,p.y)<12&&a.alt<7000}return false}
+
+/* ===================== Prédiction de trajectoire ===================== */
+function predict(a0,horizon){
+ const a={...a0};const S=[];const dt=5;let t=0;
+ while(t<=horizon){if(t%10===0)S.push({t,x:a.x,y:a.y,alt:a.alt,hdg:a.hdg,tas:a.tas,vs:a.vs,leg:a.leg,tod:a.tod});
+  a.cfl=plannedCfl(a);stepAc(a,dt);t+=dt;if(arrived(a))break}
+ return S;
+}
+function analyze(a,S){
+ let i=-1;for(let k=0;k<S.length;k++)if(inVol(S[k].x,S[k].y,S[k].alt)){i=k;break}
+ if(i<=0)return i===0?{start:true}:null;
+ let j=-1;for(let k=i+1;k<S.length;k++)if(!inVol(S[k].x,S[k].y,S[k].alt)){j=k;break}
+ if(j<0)j=S.length-1;
+ const si=S[i],sp=S[i-1],sj=S[j],sq=S[j-1];
+ const r={entryT:si.t,exitT:sj.t,iEntry:i,iExit:j};
+ if(latIn(sp.x,sp.y)){if(sp.alt<VOL.floor*100){r.entryKind='below';r.efl=floor10(VOL.floor);r.eflKind='climb'}else{r.entryKind='above';r.efl=Math.ceil(VOL.ceil/10)*10;if(r.efl<=VOL.ceil)r.efl+=10;r.eflKind='desc'}}
+ else{r.entryKind='lat';const dz=si.alt-sp.alt;if(Math.abs(dz)<150){r.efl=Math.round(si.alt/100);r.eflKind='level'}else{r.efl=Math.round(si.alt/1000)*10;r.eflKind=dz>0?'climb':'desc'}
+  if(r.efl<VOL.floor){r.efl=Math.ceil(VOL.floor/10)*10;if(r.efl<VOL.floor)r.efl+=10}if(r.efl>=VOL.ceil)r.efl=floor10(VOL.ceil-1);
+  if(r.eflKind==='climb'&&r.efl>=a.rfl){r.efl=a.rfl;r.eflKind='level'}}
+ if(latIn(sj.x,sj.y)){if(sj.alt<VOL.floor*100){r.exitKind='down';r.xfl=floor10(VOL.floor);r.xflKind='desc'}else{r.exitKind='up';r.xfl=Math.ceil(VOL.ceil/10)*10;if(r.xfl<=VOL.ceil)r.xfl+=10;r.xflKind='climb'}}
+ else{r.exitKind='lat';const dz=sj.alt-sq.alt;if(Math.abs(dz)<150){r.xfl=Math.round(sq.alt/1000)*10;if(Math.abs(sq.alt-a.rfl*100)<200)r.xfl=a.rfl;r.xflKind='level'}else{r.xfl=Math.round(sj.alt/1000)*10;r.xflKind=dz>0?'climb':'desc';if(r.xflKind==='climb'&&r.xfl>=a.rfl){r.xfl=a.rfl;r.xflKind='level'}}}
+ r.prev=unitAt(sp.x,sp.y,sp.alt,a);r.next=unitAt(sj.x,sj.y,sj.alt,a);
+ r.entryPt=nearestRoutePt(a,si.x,si.y);r.exitPt=nearestRoutePt(a,sj.x,sj.y);
+ return r;
+}
+function nearestRoutePt(a,x,y){let b=null,bd=1e9;for(const p of a.pts){const d=dist(x,y,p.x,p.y);if(d<bd){bd=d;b=p}}return b?b.id:''}
+
+/* ===================== Création des vols ===================== */
+function semiOK(fl,east){if(fl>410)return east?(fl===450||fl===490):(fl===430||fl===470);return east?(fl/10)%2===1:(fl/10)%2===0}
+function chooseRFL(lo,hi,east,pf,cap){const mx=Math.min(hi,pf.ceil,cap);const c=[];for(let f=200;f<=470;f+=10)if(semiOK(f,east)&&f>=lo&&f<=mx)c.push(f);if(c.length)return pick(c);for(let f=mx;f>=200;f-=10)if(semiOK(f,east))return f;return 300}
+function makeFlight(flow){
+ const tok=flow.tok,pts=flow.pts.map(p=>p);
+ const depAp=PTS[tok[0]].type==='apt'?tok[0]:null,arrAp=PTS[tok[tok.length-1]].type==='apt'?tok[tok.length-1]:null;
+ const from=depAp||pick(flow.from||['ZZZZ']),to=arrAp||pick(flow.to||['ZZZZ']);
+ const alc=wpick(flow.al);const al=AL[alc];
+ let type=(flow.heavy&&al.h)?pick(al.h):wpick(al.t);
+ if(flow.heavy&&!al.h)type=pick(['B77W','A359']);
+ const pf=PERF[type];
+ const p0=pts[0],pl=pts[pts.length-1];const east=brg(p0.x,p0.y,pl.x,pl.y)<180;
+ let cap=470;if(depAp&&arrAp){let L=0;for(let i=0;i<pts.length-1;i++)L+=dist(pts[i].x,pts[i].y,pts[i+1].x,pts[i+1].y);cap=Math.max(240,120+L*.7)}
+ let rfl=type==='C56X'?chooseRFL(410,450,east,pf,470):chooseRFL(flow.rfl[0],flow.rfl[1],east,pf,cap);
+ let cs;do{cs=genCs(alc)}while(SIM.acs.some(x=>x.cs===cs));
+ const a={id:++SIM.seq,cs,al:alc,say:al.say+' '+cs.slice(3),fr:!!al.fr,type,pf,wake:pf.w,dep:from,arr:to,depAp,arrAp,rfl,tok,pts,
+  x:p0.x,y:p0.y,leg:1,hdg:brg(p0.x,p0.y,pts[1].x,pts[1].y),mode:'nav',hdgSel:0,turnDir:null,spdMode:'auto',spdVal:0,
+  alt:depAp?2500:rfl*100,vs:0,tas:0,gs:0,trk:0,pfac:rnd(.88,1.1),tod:false,routeEnd:false,
+  state:'bg',concerned:false,cfl:rfl,hist:[],plot:null,lx:16,ly:-34,flags:{}};
+ a.tas=depAp?casToTas(230,2500):Math.min(pf.cr*sos(a.alt),casToTas(310,a.alt));
+ return a;
+}
+function applySample(a,s){a.x=s.x;a.y=s.y;a.alt=s.alt;a.hdg=s.hdg;a.tas=s.tas;a.vs=s.vs;a.leg=s.leg;a.tod=s.tod;a.trk=s.hdg;a.gs=s.tas}
+
+function spawnConflict(a,limitT){
+ for(const b of SIM.acs){if(dist(a.x,a.y,b.x,b.y)<9&&Math.abs(a.alt-b.alt)<1500)return true}
+ for(const b of SIM.acs){if(!b.pred||b.state==='assumed')continue;const b0=b.pred[0].t;
+  for(const s of a.pred){if(s.t>limitT)break;const k=Math.round((s.t-b0)/10);if(k<0||k>=b.pred.length)continue;const q=b.pred[k];
+   if(Math.abs(s.alt-q.alt)<1000&&dist(s.x,s.y,q.x,q.y)<7)return true}}
+ return false;
+}
+function trySpawn(kind,tau){
+ // kind: 'c' concerné, 'b' fond ; tau : décalage par rapport à l'entrée (s)
+ for(let n=0;n<70;n++){
+  const flow=wpick(FLOWS.map(f=>[f,f.w]));const a=makeFlight(flow);const S=predict(a,3200);if(S.length<4)continue;
+  const an=analyze(a,S);
+  if(kind==='c'&&(!an||an.start))continue;
+  if(kind==='b'&&an)continue;
+  let k=0;
+  if(kind==='c'){const tt=an.entryT+(tau!=null?tau:-rnd(330,540));k=Math.max(0,Math.round(tt/10));if(k>=S.length-3||S[k].t>=an.exitT-60)continue}
+  else{const idx=[];for(let q=0;q<S.length;q+=3){const s=S[q];if(Math.hypot(s.x,s.y)<230)idx.push(q)}if(!idx.length)continue;k=tau==='start'?pick(idx):idx[0]}
+  applySample(a,S[k]);a.cfl=plannedCfl(a);
+  const t0=S[k].t;a.pred=S.slice(k).map(s=>({...s,t:s.t-t0+SIM.t}));
+  if(an){a.concerned=true;Object.assign(a,{entryT:an.entryT-t0+SIM.t,exitT:an.exitT-t0+SIM.t,entryKind:an.entryKind,exitKind:an.exitKind,efl:an.efl,eflKind:an.eflKind,xfl:an.xfl,xflKind:an.xflKind,prev:an.prev,next:an.next,entryPt:an.entryPt,exitPt:an.exitPt});
+   a.offerT=a.entryT-(a.entryKind==='lat'?150:90);a.preT=a.entryT-660;a.state='pre';maybeNordo(a)}
+  if(spawnConflict(a,an?a.entryT+20:SIM.t+600))continue;
+  if(an&&SIM.t>=a.entryT&&inVol(a.x,a.y,a.alt)){a.state='assumed';a.assumedAt=SIM.t;a.wasIn=true;a.cfl=initialCfl(a);a.initial=true;a.called=true}
+  else if(an&&SIM.t>=a.offerT){a.state='offered';a.offeredAt=SIM.t;a.needCall=true}
+  SIM.acs.push(a);a.plot={x:a.x,y:a.y,alt:a.alt,gs:a.gs,trk:a.trk,vs:a.vs};
+  return a;
+ }
+ return null;
+}
+function maybeNordo(a){
+ if(!SIM.nordoRate||SIM.acs.some(q=>q.nordo&&!q.nordo.done))return;
+ if(Math.random()<SIM.nordoRate/Math.max(10,SIM.lambda)){const never=SIM.t<a.offerT-20&&Math.random()<.6;a.nordo={kind:never?'never':'mid'};if(never){a.silent=true;a.nordo.onset=a.offerT}}
+}
+function adopt(a,S,k,an){
+ applySample(a,S[k]);a.cfl=plannedCfl(a);const t0=S[k].t;a.pred=S.slice(k).map(s=>({...s,t:s.t-t0+SIM.t}));
+ a.concerned=true;Object.assign(a,{entryT:an.entryT-t0+SIM.t,exitT:an.exitT-t0+SIM.t,entryKind:an.entryKind,exitKind:an.exitKind,efl:an.efl,eflKind:an.eflKind,xfl:an.xfl,xflKind:an.xflKind,prev:an.prev,next:an.next,entryPt:an.entryPt,exitPt:an.exitPt});
+ a.offerT=a.entryT-(a.entryKind==='lat'?150:90);a.preT=a.entryT-660;a.state='pre';
+ if(SIM.t>=a.offerT){a.state='offered';a.offeredAt=SIM.t;a.needCall=true}
+ SIM.acs.push(a);a.plot={x:a.x,y:a.y,alt:a.alt,gs:a.gs,trk:a.trk,vs:a.vs};return a;
+}
+/* Génère un vol B qui converge vers un vol A pré-annoncé, au même niveau, dans le volume */
+function spawnConverging(){
+ const cands=SIM.acs.filter(a=>a.concerned&&a.state==='pre'&&a.pred&&!a.conv);
+ for(let tries=0;tries<4&&cands.length;tries++){
+  const A=pick(cands);
+  const inA=A.pred.filter(s=>s.t>=Math.max(A.entryT+60,SIM.t+240)&&s.t<=A.exitT-60&&inVol(s.x,s.y,s.alt));
+  if(inA.length<4)continue;
+  for(let n=0;n<60;n++){
+   const flow=wpick(FLOWS.map(f=>[f,f.w]));const B=makeFlight(flow);const S=predict(B,3200);
+   let best=null;
+   for(const sb of S){if(Math.abs(sb.x-inA[0].x)>250)continue;for(const sa of inA){const d=Math.abs(sa.x-sb.x)+Math.abs(sa.y-sb.y);if(d<2.5&&(!best||d<best.d))best={d,sa,sb}}}
+   if(!best)continue;
+   const ang=Math.abs(angDiff(best.sa.hdg,best.sb.hdg));if(ang<20||(n<40&&ang>155))continue;
+   const fl=Math.round(best.sa.alt/1000)*10;if(fl>B.pf.ceil||fl<150||fl*100<VOL.floor*100||fl*100>=VOL.ceil*100)continue;
+   B.rfl=fl;B.cfl=fl;if(!B.depAp){B.alt=fl*100;B.tas=Math.min(B.pf.cr*sos(B.alt),casToTas(310,B.alt))}
+   const S2=predict(B,3200);let i=-1,bd=1e9;for(let q=0;q<S2.length;q++){const d=dist(S2[q].x,S2[q].y,best.sb.x,best.sb.y);if(d<bd){bd=d;i=q}}
+   if(i<0||bd>3||Math.abs(S2[i].alt-best.sa.alt)>700)continue;
+   const lead=best.sa.t-SIM.t+rnd(-20,20);const k=Math.round((S2[i].t-lead)/10);if(k<0||k>=i)continue;
+   const an=analyze(B,S2);if(!an||an.start)continue;if(S2[k].t>an.entryT-90||inVol(S2[k].x,S2[k].y,S2[k].alt))continue;
+   adopt(B,S2,k,an);B.conv=A.id;A.conv=B.id;return true;
+  }
+ }
+ return false;
+}
+function initialCfl(a){let c=a.xfl;if(a.xflKind==='climb'&&c*100<a.alt)c=Math.round(a.alt/1000)*10;if(a.xflKind==='desc'&&c*100>a.alt)c=Math.round(a.alt/1000)*10;return c}
+
+/* ===================== Radio ===================== */
+const logEl=document.getElementById('log');
+function utc(t){const s=Math.floor(SIM.startUTC+t)%86400;const h=Math.floor(s/3600),m=Math.floor(s/60)%60,ss=s%60;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0')}
+function log(cls,txt){const d=document.createElement('div');d.innerHTML='<span class="t">'+utc(SIM.t)+'</span><span class="'+cls+'"></span>';d.lastChild.textContent=txt;logEl.appendChild(d);while(logEl.children.length>120)logEl.firstChild.remove();logEl.scrollTop=logEl.scrollHeight}
+function speak(txt,fr){if(!SIM.voice||!window.speechSynthesis)return;try{const u=new SpeechSynthesisUtterance(txt);u.lang=fr?'fr-FR':'en-GB';u.rate=1.12;speechSynthesis.speak(u)}catch(e){}}
+function pilot(a,txt){log('plt','◂ '+txt);speak(txt,a.fr)}
+function atc(txt){log('atc','▸ '+txt)}
+const flTxt=(fl,fr)=>fr?'niveau '+fl:'flight level '+fl;
+const myName=fr=>fr?'Bordeaux':'Bordeaux Control';
+const greet=fr=>{const h=Math.floor((SIM.startUTC+SIM.t)/3600)%24;return fr?(h>=17?'bonsoir':'bonjour'):(h<11?'good morning':h<17?'good afternoon':'good evening')};
+function pilotCall(a){
+ if(a.silent)return;a.called=true;
+ const fl=Math.round(a.alt/100),c=a.cfl;let s;
+ if(a.fr)s=myName(1)+' '+greet(1)+', '+a.say+', '+(Math.abs(a.alt-c*100)>300?(a.vs>0?'en montée ':'en descente ')+'niveau '+c+', passant '+fl:'niveau '+fl);
+ else s=myName(0)+', '+greet(0)+', '+a.say+', '+(Math.abs(a.alt-c*100)>300?'passing FL'+fl+(a.vs>0?' climbing ':' descending ')+'FL'+c:'FL'+fl);
+ pilot(a,s);
+}
+function queue(a,delay,fn){SIM.queue.push({t:SIM.t+delay,a,fn:()=>{if(a.silent){noResponse(a);return}fn()}})}
+function noResponse(a){if(SIM.t-(a.lastNR??-99)<6)return;a.lastNR=SIM.t;a.noResp=(a.noResp||0)+1;log('sys','… '+a.cs+' : pas de réponse'+(a.noResp>1?' ('+a.noResp+' appels sans réponse)':''))}
+function cmdGuard(a){
+ if(!a.concerned||a.state==='pre'){log('sys',a.cs+' n\'est pas encore sous votre responsabilité');return}
+ atc(a.fr?a.say+', '+myName(1)+' sur 121.5, si vous recevez, contactez '+myName(1)+' sur '+VOL.freq:a.say+', '+myName(0)+' on guard, if you read, contact '+myName(0)+' on '+VOL.freq);
+ SIM.queue.push({t:SIM.t+rnd(5,8),a,fn:()=>{
+  if(!a.silent){pilot(a,a.fr?myName(1)+', '+a.say+', on vous reçoit 5 sur 5':myName(0)+', '+a.say+', loud and clear');return}
+  if(!a.nordo.guardTried&&Math.random()<.4){a.nordo.guardTried=true;recoverNordo(a,'guard')}
+  else{a.nordo.guardTried=true;a.noResp=(a.noResp||0)+1;log('sys','… 121.5 : aucune réponse de '+a.cs)}}});
+}
+function recoverNordo(a,how){
+ a.silent=false;a.nordo.recovered=true;a.nordo.done=true;a.flags.reqT=SIM.t;a.called=true;const fl=Math.round(a.alt/100);
+ pilot(a,a.fr?myName(1)+', '+a.say+', désolés, '+(how==='guard'?'on était resté sur la fréquence précédente':'on a eu une panne radio')+', niveau '+fl:myName(0)+', '+a.say+', apologies, '+(how==='guard'?'we were still on the previous frequency':'we had a radio failure')+', FL'+fl);
+ if(!a.alerted){SIM.score+=10;log('good','Contact rétabli avec '+a.cs+' (+10)')}else{SIM.score+=10;log('good','COMLOSS résolu pour '+a.cs+' (+10)')}
+ if(sel===a)renderPanel(true);
+}
+function askAlert(a){
+ if(!a.concerned||a.state==='pre'){log('sys','Alerte impossible : '+a.cs+' n\'est pas encore sous votre responsabilité');return}
+ if(a.alerted){log('sys','Défense aérienne déjà alertée pour '+a.cs);return}
+ menu.innerHTML='<div class="mt">COMLOSS '+a.cs+'</div><div class="mconf"><div>Déclarer la perte de contact radio et alerter la défense aérienne ?</div><div class="hint">Appels sans réponse : '+(a.noResp||0)+(a.nordo&&a.nordo.guardTried?' · 121.5 essayé':'')+'</div><div class="row"><button class="primary" id="mOk">Alerter</button><button id="mNo">Annuler</button></div></div>';
+ const r=document.getElementById('scopeWrap').getBoundingClientRect();placeMenu(r.left+r.width/2-130,r.top+r.height/2-50);
+ menu.querySelector('#mOk').onclick=()=>{closeMenu();cmdAlert(a)};menu.querySelector('#mNo').onclick=()=>closeMenu();
+}
+function cmdAlert(a){
+ a.alerted=true;const fl=Math.round(a.alt/100);const p=a.pts[a.leg];
+ log('mil','▸ '+myName(1)+' → défense aérienne : COMLOSS '+a.cs+', '+a.type+', FL'+pad3(fl)+', route '+pad3(a.trk)+'°, '+Math.round(a.gs)+' kt, prochain point '+(p?p.id:'—')+', '+a.dep+' → '+a.arr);
+ if(!a.silent){penalty(a,'fa',-10,'Fausse alerte : '+a.cs+' est en contact');SIM.queue.push({t:SIM.t+rnd(20,35),a,fn:()=>{log('mil','◂ Défense aérienne : '+a.cs+' est en contact avec vous, alerte levée.');a.alerted=false;if(sel===a)renderPanel(true)}});return}
+ const delay=SIM.t-(a.nordo.onset??SIM.t);const pts=delay<=300?20:delay<=600?10:5;SIM.score+=pts;log('good','Alerte COMLOSS justifiée pour '+a.cs+' (+'+pts+')');
+ SIM.alerts.push({a,stage:0,tAck:SIM.t+rnd(25,45),tUp:SIM.t+rnd(120,180)});
+ if(sel===a)renderPanel(true);
+}
+/* ===================== Défense aérienne / PO ===================== */
+const PO_CS=['RAMEX','VADOR','COBRA','FANGIO','TIGRE'];
+const ALSTAGE=['Alerte transmise','PO en préparation','PO en vol','Interception','Contact visuel','Escorte'];
+function mkFighter(cs,tgt,wing){const b=PTS.LFBM;return{cs,mil:true,x:b.x+(wing?.25:0),y:b.y-(wing?.25:0),alt:300,hdg:brg(b.x,b.y,tgt.x,tgt.y),tas:200,gs:200,trk:0,vs:0,phase:'intercept',tgt,wing,hist:[],plot:null}}
+function rtb(al){for(const f of [al.lead,al.wing])if(f)f.phase='rtb'}
+function processAlerts(now){
+ for(const al of SIM.alerts){const a=al.a;if(al.stage>=9)continue;const alive=SIM.acs.includes(a);
+  if(al.stage===0&&now>=al.tAck){al.stage=1;log('mil','◂ Défense aérienne : COMLOSS '+a.cs+' pris en compte. Décollage sur alerte de la PO de Mont-de-Marsan.')}
+  if(al.stage===1&&now>=al.tUp){
+   if(!alive||!a.silent){al.stage=9;log('mil','◂ Défense aérienne : '+(alive?'contact rétabli avec '+a.cs:a.cs+' hors zone')+', décollage annulé.');continue}
+   al.stage=2;const nm=pick(PO_CS),n0=Math.floor(rnd(1,9))*10;
+   al.lead=mkFighter(nm+' '+(n0+1),a,0);al.wing=mkFighter(nm+' '+(n0+2),a,1);al.wing.lead=al.lead;SIM.mil.push(al.lead,al.wing);
+   const d=dist(PTS.LFBM.x,PTS.LFBM.y,a.x,a.y);
+   log('mil','◂ PO Mont-de-Marsan : '+al.lead.cs+' et '+al.wing.cs+', patrouille de deux Rafale, décollés. Interception de '+a.cs+' estimée dans '+fmtT(90+d/12*60)+'.');
+   log('mil','◂ Défense aérienne : merci de garder le trafic à 10 NM ou 2 000 ft de '+a.cs+'.')}
+  if(al.stage===2&&al.lead&&al.lead.phase==='escort'){al.stage=3;al.tRes=now+rnd(50,100);
+   log('mil','◂ '+al.lead.cs+' : en patrouille avec '+a.cs+', '+(PERF[a.type]?PERF[a.type].n:a.type)+', FL'+pad3(a.alt/100)+'. On se présente côté gauche du cockpit.')}
+  if(al.stage===3&&now>=al.tRes){
+   if(alive&&a.silent&&Math.random()<.8){al.stage=4;al.tRec=now+rnd(8,16);log('mil','◂ '+al.lead.cs+' : l\'équipage nous a vus et répond par signaux, il devrait vous rappeler.')}
+   else{al.stage=5;log('mil','◂ '+al.lead.cs+' : pas de réaction de l\'équipage, on reste en escorte.')}}
+  if(al.stage===4&&now>=al.tRec){al.stage=9;if(alive&&a.silent)recoverNordo(a,'radio');log('mil','◂ '+al.lead.cs+' : on dégage, retour Mont-de-Marsan.');rtb(al)}
+  if(al.stage>=2&&al.stage!==4&&al.stage<9&&al.lead&&(!alive||!inPoly(a.x,a.y,LFBB))){al.stage=9;log('mil','◂ Défense aérienne : '+a.cs+' a quitté la région, suivi relayé à la zone voisine. '+al.lead.cs+' retour Mont-de-Marsan.');rtb(al)}
+  if(al.stage>=2&&al.stage<9&&!alive){al.stage=9;rtb(al)}
+ }
+}
+function stepFighter(f,dt){
+ const T=f.tgt;if(f.phase!=='rtb'&&!SIM.acs.includes(T))f.phase='rtb';
+ if(f.phase==='escort'){const off=f.wing?[1.4,215]:[.7,262];const an=(T.trk+off[1])*D2R;const px=T.x+off[0]*Math.sin(an),py=T.y+off[0]*Math.cos(an);
+  const k=Math.min(1,dt*.3);f.x+=(px-f.x)*k;f.y+=(py-f.y)*k;f.alt+=(T.alt+(f.wing?300:0)-f.alt)*Math.min(1,dt*.2);f.hdg=f.trk=T.trk;f.gs=T.gs;f.tas=T.tas;f.vs=T.vs;return}
+ let tx,ty,talt,tasT;
+ if(f.phase==='rtb'){const b=PTS.LFBM;tx=b.x;ty=b.y;const d=dist(f.x,f.y,b.x,b.y);if(d<3){f.gone=true;return}talt=d<35?3000:Math.min(Math.max(f.alt,20000),32000);tasT=d<35?casToTas(300,f.alt):.9*sos(f.alt)}
+ else{
+  const L=f.lead;
+  if(f.wing&&L&&L.phase!=='rtb'){if(L.phase==='escort'&&dist(f.x,f.y,T.x,T.y)<4){f.phase='escort';return}
+   const back=(L.hdg+150)*D2R;tx=L.x+1.2*Math.sin(back);ty=L.y+1.2*Math.cos(back);talt=L.alt-300;const dl=dist(f.x,f.y,tx,ty);tasT=L.tas+clamp(dl*40,-60,120)}
+  else{const vT=velOf(T);const rx=T.x-f.x,ry=T.y-f.y,d=Math.hypot(rx,ry);const V=Math.max(f.tas,350);
+   const A=vT.x*vT.x+vT.y*vT.y-V*V,B=2*(rx*vT.x+ry*vT.y),C=rx*rx+ry*ry,disc=B*B-4*A*C;let t=0;
+   if(A<0&&disc>=0){t=(-B-Math.sqrt(disc))/(2*A);if(t<0)t=(-B+Math.sqrt(disc))/(2*A)}t=Math.max(0,Math.min(t,.5));
+   tx=T.x+vT.x*t;ty=T.y+vT.y*t;talt=d>25?Math.max(T.alt,Math.min(T.alt+2000,40000)):T.alt;
+   tasT=d>40&&f.alt>28000?1.4*sos(f.alt):d>10?.95*sos(f.alt):T.tas+clamp((d-1)*45,20,160);
+   if(d<1.6&&Math.abs(T.alt-f.alt)<1200)f.phase='escort'}
+ }
+ const dd=angDiff(brg(f.x,f.y,tx,ty),f.hdg);f.hdg=norm(f.hdg+clamp(dd,-4.5*dt,4.5*dt));
+ f.tas+=clamp(tasT-f.tas,-14*dt,14*dt);
+ const dz=talt-f.alt;const vsT=clamp(dz*2.5,-15000,f.alt<15000?30000:14000);f.vs+=clamp(vsT-f.vs,-4000*dt,4000*dt);f.alt=Math.max(0,f.alt+f.vs*dt/60);
+ const wv=windAt(f.alt);const vx=f.tas*Math.sin(f.hdg*D2R)+wv.vx,vy=f.tas*Math.cos(f.hdg*D2R)+wv.vy;f.x+=vx*dt/3600;f.y+=vy*dt/3600;f.gs=Math.hypot(vx,vy);f.trk=norm(Math.atan2(vx,vy)*R2D);
+}
+function drawMil(){
+ for(const f of SIM.mil){if(!f.plot)continue;const p=f.plot,X=sx(p.x),Y=sy(p.y);
+  ctx.fillStyle='#ffffff';for(let i=0;i<f.hist.length;i++){ctx.globalAlpha=.6-i*.09;const h=f.hist[i];ctx.fillRect(sx(h.x)-1.3,sy(h.y)-1.3,2.6,2.6)}ctx.globalAlpha=1;
+  if(LAY.vec>0){const L=p.gs*LAY.vec/60;ctx.strokeStyle='#ffffff';ctx.beginPath();ctx.moveTo(X,Y);ctx.lineTo(sx(p.x+L*Math.sin(p.trk*D2R)),sy(p.y+L*Math.cos(p.trk*D2R)));ctx.stroke()}
+  ctx.fillStyle='#ffffff';ctx.beginPath();ctx.moveTo(X,Y-7);ctx.lineTo(X+6,Y+5);ctx.lineTo(X,Y+2);ctx.lineTo(X-6,Y+5);ctx.closePath();ctx.fill();
+  const tr=p.vs>400?'↑':p.vs<-400?'↓':' ';const m=p.gs/sos(p.alt);
+  if(f.phase==='escort'&&f.wing)continue;
+  const esc=f.phase==='escort',T=f.tgt;const nm=esc&&f.wing===0?f.cs.split(' ')[0]+' '+f.cs.split(' ')[1]+'/'+(+f.cs.split(' ')[1]+1)+' PO':f.cs+' PO';
+  const lines=[nm,pad3(p.alt/100)+tr+' '+(m>1?'M'+m.toFixed(1):String(Math.round(p.gs/10)).padStart(2,'0'))+(esc?' escorte':'')];
+  let LX=f.wing?X-96:X+12,LY=f.wing?Y+20:Y-28;if(esc&&T){LX=T.lx>0?X-150:X+16;LY=T.ly<0?Y+26:Y-30}ctx.font='600 12px '+fMono;
+  lines.forEach((t,i)=>{ctx.strokeStyle=COL.halo;ctx.lineWidth=3;ctx.strokeText(t,LX,LY+i*13);ctx.lineWidth=1;ctx.fillStyle='#ffffff';ctx.fillText(t,LX,LY+i*13)})}
+}
+
+/* ===================== Clairances ===================== */
+function onFreq(a){return a.state==='assumed'}
+function needFreq(a){if(onFreq(a))return true;log('sys',a.cs+' n\'est pas sur votre fréquence'+(a.state==='offered'?' : assumez-le d\'abord (clic sur l\'indicatif ou A)':a.state==='pre'?' (pas encore transféré par '+a.prev.sh+')':'.'));return false}
+function cmdLevel(a,fl){
+ if(!needFreq(a))return;fl=Math.round(fl/10)*10;
+ const up=fl*100>a.alt+50;
+ atc(a.fr?a.say+', '+(Math.abs(fl*100-a.alt)<60?'maintenez':up?'montez':'descendez')+' niveau '+fl:a.say+', '+(Math.abs(fl*100-a.alt)<60?'maintain':up?'climb':'descend')+' FL'+fl);
+ if(fl>a.pf.ceil){queue(a,rnd(2,3.5),()=>pilot(a,a.fr?'Négatif, notre plafond est niveau '+a.pf.ceil+', '+a.say:'Unable, maximum FL'+a.pf.ceil+', '+a.say));return}
+ if(fl<60){log('bad','Niveau trop bas pour un vol en route');return}
+ const mt=Math.abs(fl*100-a.alt)<60;queue(a,rnd(2,4),()=>{a.cfl=fl;a.flags.reqT=SIM.t;pilot(a,a.fr?(mt?'On maintient':up?'On monte':'On descend')+' niveau '+fl+', '+a.say:(mt?'Maintaining':up?'Climbing':'Descending')+' FL'+fl+', '+a.say);
+  const nx=a.pts[a.leg];const lvlTrk=a.mode==='nav'&&nx?brg(a.x,a.y,nx.x,nx.y):a.mode==='hdg'?a.hdgSel:a.trk;if(fl>=200&&fl<=410&&!semiOK(fl,lvlTrk<180)&&fl!==a.xfl)log('sys','Note : FL'+fl+' ne respecte pas la règle semi-circulaire pour une route au '+String(Math.round(lvlTrk)).padStart(3,'0')+'°')});
+}
+function cmdHdg(a,h,dir){
+ if(!needFreq(a))return;h=norm(Math.round(h));if(h===0)h=360;const hs=String(h).padStart(3,'0');
+ const dTxt=dir==='L'?(a.fr?'à gauche ':'left '):dir==='R'?(a.fr?'à droite ':'right '):'';
+ atc(a.fr?a.say+', '+(dir?'virez '+dTxt+'cap ':'cap ')+hs:a.say+', '+(dir?'turn '+dTxt+'heading ':'fly heading ')+hs);
+ queue(a,rnd(2,4),()=>{a.mode='hdg';a.hdgSel=h%360;a.turnDir=dir||null;pilot(a,(a.fr?(dir==='L'?'Gauche ':dir==='R'?'Droite ':'')+'cap '+hs:(dir==='L'?'Left ':dir==='R'?'Right ':'')+'heading '+hs)+', '+a.say)});
+}
+function cmdDirect(a,id){
+ if(!needFreq(a))return;const p=PTS[id];if(!p){log('bad','Point inconnu : '+id);return}
+ atc(a.fr?a.say+', direct '+id:a.say+', proceed direct '+id);
+ queue(a,rnd(2,4),()=>{let idx=-1;for(let i=a.leg;i<a.pts.length;i++)if(a.pts[i].id===id){idx=i;break}
+  if(idx>=0)a.leg=idx;else{a.pts=a.pts.slice();a.pts.splice(a.leg,0,p);a.tok=a.pts.map(q=>q.id)}
+  a.mode='nav';a.turnDir=null;pilot(a,'Direct '+id+', '+a.say)});
+}
+function cmdResume(a){
+ if(!needFreq(a))return;let best=a.leg;let bd=1e9;for(let i=Math.max(1,a.leg-1);i<a.pts.length;i++){const p=a.pts[i];const ahead=Math.abs(angDiff(brg(a.x,a.y,p.x,p.y),a.hdg))<100;const d=dist(a.x,a.y,p.x,p.y);if(ahead&&d<bd){bd=d;best=i}}
+ const id=a.pts[best].id;atc(a.fr?a.say+', reprenez votre navigation, direct '+id:a.say+', resume own navigation, direct '+id);
+ queue(a,rnd(2,4),()=>{a.leg=best;a.mode='nav';a.turnDir=null;pilot(a,a.fr?'Direct '+id+', '+a.say:'Direct '+id+', '+a.say)});
+}
+function cmdSpeed(a,mode,v){
+ if(!needFreq(a))return;
+ if(mode==='auto'){atc(a.fr?a.say+', vitesse libre':a.say+', no speed restriction');queue(a,rnd(2,3.5),()=>{a.spdMode='auto';pilot(a,(a.fr?'Vitesse libre, ':'No speed restriction, ')+a.say)});return}
+ if(mode==='mach'){const m=(v/100).toFixed(2).slice(1);if(v/100>a.pf.cr+.03||v/100<.6){queue(a,2.5,()=>pilot(a,(a.fr?'Négatif pour Mach ':'Unable Mach ')+m+', '+a.say));atc(a.say+', Mach '+m);return}
+  atc(a.say+', '+(a.fr?'Mach ':'Mach ')+m);queue(a,rnd(2,3.5),()=>{a.spdMode='mach';a.spdVal=v/100;pilot(a,'Mach '+m+', '+a.say)});return}
+ if(v<200||v>350){log('bad','Vitesse indiquée hors domaine (200–350 kt)');return}
+ atc(a.fr?a.say+', réduisez/maintenez '+v+' nœuds':a.say+', maintain '+v+' knots');queue(a,rnd(2,3.5),()=>{a.spdMode='ias';a.spdVal=v;pilot(a,(a.fr?v+' nœuds, ':v+' knots, ')+a.say)});
+}
+function cmdAssume(a){
+ if(a.state==='assumed'){log('sys',a.cs+' est déjà sous votre contrôle');return}
+ if(a.state==='pre'){log('sys',a.cs+' n\'est pas encore transféré par '+a.prev.sh+' (appel prévu vers '+utc(a.offerT)+')');return}
+ if(a.state!=='offered'&&a.state!=='missed'){log('sys',a.cs+' ne vous concerne pas');return}
+ a.state='assumed';a.assumedAt=SIM.t;a.flags.reqT=SIM.t;if(!a.called)queue(a,rnd(3,5),()=>{a.called=true;pilot(a,a.fr?'Identifié, '+a.say:'Radar contact, '+a.say)});
+ atc(a.fr?a.say+', '+myName(1)+' '+greet(1)+', identifié'+(a.alt!==a.cfl*100?'':', maintenez niveau '+a.cfl):a.say+', '+myName(0)+', radar contact'+(Math.abs(a.alt-a.cfl*100)<60?', maintain FL'+a.cfl:''));
+ renderPanel(true);
+}
+function xflOK(a){const c=a.cfl,x=a.xfl;if(a.xflKind==='level')return c===x||Math.abs(a.alt-x*100)<=300&&c===x;if(a.xflKind==='climb')return c>=x;return c<=x}
+function cmdTransfer(a,auto){
+ if(a.state!=='assumed'){log('sys',a.cs+' n\'est pas sous votre contrôle');return}
+ const u=a.next;a.state='transferred';a.transferredAt=SIM.t;a.flags.autoTfr=!!auto;a.flags.tfrPts=0;a.flags.tfrDone=0;a.flags.xflPenObj=null;
+ const ok=xflOK(a);
+ if(!auto){atc(a.fr?a.say+', contactez '+u.name.replace(' Contrôle','').replace(' Approche',' Approche')+' '+u.freq+', au revoir':a.say+', contact '+u.en+' '+u.freq+', goodbye');
+  queue(a,rnd(1.5,3),()=>pilot(a,a.fr?u.freq+', au revoir, '+a.say:u.freq+', '+a.say+', goodbye'))}
+ if(!ok&&!a.flags.p_xfl){penalty(a,'xfl',-10,a.cs+' : XFL non respecté (attendu '+xflTxt(a)+', autorisé FL'+a.cfl+')');a.flags.xflPenObj=SIM.pen[SIM.pen.length-1]}
+ if(ok&&!a.flags.lossInv&&!a.flags.pen){SIM.score+=10;SIM.done++;a.flags.tfrPts=10;a.flags.tfrDone=1;log('good',a.cs+' transféré à '+u.sh+' · coordination respectée (+10)')}
+ else if(ok){SIM.done++;a.flags.tfrDone=1}
+ if(sel===a)renderPanel(true);
+}
+function canRetake(a){return a.state==='transferred'&&!a.flags.autoTfr&&SIM.acs.includes(a)&&(a.inv||SIM.t-a.transferredAt<=90)}
+function askRetake(a,cx,cy){
+ if(a.state!=='transferred'){log('sys',a.cs+' n\'est pas transféré');return}
+ if(!canRetake(a)){log('sys','Trop tard pour reprendre '+a.cs+' : il a quitté votre secteur, il est maintenant chez '+a.next.sh);return}
+ menu.innerHTML='<div class="mt">Annuler le transfert '+a.cs+'</div><div class="mconf"><div>Coordonner avec <b>'+a.next.sh+'</b> pour reprendre '+a.cs+' sur votre fréquence ?</div><div class="hint">Les points du transfert sont annulés : vous devrez le retransférer.</div><div class="row"><button class="primary" id="mOk">Reprendre</button><button id="mNo">Annuler</button></div></div>';
+ if(cx==null){const r=document.getElementById('scopeWrap').getBoundingClientRect();cx=r.left+r.width/2-130;cy=r.top+r.height/2-50}
+ placeMenu(cx,cy);
+ menu.querySelector('#mOk').onclick=()=>{closeMenu();cmdRetake(a);cmdEl.focus()};menu.querySelector('#mNo').onclick=()=>{closeMenu();cmdEl.focus()};
+}
+function cmdRetake(a){
+ if(!canRetake(a)){log('sys','Trop tard pour reprendre '+a.cs);return}
+ const u=a.next;
+ if(a.flags.tfrPts){SIM.score-=a.flags.tfrPts;a.flags.tfrPts=0}
+ if(a.flags.tfrDone){SIM.done--;a.flags.tfrDone=0}
+ if(a.flags.xflPenObj){SIM.score-=a.flags.xflPenObj.pts;SIM.pen=SIM.pen.filter(p=>p!==a.flags.xflPenObj);a.flags.xflPenObj=null;a.flags.p_xfl=0}
+ a.state='assumed';a.transferredAt=null;a.assumedAt=SIM.t;a.flags.reqT=SIM.t;a.outT=0;
+ log('sys','Coordination '+u.sh+' : transfert de '+a.cs+' annulé, le vol est renvoyé sur votre fréquence '+VOL.freq);
+ const fl=Math.round(a.alt/100);
+ queue(a,rnd(6,10),()=>pilot(a,a.fr?myName(1)+', '+a.say+', de retour avec vous, niveau '+fl:myName(0)+', '+a.say+', back with you, FL'+fl));
+ renderPanel(true);
+}
+function askTransfer(a,cx,cy){
+ if(a.state!=='assumed'){cmdTransfer(a);return}
+ const u=a.next,ok=xflOK(a);
+ menu.innerHTML='<div class="mt">Transfert '+a.cs+'</div><div class="mconf"><div>Vers <b>'+u.sh+'</b> · '+u.freq+'</div><div style="color:'+(ok?'var(--ok)':'var(--call)')+'">XFL attendu '+xflTxt(a)+' · autorisé FL'+a.cfl+(ok?' ✓':' ✗')+'</div>'+(a.tte!=null?'<div class="hint">Sortie du volume dans '+fmtT(a.tte)+'</div>':'')+'<div class="row"><button class="primary" id="mOk">Confirmer</button><button id="mNo">Annuler</button></div></div>';
+ if(cx==null){const r=document.getElementById('scopeWrap').getBoundingClientRect();cx=r.left+r.width/2-130;cy=r.top+r.height/2-50}
+ placeMenu(cx,cy);
+ const okb=menu.querySelector('#mOk');setTimeout(()=>{if(!menu.hidden)okb.focus()},250);
+ okb.onclick=()=>{closeMenu();if(a.state==='assumed'&&SIM.acs.includes(a))cmdTransfer(a);renderPanel(true);cmdEl.focus()};
+ menu.querySelector('#mNo').onclick=()=>{closeMenu();log('sys','Transfert de '+a.cs+' annulé');cmdEl.focus()};
+}
+function xflTxt(a){return 'FL'+a.xfl+(a.xflKind==='climb'?' ou au-dessus':a.xflKind==='desc'?' ou au-dessous':'')}
+function penalty(a,key,pts,msg){if(a&&a.flags['p_'+key])return;if(a)a.flags['p_'+key]=1;if(a)a.flags.pen=1;SIM.score+=pts;SIM.pen.push({t:SIM.t,msg,pts});log('bad',msg+' ('+pts+')')}
+
+/* ===================== Boucle principale ===================== */
+function autoControl(a){
+ let tgt=plannedCfl(a);
+ if(a.concerned&&(a.state==='pre'||a.state==='offered')){if(tgt*100>a.alt)tgt=Math.min(tgt,a.efl);else tgt=Math.max(tgt,a.efl)}
+ if(a.state==='transferred'){
+  const out=!a.inv;
+  if(a.exitKind==='lat'&&!out)tgt=a.cfl;else if(a.mode==='hdg')resumeAuto(a);
+ }
+ if(a.state==='missed'&&a.mode==='hdg')resumeAuto(a);
+ if(a.spdMode!=='auto'&&a.state!=='assumed'&&a.state!=='transferred')a.spdMode='auto';
+ if(a.state==='transferred'&&!inVol(a.x,a.y,a.alt))a.spdMode='auto';
+ a.cfl=tgt;
+}
+function resumeAuto(a){let best=a.leg,bd=1e9;for(let i=Math.max(1,a.leg-1);i<a.pts.length;i++){const p=a.pts[i];const ahead=Math.abs(angDiff(brg(a.x,a.y,p.x,p.y),a.hdg))<100;const d=dist(a.x,a.y,p.x,p.y);if(ahead&&d<bd){bd=d;best=i}}a.leg=best;a.mode='nav';a.turnDir=null}
+
+function tick1s(){
+ const now=SIM.t;
+ for(const a of SIM.acs){
+  a.inv=inVol(a.x,a.y,a.alt);if(a.inv&&a.concerned)a.wasIn=true;
+  if(a.nordo&&!a.nordo.done){
+   if(a.nordo.kind==='mid'&&!a.silent&&a.state==='assumed'&&!a.nordo.onset)a.nordo.onset=now+rnd(60,200);
+   if(a.nordo.kind==='mid'&&!a.silent&&a.nordo.onset&&now>=a.nordo.onset)a.silent=true;
+   if(a.silent&&a.state==='assumed'&&now-(a.nordo.onset??now)>180){if(a.mode==='hdg')resumeAuto(a);a.cfl=plannedCfl(a)}
+   if(a.silent&&!a.alerted&&a.wasIn&&!a.inv&&a.state!=='pre')penalty(a,'cl',-30,a.cs+' : perte de contact radio non signalée à la défense aérienne');
+  }
+  if(a.concerned){
+   if(a.needCall&&a.state==='offered'){a.needCall=false;pilotCall(a)}
+   if(a.state==='pre'&&now>=a.offerT){a.state='offered';a.offeredAt=now;pilotCall(a)}
+   if(a.state==='offered'){if(a.inv)a.invT=(a.invT||0)+1;if((a.invT||0)>20||now-a.offeredAt>200){penalty(a,'np',-15,a.cs+' : appel non traité, vol non pris en compte')}
+    if(a.wasIn&&!a.inv&&(a.invT||0)>20){a.state='missed'}}
+   if(a.state==='assumed'){
+    a.tte=a.inv?timeToExit(a):null;
+    if(a.wasIn&&!a.inv){a.outT=(a.outT||0)+1;if(a.outT>=4){penalty(a,'tf',-10,a.cs+' : sorti du secteur sans transfert');if(!a.silent)pilot(a,a.fr?myName(1)+', '+a.say+', on vous quitte ?':myName(0)+', '+a.say+', are we still with you?');cmdTransfer(a,true)}}else a.outT=0;
+    // demandes pilote
+    if(a.state==='assumed'&&!a.silent&&Math.abs(a.alt-a.cfl*100)<100){const pl=plannedCfl(a);const since=now-(a.flags.reqT||0);
+     if(pl>a.cfl&&a.cfl<a.rfl&&since>100){a.flags.reqT=now;pilot(a,a.fr?myName(1)+', '+a.say+', on aimerait monter niveau '+a.rfl:myName(0)+', '+a.say+', request climb FL'+a.rfl)}
+     else if(pl<a.cfl&&a.arrAp&&since>70){a.flags.reqT=now;pilot(a,a.fr?myName(1)+', '+a.say+', prêts pour la descente':myName(0)+', '+a.say+', ready for descent')}}
+   }
+  }
+  if(a.state!=='assumed')autoControl(a);
+ }
+ processAlerts(now);SIM.mil=SIM.mil.filter(f=>!f.gone);
+ if(SIM.convInt&&now>=SIM.nextConv)SIM.nextConv=now+(spawnConverging()?SIM.convInt*rnd(.7,1.3):30);
+ // retraits
+ SIM.acs=SIM.acs.filter(a=>{const far=Math.hypot(a.x,a.y)>330;const gone=arrived(a)||far;if(gone){if(a.state==='assumed'){penalty(a,'tf',-10,a.cs+' : quitte la couverture sans transfert')}if(a===sel)selectAc(null);if(a===sepA||a===sepB){sepA=sepB=null}}return!gone});
+ // séparation
+ checkSeparation();
+ // génération
+ const nConc=SIM.acs.filter(a=>a.concerned&&(a.state==='pre'||a.state==='offered')).length;
+ if(Math.random()<SIM.lambda/3600&&nConc<14)trySpawn('c');
+ const nBg=SIM.acs.filter(a=>!a.concerned).length;const bgTarget=Math.round(6+SIM.lambda*.35);
+ if(nBg<bgTarget&&Math.random()<.04)trySpawn('b');
+}
+function timeToExit(a){const b={...a};for(let t=10;t<=1800;t+=10){stepAc(b,10);if(!inVol(b.x,b.y,b.alt)||b.routeEnd)return t}return 99999}
+function isMine(a){return a.state==='assumed'||(a.concerned&&a.inv&&(a.state==='offered'||a.state==='missed'))}
+function checkSeparation(){
+ const L=SIM.acs,st=new Set(),now=SIM.t;
+ for(let i=0;i<L.length;i++){const a=L[i];for(let j=i+1;j<L.length;j++){const b=L[j];
+  const dx=b.x-a.x,dy=b.y-a.y;if(Math.abs(dx)>40||Math.abs(dy)>40)continue;const dz=Math.abs(b.alt-a.alt);if(dz>6000)continue;
+  const mine=isMine(a)||isMine(b);const key=a.id<b.id?a.id+'-'+b.id:b.id+'-'+a.id;
+  const d=Math.hypot(dx,dy);
+  if(d<5&&dz<950){st.add(key);if(mine&&!SIM.sepPairs.has(key)){SIM.sepPairs.set(key,now);SIM.sepLoss++;a.flags.lossInv=b.flags.lossInv=1;penalty(null,'',-50,'PERTE DE SÉPARATION '+a.cs+' / '+b.cs+' · '+d.toFixed(1)+' NM, '+Math.round(dz)+' ft');showToast('Perte de séparation '+a.cs+' / '+b.cs)}continue}
+  if(SIM.sepPairs.has(key)&&(d>5.5||dz>=1000))SIM.sepPairs.delete(key);
+  if(!mine&&!(a.concerned||b.concerned))continue;
+  // STCA : extrapolation 120 s
+  const va=velOf(a),vb=velOf(b);
+  for(let t=10;t<=120;t+=10){const px=dx+(vb.x-va.x)*t/3600,py=dy+(vb.y-va.y)*t/3600;const za=projAlt(a,t),zb=projAlt(b,t);if(Math.hypot(px,py)<5&&Math.abs(za-zb)<950){st.add(key);break}}
+ }}
+ SIM.stca=st;
+}
+function velOf(a){return{x:a.gs*Math.sin(a.trk*D2R),y:a.gs*Math.cos(a.trk*D2R)}}
+function projAlt(a,t){const z=a.alt+a.vs*t/60;const c=a.cfl*100;return a.vs>0?Math.min(z,Math.max(c,a.alt)):a.vs<0?Math.max(z,Math.min(c,a.alt)):z}
+function showToast(t){const el=document.getElementById('toast');el.textContent=t;el.hidden=false;clearTimeout(showToast.h);showToast.h=setTimeout(()=>el.hidden=true,5000)}
+
+let lastFrame=performance.now();
+function loop(now){
+ const rdt=Math.min(.25,(now-lastFrame)/1000);lastFrame=now;
+ if(SIM.running&&SIM.speed>0){SIM.acc+=rdt*SIM.speed;
+  while(SIM.acc>=.5){SIM.acc-=.5;SIM.t+=.5;for(const a of SIM.acs)stepAc(a,.5);for(const f of SIM.mil)stepFighter(f,.5);
+   for(let i=SIM.queue.length-1;i>=0;i--){const q=SIM.queue[i];if(SIM.t>=q.t){SIM.queue.splice(i,1);if(SIM.acs.includes(q.a))q.fn()}}
+   if(SIM.t-SIM.last1s>=1){SIM.last1s=SIM.t;tick1s()}
+   if(SIM.t-SIM.lastRadar>=4){SIM.lastRadar=SIM.t;radarSweep()}}}
+ draw();
+ if(now-(loop.ui||0)>400){loop.ui=now;updateUI()}
+ requestAnimationFrame(loop);
+}
+const ovl=(r,q)=>Math.max(0,Math.min(r[0]+r[2],q[0]+q[2])-Math.max(r[0],q[0]))*Math.max(0,Math.min(r[1]+r[3],q[1]+q[3])-Math.max(r[1],q[1]));
+const prio=a=>a.state==='assumed'?3:a.state==='offered'?2:a.concerned?1:0;
+function autoLabels(){if(!VOL||!W)return;const placed=[];const list=SIM.acs.filter(a=>a.plot&&visible(a)).sort((a,b)=>prio(b)-prio(a));
+ for(const a of list){const X=sx(a.plot.x),Y=sy(a.plot.y);const w=a._bw||70,h=a._bh||30;
+  if(a.userLbl){placed.push([X+a.lx,Y+a.ly,w,h]);continue}
+  const C=[[14,-h-10],[14,10],[-w-14,-h-10],[-w-14,10],[22,-h/2],[-w-22,-h/2],[-w/2,-h-22],[-w/2,22]];
+  const vx=Math.sin(a.plot.trk*D2R),vy=-Math.cos(a.plot.trk*D2R);let best=C[0],bs=1e9;
+  for(const[dx,dy]of C){const r=[X+dx,Y+dy,w,h];let s=0;for(const q of placed)s+=ovl(r,q);for(const b of list){if(b===a||!b.plot)continue;const bx=sx(b.plot.x),by=sy(b.plot.y);if(bx>r[0]-4&&bx<r[0]+w+4&&by>r[1]-4&&by<r[1]+h+4)s+=300}
+   const cx=dx+w/2,cy=dy+h/2;if(cx*vx+cy*vy>0)s+=120;if(Math.abs(dx-a.lx)<1&&Math.abs(dy-a.ly)<1)s-=150;if(s<bs){bs=s;best=[dx,dy]}}
+  a.lx=best[0];a.ly=best[1];placed.push([X+a.lx,Y+a.ly,w,h])}}
+function radarSweep(){for(const f of SIM.mil){if(f.plot){f.hist.unshift({x:f.plot.x,y:f.plot.y});if(f.hist.length>6)f.hist.pop()}f.plot={x:f.x,y:f.y,alt:f.alt,gs:f.gs,trk:f.trk,vs:f.vs}}for(const a of SIM.acs){if(a.plot){a.hist.unshift({x:a.plot.x,y:a.plot.y});if(a.hist.length>6)a.hist.pop()}a.plot={x:a.x,y:a.y,alt:a.alt,gs:a.gs,trk:a.trk,vs:a.vs}}autoLabels()}
+
+/* ===================== Écran radar ===================== */
+const cv=document.getElementById('scope'),ctx=cv.getContext('2d');
+let W=0,H=0,dpr=1;const VIEW={cx:0,cy:0,s:2};
+const LAY={legend:true,routes:true,fixes:true,vors:true,apts:true,secs:true,bg:true,vfilt:true,hist:true,vec:3};
+const COL={outside:'#000000',lfbb:'#080808',mine:'#121212',fir:'#383838',firTxt:'#4e4e4e',sec:'#383838',secTxt:'#515151',mineLine:'#959595',awy:'#292929',awyApt:'#212121',fix:'#666666',vor:'#888888',apt:'#6b6b6b',ptTxt:'#727272',
+ bg:'#6d6d6d',pre:'#d9a441',call:'#ffcf5c',mine1:'#6fdc96',xfer:'#5aa9e6',miss:'#9a7f7f',crit:'#ff5b52',sel:'#c8c8c8',route:'#a8a8a8',halo:'#000000'};
+function resize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;W=r.width;H=r.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}
+new ResizeObserver(resize).observe(cv);
+const sx=x=>W/2+(x-VIEW.cx)*VIEW.s,sy=y=>H/2-(y-VIEW.cy)*VIEW.s;
+const wx=X=>VIEW.cx+(X-W/2)/VIEW.s,wy=Y=>VIEW.cy-(Y-H/2)/VIEW.s;
+function fitSector(){if(!W)resize();let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const Q of VOL.polys){x0=Math.min(x0,Q.x0);x1=Math.max(x1,Q.x1);y0=Math.min(y0,Q.y0);y1=Math.max(y1,Q.y1)}
+ VIEW.cx=(x0+x1)/2;VIEW.cy=(y0+y1)/2;VIEW.s=Math.min((W-40)/(x1-x0+50),(H-40)/(y1-y0+50));if(!isFinite(VIEW.s)||VIEW.s<=0)VIEW.s=2}
+function polyPath(p){ctx.beginPath();for(let i=0;i<p.length;i++){const X=sx(p[i][0]),Y=sy(p[i][1]);i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)}ctx.closePath()}
+let blink=0;
+const labelBoxes=[];
+function draw(){
+ if(!W)resize();
+ ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle=COL.outside;ctx.fillRect(0,0,W,H);
+ if(!VOL)return;
+ blink=(performance.now()/500|0)%2;
+ polyPath(LFBB.p);ctx.fillStyle=COL.lfbb;ctx.fill();
+ for(const Q of VOL.polys){polyPath(Q.p);ctx.fillStyle=COL.mine;ctx.fill()}
+ // FIR voisines (hors LFBB)
+ ctx.save();ctx.beginPath();ctx.rect(0,0,W,H);for(let i=0;i<LFBB.p.length;i++){const X=sx(LFBB.p[i][0]),Y=sy(LFBB.p[i][1]);i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)}ctx.closePath();ctx.clip('evenodd');
+ ctx.strokeStyle=COL.fir;ctx.lineWidth=1;for(const k in FIRS)for(const Q of FIRS[k]){polyPath(Q.p);ctx.stroke()}ctx.restore();
+ ctx.font='600 12px '+fUI;ctx.fillStyle=COL.firTxt;ctx.textAlign='center';
+ for(const[nm,la,lo]of [['PARIS',48.45,3.2],['BREST',46.3,-2.6],['MARSEILLE',44.6,4.75],['MADRID',42.25,-2.6],['BARCELONA',42.15,1.2]]){const q=P(la,lo);ctx.fillText(nm,sx(q.x),sy(q.y))}
+ // secteurs LFBB
+ if(LAY.secs){ctx.setLineDash([5,5]);ctx.strokeStyle=COL.sec;for(const k of VOL.layer){polyPath(SECT[k].p);ctx.stroke()}ctx.setLineDash([]);
+  ctx.fillStyle=COL.secTxt;ctx.font='600 13px '+fUI;for(const k of VOL.layer){const Q=SECT[k];ctx.fillText(k,sx(Q.cx),sy(Q.cy))}}
+ ctx.strokeStyle='#414141';ctx.lineWidth=1.2;polyPath(LFBB.p);ctx.stroke();
+ ctx.strokeStyle=COL.mineLine;ctx.lineWidth=1.6;for(const Q of VOL.polys){polyPath(Q.p);ctx.stroke()}ctx.lineWidth=1;
+ // plancher / plafond au centre du volume
+ if(!VOL.cen)VOL.cen=volCenter();
+ {const X=sx(VOL.cen.x),Y=sy(VOL.cen.y);ctx.textAlign='center';
+  ctx.fillStyle='rgba(205,205,205,.30)';ctx.font='600 10.5px '+fUI;ctx.fillText('PLAFOND',X,Y-34);ctx.fillText('PLANCHER',X,Y+40);
+  ctx.fillStyle='rgba(205,205,205,.42)';ctx.font='600 22px '+fMono;ctx.fillText('FL'+pad3(VOL.ceil),X,Y-12);ctx.fillText('FL'+pad3(VOL.floor),X,Y+24);
+  ctx.strokeStyle='rgba(205,205,205,.30)';ctx.beginPath();ctx.moveTo(X-38,Y+2);ctx.lineTo(X+38,Y+2);ctx.stroke();ctx.textAlign='left'}
+ // routes
+ if(LAY.routes){for(const w of AIRWAYS){ctx.strokeStyle=w.apt?COL.awyApt:COL.awy;ctx.setLineDash(w.apt?[3,4]:[]);ctx.beginPath();ctx.moveTo(sx(w.a.x),sy(w.a.y));ctx.lineTo(sx(w.b.x),sy(w.b.y));ctx.stroke()}ctx.setLineDash([])}
+ // points
+ ctx.font='10.5px '+fMono;ctx.textAlign='left';
+ for(const id in PTS){const p=PTS[id];const X=sx(p.x),Y=sy(p.y);if(X<-20||X>W+20||Y<-20||Y>H+20)continue;
+  if(p.type==='fix'&&LAY.fixes){ctx.strokeStyle=COL.fix;ctx.beginPath();ctx.moveTo(X,Y-4);ctx.lineTo(X+3.5,Y+2.5);ctx.lineTo(X-3.5,Y+2.5);ctx.closePath();ctx.stroke();ctx.fillStyle=COL.ptTxt;ctx.fillText(id,X+5,Y-4)}
+  else if(p.type==='vor'&&LAY.vors&&(ROUTEPTS.has(id)||VIEW.s>2.2)){ctx.strokeStyle=COL.vor;ctx.beginPath();for(let k=0;k<6;k++){const an=k*Math.PI/3;const px=X+4.5*Math.cos(an),py=Y+4.5*Math.sin(an);k?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath();ctx.stroke();ctx.fillStyle=COL.vor;ctx.fillRect(X-1,Y-1,2,2);ctx.fillStyle=COL.ptTxt;ctx.fillText(id,X+6,Y-5)}
+  else if(p.type==='apt'&&LAY.apts&&(id.startsWith('LFB')||ROUTEPTS.has(id)||VIEW.s>3)){ctx.strokeStyle=COL.apt;ctx.beginPath();ctx.arc(X,Y,3.5,0,7);ctx.stroke();ctx.fillStyle=COL.apt;ctx.fillText(id,X+5,Y+11)}}
+ // route du vol sélectionné
+ if(sel){ctx.strokeStyle=COL.route;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(sx(sel.x),sy(sel.y));for(let i=sel.leg;i<sel.pts.length;i++)ctx.lineTo(sx(sel.pts[i].x),sy(sel.pts[i].y));ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=COL.route;ctx.font='600 11px '+fMono;for(let i=sel.leg;i<sel.pts.length;i++){const p=sel.pts[i];ctx.fillText(p.id,sx(p.x)+6,sy(p.y)+12)}}
+ drawTraffic();drawMil();
+ drawTools();
+ // échelle
+ const nm=VIEW.s>6?10:VIEW.s>2.5?20:VIEW.s>1.2?50:100;const L=nm*VIEW.s;ctx.strokeStyle='#727272';ctx.fillStyle='#727272';ctx.beginPath();ctx.moveTo(W-20-L,H-16);ctx.lineTo(W-20,H-16);ctx.moveTo(W-20-L,H-20);ctx.lineTo(W-20-L,H-12);ctx.moveTo(W-20,H-20);ctx.lineTo(W-20,H-12);ctx.stroke();ctx.textAlign='center';ctx.font='11px '+fMono;ctx.fillText(nm+' NM',W-20-L/2,H-22);ctx.textAlign='left';
+ if(!SIM.running||SIM.speed===0){ctx.fillStyle='rgba(255,255,255,.85)';ctx.font='600 13px '+fUI;ctx.fillText(SIM.running?'PAUSE':'',12,20)}
+}
+const fUI="'Barlow Semi Condensed',Arial,sans-serif",fMono="'JetBrains Mono',ui-monospace,monospace";
+const DCAT={loc:['▽','Arrivée région LFBB'],fr:['○','France'],ib:['◇','Espagne · Portugal · Canaries'],uk:['□','Royaume-Uni · Irlande'],eu:['⬡','Europe du Nord et de l\'Est · Italie · Suisse'],lh:['☆','Long-courrier']};
+const LFBB_APTS=new Set(['LFBD','LFBO','LFBZ','LFBP','LFBT','LFBE','LFBL','LFBA','LFBI','LFBG','LFBU','LFBV','LFBX','LFCR','LFBM','LFBC','LFBY','LFCK']);
+function destCat(ic){if(!ic)return'eu';if(LFBB_APTS.has(ic))return'loc';if(ic.startsWith('LF'))return'fr';if(/^(LE|LP|GC|GM)/.test(ic))return'ib';if(/^(EG|EI)/.test(ic))return'uk';if(/^(S|K|C|M|T|F|O|V|R|Z|Y|U|W|N|H|D|A|B|P)/.test(ic))return'lh';return'eu'}
+function drawShape(cat,X,Y,r){ctx.beginPath();
+ if(cat==='loc'){ctx.moveTo(X-r,Y-r*.75);ctx.lineTo(X+r,Y-r*.75);ctx.lineTo(X,Y+r*1.05);ctx.closePath()}
+ else if(cat==='fr'){ctx.arc(X,Y,r,0,7)}
+ else if(cat==='ib'){const q=r*1.25;ctx.moveTo(X,Y-q);ctx.lineTo(X+q,Y);ctx.lineTo(X,Y+q);ctx.lineTo(X-q,Y);ctx.closePath()}
+ else if(cat==='uk'){const q=r*.85;ctx.rect(X-q,Y-q,2*q,2*q)}
+ else if(cat==='eu'){for(let k=0;k<6;k++){const an=k*Math.PI/3+Math.PI/6;const px=X+r*1.05*Math.cos(an),py=Y+r*1.05*Math.sin(an);k?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath()}
+ else{for(let k=0;k<10;k++){const an=-Math.PI/2+k*Math.PI/5;const rr=k%2?r*.55:r*1.35;const px=X+rr*Math.cos(an),py=Y+rr*Math.sin(an);k?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath()}
+ ctx.stroke()}
+function acColor(a){if(a.state==='pre'&&SIM.t<a.preT)return COL.bg;if(a.state==='assumed')return COL.mine1;if(a.state==='offered')return COL.call;if(a.state==='pre')return COL.pre;if(a.state==='transferred')return COL.xfer;if(a.state==='missed')return COL.miss;return COL.bg}
+function visible(a){if(!a.plot)return false;if(a.concerned)return true;if(!LAY.bg)return false;if(LAY.vfilt&&(a.plot.alt<VOL.floor*100-8000||a.plot.alt>VOL.ceil*100+2000))return false;return true}
+function stcaOf(a){for(const k of SIM.stca){const[i,j]=k.split('-');if(+i===a.id||+j===a.id)return true}return false}
+function drawTraffic(){
+ labelBoxes.length=0;
+ const cw=7.0,lh=13;ctx.font='12px '+fMono;const cwm=ctx.measureText('M').width;
+ const list=SIM.acs.filter(visible).sort((a,b)=>(a.concerned?1:0)-(b.concerned?1:0));
+ // lignes STCA
+ for(const k of SIM.stca){const[i,j]=k.split('-').map(Number);const a=SIM.acs.find(q=>q.id===i),b=SIM.acs.find(q=>q.id===j);if(!a||!b||!a.plot||!b.plot)continue;if(!(isMine(a)||isMine(b)||a.concerned||b.concerned))continue;
+  ctx.strokeStyle=COL.crit;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(sx(a.plot.x),sy(a.plot.y));ctx.lineTo(sx(b.plot.x),sy(b.plot.y));ctx.stroke();ctx.setLineDash([]);
+  if(SIM.sepPairs.has(k)){for(const q of [a,b]){ctx.beginPath();ctx.arc(sx(q.plot.x),sy(q.plot.y),2.5*VIEW.s,0,7);ctx.stroke()}}}
+ for(const a of list){
+  const p=a.plot,X=sx(p.x),Y=sy(p.y);if(X<-200||X>W+200||Y<-200||Y>H+200)continue;
+  const col=acColor(a),alert=stcaOf(a)&&(a.concerned||isMine(a));
+  // traînée
+  if(LAY.hist){ctx.fillStyle=col;for(let i=0;i<a.hist.length;i++){ctx.globalAlpha=.55-i*.08;const h=a.hist[i];ctx.fillRect(sx(h.x)-1.2,sy(h.y)-1.2,2.4,2.4)}ctx.globalAlpha=1}
+  // vecteur vitesse
+  if(LAY.vec>0){const L=p.gs*LAY.vec/60;ctx.strokeStyle=col;ctx.globalAlpha=.8;ctx.beginPath();ctx.moveTo(X,Y);ctx.lineTo(sx(p.x+L*Math.sin(p.trk*D2R)),sy(p.y+L*Math.cos(p.trk*D2R)));ctx.stroke();ctx.globalAlpha=1}
+  // symbole
+  ctx.strokeStyle=alert?COL.crit:col;ctx.fillStyle=alert?COL.crit:col;ctx.lineWidth=1.3;
+  drawShape(destCat(a.arr),X,Y,a.concerned?4.6:3.6);
+  if(a.state==='assumed')ctx.fillRect(X-1.4,Y-1.4,2.8,2.8);
+  ctx.lineWidth=1;
+  // étiquette
+  const lines=labelLines(a);const wch=Math.max(...lines.map(l=>l.reduce((s,f)=>s+f.t.length,0)));
+  const LX=X+a.lx,LY=Y+a.ly;const bw=wch*cwm+8,bh=lines.length*lh+4;
+  // trait de rappel
+  const ax=clamp(X,LX,LX+bw),ay=clamp(Y,LY,LY+bh);ctx.strokeStyle=col;ctx.globalAlpha=.6;ctx.beginPath();ctx.moveTo(X,Y);ctx.lineTo(ax,ay);ctx.stroke();ctx.globalAlpha=1;
+  if(a===sel){ctx.strokeStyle=COL.sel;ctx.strokeRect(LX-1,LY-1,bw+2,bh+2)}
+  if(alert){ctx.fillStyle='rgba(120,20,18,.55)';ctx.fillRect(LX,LY,bw,bh)}
+  a._bw=bw;a._bh=bh;const box={a,x:LX,y:LY,w:bw,h:bh,fields:[]};
+  for(let li=0;li<lines.length;li++){let cx=LX+4;const by=LY+2+lh*(li+1)-3;
+   for(const f of lines[li]){const fw=f.t.length*cwm;
+    if(f.bgc){ctx.fillStyle=f.bgc;ctx.fillRect(cx-1,by-lh+3,fw+2,lh)}
+    ctx.fillStyle=f.c||(alert?'#ffd6d2':col);ctx.font=(f.b?'600 ':'')+'12px '+fMono;
+    ctx.strokeStyle=COL.halo;ctx.lineWidth=3;ctx.strokeText(f.t,cx,by);ctx.lineWidth=1;ctx.fillText(f.t,cx,by);
+    if(f.k)box.fields.push({k:f.k,x:cx-2,y:by-lh+2,w:fw+4,h:lh});cx+=fw}}
+  labelBoxes.push(box);
+ }
+}
+function pad3(n){return String(Math.max(0,Math.round(n))).padStart(3,'0')}
+function labelLines(a){
+ const p=a.plot,afl=pad3(p.alt/100),tr=p.vs>250?'↑':p.vs<-250?'↓':' ';
+ const gs=String(Math.round(p.gs/10)).padStart(2,'0');
+ const cs={t:a.cs+(a.wake==='H'?' H':''),k:'cs',b:1};
+ const tg=a.alerted&&a.silent?[{t:' COMLOSS',c:COL.crit,b:1}]:a.noResp&&a.silent?[{t:' RDO?',c:COL.crit,b:1}]:[];
+ if(!a.concerned||(a.state==='pre'&&SIM.t<a.preT)){return[[cs,...tg],[{t:afl+tr+' '+gs}]]}
+ if(a.state==='transferred')return[[cs,...tg],[{t:afl+tr+' '+gs+' ›'+a.next.code}]];
+ if(a.state==='offered'&&blink)cs.bgc='rgba(255,207,92,.30)';
+ if(a.state==='assumed'&&a.inv&&a.tte!=null&&a.tte<=100)cs.bgc=blink?'rgba(205,205,205,.22)':null;
+ const cfl=Math.abs(a.cfl*100-p.alt)>150?pad3(a.cfl):'';
+ if(a.state==='pre'||a.state==='offered'||a.state==='missed'){
+  return[[cs,...tg],[{t:afl+tr,k:'cfl'},{t:cfl?cfl:'   ',k:'cfl'}],[{t:gs+' '},{t:'E'+a.efl,c:COL.pre},{t:' '+a.prev.code+'›'}]];
+ }
+ const xok=xflOK(a);const xc=a.state==='assumed'&&!xok&&a.tte!=null&&a.tte<240?COL.call:null;
+ const xs=a.xfl+(a.xflKind==='climb'?'↑':a.xflKind==='desc'?'↓':'');
+ const nav=a.mode==='hdg'?'C'+pad3(a.hdgSel||360):'›'+(a.pts[a.leg]?a.pts[a.leg].id:'---');
+ const spd=a.spdMode==='mach'?' M'+Math.round(a.spdVal*100):a.spdMode==='ias'?' S'+a.spdVal:'';
+ const L=[[cs,...tg],[{t:afl+tr,k:'cfl'},{t:cfl||'   ',k:'cfl'}],[{t:gs+' '},{t:'X'+xs+(xc?'!':''),c:xc,bgc:xc?'rgba(255,255,255,.22)':null,k:'cfl'},{t:' ›'+a.next.code}]];
+ if(a.state==='assumed'||a===sel)L.push([{t:nav,k:'nav'},{t:spd||' ·',k:'spd'},{t:' '+a.type}]);
+ return L;
+}
+
+/* ===================== Outils ===================== */
+let measure=null,measureMode=false,sepA=null,sepB=null;
+function drawTools(){
+ if(measure){const{x0,y0,x1,y1}=measure;ctx.strokeStyle='#d6d6d6';ctx.beginPath();ctx.moveTo(sx(x0),sy(y0));ctx.lineTo(sx(x1),sy(y1));ctx.stroke();
+  const d=dist(x0,y0,x1,y1),b=brg(x0,y0,x1,y1);ctx.fillStyle='#d6d6d6';ctx.font='600 12px '+fMono;const t=pad3(b)+'° '+d.toFixed(1)+' NM';ctx.strokeStyle=COL.halo;ctx.lineWidth=3;ctx.strokeText(t,sx(x1)+8,sy(y1)-8);ctx.lineWidth=1;ctx.fillText(t,sx(x1)+8,sy(y1)-8)}
+ if(sepA&&sepB&&sepA.plot&&sepB.plot)drawConflict();
+}
+
+/* ===================== Analyse de trajectoires (2 avions) ===================== */
+let pickMode=0;
+function gvel(a,h){if(h==null)return velOf(a);const wv=windAt(a.alt);return{x:a.tas*Math.sin(h*D2R)+wv.vx,y:a.tas*Math.cos(h*D2R)+wv.vy}}
+function pairAnalysis(a,b,hA,hB){
+ const va=gvel(a,hA),vb=gvel(b,hB);const rx=b.x-a.x,ry=b.y-a.y,vx=vb.x-va.x,vy=vb.y-va.y,vv=vx*vx+vy*vy;
+ let tc=vv>1e-9?-(rx*vx+ry*vy)/vv:0;tc=clamp(tc,0,1);const cpa={t:tc*3600,d:Math.hypot(rx+vx*tc,ry+vy*tc)};
+ cpa.za=projAlt(a,cpa.t);cpa.zb=projAlt(b,cpa.t);cpa.dz=Math.abs(cpa.za-cpa.zb);
+ let conflictT=null,minSep=1e9;for(let t=0;t<=1500;t+=5){const d=Math.hypot(rx+vx*t/3600,ry+vy*t/3600),dz=Math.abs(projAlt(a,t)-projAlt(b,t));if(dz<1000)minSep=Math.min(minSep,d);if(d<5&&dz<1000){conflictT=t;break}}
+ const cr=va.x*vb.y-va.y*vb.x;let X=null;
+ if(Math.abs(cr)>50){const tA=(rx*vb.y-ry*vb.x)/cr,tB=(rx*va.y-ry*va.x)/cr;X={x:a.x+va.x*tA,y:a.y+va.y*tA,tA:tA*3600,tB:tB*3600};
+  if(tA>0&&tB>0){X.gap=tA<tB?Math.hypot(vb.x,vb.y)*(tB-tA):Math.hypot(va.x,va.y)*(tA-tB);X.second=tA<tB?b:a;X.ahead=true}else X.ahead=false}
+ const ang=Math.abs(angDiff(norm(Math.atan2(va.x,va.y)*R2D),norm(Math.atan2(vb.x,vb.y)*R2D)));
+ let level='ok',why='';if(conflictT!=null)level='danger';else if(minSep<8)level='warn';else if(cpa.d<5&&Math.abs(a.cfl-b.cfl)<10){level='warn';why='vertical'}
+ return{va,vb,cpa,conflictT,minSep,X,ang,level,why};
+}
+function avoidance(a,b){
+ const out=[];
+ for(const[ac,other,isA]of [[a,b,true],[b,a,false]]){let found=null;
+  for(const d of [10,15,20,25,30,40,50,60]){for(const sg of [-1,1]){const h=norm(Math.round((ac.hdg+sg*d)/5)*5);const r=isA?pairAnalysis(a,b,h,null):pairAnalysis(a,b,null,h);
+    if(r.conflictT==null&&r.minSep>=6){found={ac,h,d,sg,sep:r.minSep>900?null:r.minSep};break}}if(found)break}
+  if(found)out.push(found)}
+ // option verticale : stopper la montée / descente au niveau actuel
+ for(const ac of [a,b]){if(Math.abs(ac.cfl*100-ac.alt)>400){const keep=ac.cfl;const lvl=Math.round(ac.alt/1000)*10;ac.cfl=ac.vs>0?Math.floor(ac.alt/1000)*10:Math.ceil(ac.alt/1000)*10;const r=pairAnalysis(a,b);const fl=ac.cfl;ac.cfl=keep;if(r.conflictT==null&&r.minSep>=5)out.push({ac,fl,vert:true})}}
+ return out;
+}
+function drawConflict(){
+ const a=sepA,b=sepB,r=pairAnalysis(a,b);const col=r.level==='danger'?COL.crit:r.level==='warn'?'#e4e4e4':'#cfcfcf';
+ const ext=(ac,v,t)=>({x:ac.x+v.x*t/3600,y:ac.y+v.y*t/3600});
+ const tEnd=Math.max(600,r.X&&r.X.ahead?Math.max(r.X.tA,r.X.tB)+120:0,r.cpa.t+60);
+ ctx.setLineDash([7,5]);ctx.lineWidth=1.3;
+ for(const[ac,v]of [[a,r.va],[b,r.vb]]){const e=ext(ac,v,Math.min(tEnd,2400));ctx.strokeStyle='rgba(225,225,225,.85)';ctx.beginPath();ctx.moveTo(sx(ac.x),sy(ac.y));ctx.lineTo(sx(e.x),sy(e.y));ctx.stroke();
+  for(let m=1;m*60<=Math.min(tEnd,2400);m++){if(m%2)continue;const q=ext(ac,v,m*60);ctx.fillStyle='rgba(225,225,225,.85)';ctx.fillRect(sx(q.x)-2,sy(q.y)-2,4,4)}}
+ ctx.setLineDash([]);ctx.lineWidth=1;
+ ctx.font='600 11.5px '+fMono;
+ const tag=(t,x,y,c)=>{ctx.strokeStyle=COL.halo;ctx.lineWidth=3;ctx.strokeText(t,x,y);ctx.lineWidth=1;ctx.fillStyle=c;ctx.fillText(t,x,y)};
+ if(r.X&&r.X.ahead&&r.X.tA<3600){const X=sx(r.X.x),Y=sy(r.X.y);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X-7,Y-7);ctx.lineTo(X+7,Y+7);ctx.moveTo(X+7,Y-7);ctx.lineTo(X-7,Y+7);ctx.stroke();ctx.beginPath();ctx.arc(X,Y,10,0,7);ctx.stroke();ctx.lineWidth=1;
+  tag('Croisement',X+14,Y-14,col);tag(a.cs+' '+fmtT(r.X.tA),X+14,Y,'#e9e9e9');tag(b.cs+' '+fmtT(r.X.tB),X+14,Y+14,'#e9e9e9')}
+ const pa=ext(a,r.va,r.cpa.t),pb=ext(b,r.vb,r.cpa.t);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx(pa.x),sy(pa.y));ctx.lineTo(sx(pb.x),sy(pb.y));ctx.stroke();ctx.lineWidth=1;
+ for(const q of [pa,pb]){ctx.beginPath();ctx.arc(sx(q.x),sy(q.y),4,0,7);ctx.stroke()}
+ if(r.conflictT!=null){const qa=ext(a,r.va,r.conflictT);ctx.strokeStyle=COL.crit;ctx.beginPath();ctx.arc(sx(qa.x),sy(qa.y),2.5*VIEW.s,0,7);ctx.stroke()}
+ tag('CPA '+r.cpa.d.toFixed(1)+' NM · '+fmtT(r.cpa.t),sx((pa.x+pb.x)/2)+10,sy((pa.y+pb.y)/2)+16,col);
+}
+const confEl=document.getElementById('confCard'),pickEl=document.getElementById('pickHint');
+let confKey='';
+function renderConfCard(){
+ pickEl.hidden=!pickMode;if(pickMode)pickEl.textContent=pickMode===1?'Trajectoires : cliquez le 1er avion':'Trajectoires : cliquez le 2e avion'+(sepA?' (1er : '+sepA.cs+')':'');
+ if(!(sepA&&sepB)){if(!confEl.hidden){confEl.hidden=true;confKey=''}return}
+ const a=sepA,b=sepB,r=pairAnalysis(a,b);
+ const line=ac=>'<div class="ac"><b>'+ac.cs+'</b> FL'+pad3(ac.alt/100)+(Math.abs(ac.cfl*100-ac.alt)>150?(ac.cfl*100>ac.alt?'↑':'↓')+ac.cfl:'')+' · route '+pad3(ac.trk)+'° · '+Math.round(ac.gs)+' kt'+(ac.mode==='hdg'?' · cap '+pad3(ac.hdgSel||360):'')+'</div>';
+ const vtxt=r.level==='danger'?'DANGER · conflit dans '+fmtT(r.conflictT):r.level==='warn'?(r.why==='vertical'?'ATTENTION · même niveau autorisé (FL'+a.cfl+')':'ATTENTION · marge faible ('+r.minSep.toFixed(1)+' NM)'):'CAPS SÛRS · pas de conflit prévu';
+ const geom=r.ang>150?'face à face':r.ang<30?'même sens (rattrapage)':'routes croisées';
+ let xs;if(!r.X)xs='Routes parallèles : pas de point de croisement.';else if(!r.X.ahead)xs='Le point de croisement est déjà dépassé par l\'un des avions.';else xs='Croisement des routes : '+a.cs+' dans '+fmtT(r.X.tA)+', '+b.cs+' dans '+fmtT(r.X.tB)+'. Quand le premier passe, '+r.X.second.cs+' en est à '+r.X.gap.toFixed(1)+' NM.';
+ let h='<h3><span>Analyse de trajectoires</span><button id="cfClose">Fermer</button></h3>'+line(a)+line(b)+'<div class="verdict '+r.level+'">'+vtxt+'</div>';
+ h+='<div class="hint">'+xs+'</div><div class="hint">Rapprochement minimal (CPA) : <b>'+r.cpa.d.toFixed(1)+' NM</b> dans '+fmtT(r.cpa.t)+', écart vertical '+Math.round(r.cpa.dz/100)*100+' ft. Angle '+Math.round(r.ang)+'° ('+geom+'). Calcul sur les caps et taux actuels, vent compris.</div>';
+ if(r.level!=='ok'){const sg=avoidance(a,b);h+='<div class="sug"><div class="hint">Résolutions possibles :</div>'+(sg.length?sg.map((s,i)=>'<button data-sg="'+i+'">'+(s.vert?s.ac.cs+' : maintenir FL'+s.fl:s.ac.cs+' : '+(s.sg<0?'gauche ':'droite ')+s.d+'° → cap '+pad3(s.h)+(s.sep?' (≥ '+s.sep.toFixed(1)+' NM)':''))+'</button>').join(''):'<div class="hint">Aucun cap simple trouvé : utilisez le vertical.</div>')+'</div>';confEl._sg=sg}
+ if(h!==confKey){confKey=h;confEl.innerHTML=h;confEl.hidden=false;
+  confEl.querySelector('#cfClose').onclick=()=>{sepA=sepB=null;renderConfCard()};
+  confEl.querySelectorAll('[data-sg]').forEach(btn=>btn.onclick=()=>{const s=confEl._sg[+btn.dataset.sg];if(!s)return;if(s.vert)cmdLevel(s.ac,s.fl);else cmdHdg(s.ac,s.h,s.sg<0?'L':'R')})}
+}
+document.getElementById('btnConf').onclick=e=>{if(pickMode){pickMode=0;e.currentTarget.classList.remove('on');renderConfCard();return}sepB=null;if(sel){sepA=sel;pickMode=2}else{sepA=null;pickMode=1}e.currentTarget.classList.add('on');renderConfCard()};
+
+/* ===================== Interaction écran ===================== */
+let sel=null;const ptrs=new Map();let drag=null,pinch=null;
+function hitLabel(X,Y){for(let i=labelBoxes.length-1;i>=0;i--){const b=labelBoxes[i];if(X>=b.x&&X<=b.x+b.w&&Y>=b.y&&Y<=b.y+b.h){for(const f of b.fields)if(X>=f.x&&X<=f.x+f.w&&Y>=f.y&&Y<=f.y+f.h)return{a:b.a,f:f.k,box:b};return{a:b.a,f:null,box:b}}}return null}
+function hitTarget(X,Y){let best=null,bd=12;for(const a of SIM.acs){if(!visible(a))continue;const d=Math.hypot(sx(a.plot.x)-X,sy(a.plot.y)-Y);if(d<bd){bd=d;best=a}}return best}
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+cv.addEventListener('pointerdown',e=>{
+ cv.setPointerCapture(e.pointerId);const r=cv.getBoundingClientRect();const X=e.clientX-r.left,Y=e.clientY-r.top;ptrs.set(e.pointerId,{X,Y});closeMenu();
+ if(ptrs.size===2){const[p1,p2]=[...ptrs.values()];pinch={d:Math.hypot(p1.X-p2.X,p1.Y-p2.Y),s:VIEW.s};drag=null;return}
+ if(e.button===2||measureMode){const t=hitTarget(X,Y);if(e.button===2&&t&&sel&&t!==sel){sepA=sel;sepB=t;renderConfCard();return}if(e.button===2&&t&&(t===sepA||t===sepB)){sepA=sepB=null;return}
+  measure={x0:wx(X),y0:wy(Y),x1:wx(X),y1:wy(Y)};drag={type:'measure'};return}
+ if(pickMode&&e.button===0){const hl=hitLabel(X,Y);const t=hitTarget(X,Y)||(hl&&hl.a);if(t){if(pickMode===1){sepA=t;pickMode=2}else if(t!==sepA){sepB=t;pickMode=0;document.getElementById('btnConf').classList.remove('on')}renderConfCard()}return}
+ const h=hitLabel(X,Y);
+ if(h){drag={type:'label',a:h.a,f:h.f,X0:X,Y0:Y,lx:h.a.lx,ly:h.a.ly,moved:false,cx:e.clientX,cy:e.clientY};return}
+ const t=hitTarget(X,Y);if(t){selectAc(t);drag=null;return}
+ drag={type:'pan',X0:X,Y0:Y,cx:VIEW.cx,cy:VIEW.cy,moved:false};
+});
+cv.addEventListener('pointermove',e=>{
+ const r=cv.getBoundingClientRect();const X=e.clientX-r.left,Y=e.clientY-r.top;if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{X,Y});
+ if(pinch&&ptrs.size===2){const[p1,p2]=[...ptrs.values()];const d=Math.hypot(p1.X-p2.X,p1.Y-p2.Y);zoomAt((p1.X+p2.X)/2,(p1.Y+p2.Y)/2,pinch.s*d/pinch.d/VIEW.s);return}
+ if(!drag){const h=hitLabel(X,Y);cv.style.cursor=h&&h.f?'pointer':h?'move':hitTarget(X,Y)?'pointer':'crosshair';return}
+ if(drag.type==='measure'){measure.x1=wx(X);measure.y1=wy(Y);return}
+ if(drag.type==='label'){if(Math.hypot(X-drag.X0,Y-drag.Y0)>4)drag.moved=true;if(drag.moved){drag.a.lx=drag.lx+X-drag.X0;drag.a.ly=drag.ly+Y-drag.Y0;drag.a.userLbl=true}return}
+ if(drag.type==='pan'){if(Math.hypot(X-drag.X0,Y-drag.Y0)>3)drag.moved=true;VIEW.cx=drag.cx-(X-drag.X0)/VIEW.s;VIEW.cy=drag.cy+(Y-drag.Y0)/VIEW.s}
+});
+function endPtr(e){ptrs.delete(e.pointerId);if(ptrs.size<2)pinch=null;if(!drag)return;const d=drag;drag=null;
+ if(d.type==='measure'){setTimeout(()=>{if(!drag)measure=null},2500);return}
+ if(d.type==='label'&&!d.moved){selectAc(d.a);labelClick(d.a,d.f,d.cx,d.cy)}
+ if(d.type==='pan'&&!d.moved){selectAc(null)}}
+cv.addEventListener('pointerup',endPtr);cv.addEventListener('pointercancel',endPtr);
+cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientRect();zoomAt(e.clientX-r.left,e.clientY-r.top,Math.exp(-e.deltaY*.0015))},{passive:false});
+function zoomAt(X,Y,f){const x=wx(X),y=wy(Y);VIEW.s=clamp(VIEW.s*f,.5,30);VIEW.cx=x-(X-W/2)/VIEW.s;VIEW.cy=y+(Y-H/2)/VIEW.s}
+document.getElementById('zIn').onclick=()=>zoomAt(W/2,H/2,1.3);
+document.getElementById('zOut').onclick=()=>zoomAt(W/2,H/2,1/1.3);
+document.getElementById('zFit').onclick=()=>fitSector();
+document.getElementById('btnMeasure').onclick=e=>{measureMode=!measureMode;e.currentTarget.classList.toggle('on',measureMode)};
+document.getElementById('vecSel').onchange=e=>{LAY.vec=+e.target.value;saveSettings()};
+
+function labelClick(a,f,cx,cy){
+ if(f==='cs'){if(a.state==='offered'||a.state==='missed')cmdAssume(a);else if(a.state==='assumed')askTransfer(a,cx,cy);else if(a.state==='transferred')askRetake(a,cx,cy);else if(a.state==='pre')cmdAssume(a);return}
+ if(!a.concerned)return;
+ if(f==='cfl')levelMenu(a,cx,cy);else if(f==='nav')navMenu(a,cx,cy);else if(f==='spd')speedMenu(a,cx,cy);
+}
+
+/* ===================== Menus ===================== */
+const menu=document.getElementById('menu');
+function closeMenu(){menu.hidden=true;menu.innerHTML=''}
+function placeMenu(cx,cy){menu.hidden=false;const r=menu.getBoundingClientRect();menu.style.left=clamp(cx+8,8,window.innerWidth-r.width-8)+'px';menu.style.top=clamp(cy-20,8,window.innerHeight-r.height-8)+'px'}
+document.addEventListener('pointerdown',e=>{if(!menu.hidden&&!menu.contains(e.target)&&e.target!==cv)closeMenu()});
+function levelMenu(a,cx,cy){
+ if(!needFreq(a))return;
+ const cur=Math.round(a.cfl);const trk=a.mode==='nav'&&a.pts[a.leg]?brg(a.x,a.y,a.pts[a.leg].x,a.pts[a.leg].y):a.hdgSel;
+ let h='<div class="mt">'+a.cs+' · niveau</div>';const top=Math.min(a.pf.ceil,470);
+ for(let f=top;f>=80;f-=10){const cls=[f===cur?'cur':'',f===a.rfl?'rfl':'',f===a.xfl?'xfl':''].join(' ');const tag=(f===a.rfl?'RFL ':'')+(f===a.xfl?'XFL ':'')+(f>=200&&semiOK(f,trk<180)?'·':'');h+='<div class="mi '+cls+'" data-fl="'+f+'"><span>'+pad3(f)+'</span><span class="tag">'+tag+'</span></div>'}
+ menu.innerHTML=h;placeMenu(cx,cy);const c=menu.querySelector('.cur');if(c)c.scrollIntoView({block:'center'});
+ menu.querySelectorAll('[data-fl]').forEach(el=>el.onclick=()=>{cmdLevel(a,+el.dataset.fl);closeMenu()});
+}
+function navMenu(a,cx,cy){
+ if(!needFreq(a))return;
+ let h='<div class="mt">'+a.cs+' · cap / direct</div><div class="grid">';
+ for(const d of [-30,-20,-10,-5,5,10,20,30])h+='<button data-rel="'+d+'">'+(d<0?'G':'D')+Math.abs(d)+'</button>';
+ h+='</div><div class="mi" data-res="1"><span>Reprendre navigation</span></div>';
+ for(let i=a.leg;i<a.pts.length;i++){const p=a.pts[i];h+='<div class="mi" data-dct="'+p.id+'"><span>DCT '+p.id+'</span><span class="tag">'+Math.round(dist(a.x,a.y,p.x,p.y))+' NM</span></div>'}
+ menu.innerHTML=h;placeMenu(cx,cy);
+ const base=()=>a.mode==='hdg'?a.hdgSel:Math.round(a.hdg);
+ menu.querySelectorAll('[data-rel]').forEach(el=>el.onclick=()=>{const d=+el.dataset.rel;cmdHdg(a,Math.round((base()+d)/5)*5,d<0?'L':'R');closeMenu()});
+ menu.querySelector('[data-res]').onclick=()=>{cmdResume(a);closeMenu()};
+ menu.querySelectorAll('[data-dct]').forEach(el=>el.onclick=()=>{cmdDirect(a,el.dataset.dct);closeMenu()});
+}
+function speedMenu(a,cx,cy){
+ if(!needFreq(a))return;
+ let h='<div class="mt">'+a.cs+' · vitesse</div><div class="mi" data-auto="1"><span>Vitesse libre</span></div>';
+ const mNow=Math.round(a.tas/sos(a.alt)*100),cNow=Math.round(machToCas(a.tas/sos(a.alt),a.alt)/10)*10;
+ if(a.alt>=24500){for(let m=Math.min(86,Math.round(a.pf.cr*100)+3);m>=68;m--)h+='<div class="mi'+(m===mNow?' cur':'')+'" data-m="'+m+'"><span>M.'+m+'</span></div>'}
+ for(let c=340;c>=220;c-=10)h+='<div class="mi'+(c===cNow&&a.alt<24500?' cur':'')+'" data-c="'+c+'"><span>'+c+' kt</span></div>';
+ menu.innerHTML=h;placeMenu(cx,cy);const c=menu.querySelector('.cur');if(c)c.scrollIntoView({block:'center'});
+ menu.querySelector('[data-auto]').onclick=()=>{cmdSpeed(a,'auto');closeMenu()};
+ menu.querySelectorAll('[data-m]').forEach(el=>el.onclick=()=>{cmdSpeed(a,'mach',+el.dataset.m);closeMenu()});
+ menu.querySelectorAll('[data-c]').forEach(el=>el.onclick=()=>{cmdSpeed(a,'ias',+el.dataset.c);closeMenu()});
+}
+
+/* ===================== Panneau vol & strips ===================== */
+const panelEl=document.getElementById('panel'),stripsEl=document.getElementById('strips');
+const STATE_TXT={pre:'Pré-annoncé',offered:'Appelle',assumed:'Sous contrôle',transferred:'Transféré',bg:'Non concerné',missed:'Non pris',done:'Transféré'};
+function selectAc(a){sel=a;renderPanel(true);if(a&&window.innerWidth<=860)panelEl.classList.remove('closed');document.getElementById('cmdHint').textContent=a?'Vol sélectionné : '+a.cs+' · tapez une commande (370, H270, DCT LMG, M78, A, T…)':'Cliquez sur une étiquette ou un strip pour sélectionner un vol. Entrée pour envoyer, Échap pour désélectionner.'}
+let panelKey='';
+function fmtT(s){if(s<0)return '—';if(s>=99999)return '> 30\'';const m=Math.floor(s/60),ss=Math.floor(s%60);return m+"'"+String(ss).padStart(2,'0')+'"'}
+function renderPanel(force){
+ const a=sel;
+ if(!a){if(force||panelKey!=='none'){panelKey='none';panelEl.innerHTML='<div class="secHead" style="position:static;padding:0">Fiche vol</div><p class="hint">Aucun vol sélectionné. Cliquez sur une étiquette radar ou un strip.</p><p class="hint">Les vols qui vous appellent clignotent en jaune : cliquez sur leur indicatif pour les assumer.</p><p class="hint">Les étiquettes se déplacent par glisser-déposer. Clic droit sur un second vol : point de rapprochement minimal.</p>'}return}
+ const key=a.id+(a.alerted?'A':'')+(canRetake(a)?'R':'')+a.state+a.mode+a.spdMode+a.leg+a.pts.length;
+ if(force||key!==panelKey){panelKey=key;
+  const ctl=a.state==='assumed';
+  let h='<div class="fpHead"><span class="fpCs">'+a.cs+'</span><span class="state '+a.state+'">'+STATE_TXT[a.state]+'</span></div>';
+  h+='<div class="hint" style="margin-top:-6px">'+a.say+' · '+a.pf.n+' ('+a.type+'/'+a.wake+')</div>';
+  if(a.state==='offered'||a.state==='missed')h+='<button class="big primary" id="pAct">Assumer '+a.cs+'</button>';
+  else if(a.state==='assumed')h+='<button class="big primary" id="pAct">Transférer → '+a.next.sh+' '+a.next.freq+'</button>';
+  else if(canRetake(a))h+='<button class="big" id="pAct">Reprendre le vol (annuler le transfert)</button>';
+  h+='<dl class="kv"><dt>Trajet</dt><dd>'+a.dep+' → '+a.arr+'</dd><dt>RFL</dt><dd>FL'+a.rfl+'</dd>';
+  if(a.concerned)h+='<dt>Entrée</dt><dd>'+a.prev.sh+' · E'+a.efl+' · '+a.entryPt+'</dd><dt>Sortie</dt><dd>'+a.next.sh+' · '+a.exitPt+'</dd><dt>XFL</dt><dd data-v="xfl"></dd>';
+  h+='<dt>Niveau</dt><dd data-v="alt"></dd><dt>Vario</dt><dd data-v="vs"></dd><dt>Vitesses</dt><dd data-v="spd"></dd><dt>Route / GS</dt><dd data-v="trk"></dd>';
+  if(a.concerned)h+='<dt>'+(a.state==='pre'||a.state==='offered'?'Entrée dans':'Sortie dans')+'</dt><dd data-v="eta"></dd>';
+  h+='</dl>';
+  if(ctl){
+   h+='<div class="ctl"><h4>Niveau <span data-v="cfl"></span></h4><div class="row"><input id="pFl" inputmode="numeric" maxlength="3" placeholder="370"><button id="pFlGo">Autoriser</button><button id="pFlX">XFL '+a.xfl+'</button>'+(a.rfl!==a.xfl?'<button id="pFlR">RFL '+a.rfl+'</button>':'')+'</div></div>';
+   h+='<div class="ctl"><h4>Cap <span data-v="hdg"></span></h4><div class="row"><button data-r="-20">G20</button><button data-r="-10">G10</button><button data-r="10">D10</button><button data-r="20">D20</button><input id="pHd" inputmode="numeric" maxlength="3" placeholder="270" style="width:56px"><button id="pHdGo">Cap</button></div><div class="row"><button id="pRes">Reprendre nav</button><select id="pDct">'+a.pts.slice(a.leg).map(p=>'<option>'+p.id+'</option>').join('')+'</select><button id="pDctGo">Direct</button></div></div>';
+   h+='<div class="ctl"><h4>Vitesse <span data-v="spdR"></span></h4><div class="row"><button data-m="-2">−M.02</button><button data-m="2">+M.02</button><input id="pSp" placeholder="M78 / 280" style="width:86px"><button id="pSpGo">OK</button><button id="pSpA">Libre</button></div></div>';
+  }
+  if(a.concerned&&a.state!=='pre'&&a.state!=='transferred')h+='<div class="ctl"><h4>Contact radio <span data-v="rdo"></span></h4><div class="row"><button id="pGuard">Appel 121.5</button><button id="pAlert" class="alertBtn">Alerter la défense aérienne</button></div></div>';
+  h+='<div class="ctl"><h4>Plan de vol</h4><div class="route" data-v="route"></div></div>';
+  if(sepA&&sepB&&(a===sepA||a===sepB))h+='<button id="pSepClr">Fermer l\'analyse de trajectoires</button>';
+  else h+='<p class="hint">Bouton Trajectoires puis clic sur un autre vol (ou clic droit dessus) : croisement, CPA et dangerosité des caps avec '+a.cs+'.</p>';
+  panelEl.innerHTML=h;
+  const $=id=>panelEl.querySelector(id);
+  if($('#pAct'))$('#pAct').onclick=e=>{const r=e.currentTarget.getBoundingClientRect();if(a.state==='transferred'){askRetake(a,r.left-260,r.bottom+6)}else if(a.state==='assumed'){askTransfer(a,r.left-260,r.bottom+6)}else{cmdAssume(a);renderPanel(true)}};
+  if(ctl){
+   const goFl=()=>{const v=parseInt($('#pFl').value,10);if(v)cmdLevel(a,v);$('#pFl').value=''};
+   $('#pFlGo').onclick=goFl;$('#pFl').onkeydown=e=>{if(e.key==='Enter')goFl()};$('#pFlX').onclick=()=>cmdLevel(a,a.xfl);if($('#pFlR'))$('#pFlR').onclick=()=>cmdLevel(a,a.rfl);
+   panelEl.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{const d=+b.dataset.r;const base=a.mode==='hdg'?a.hdgSel:Math.round(a.hdg);cmdHdg(a,Math.round((base+d)/5)*5,d<0?'L':'R')});
+   const goH=()=>{const v=parseInt($('#pHd').value,10);if(!isNaN(v))cmdHdg(a,v);$('#pHd').value=''};$('#pHdGo').onclick=goH;$('#pHd').onkeydown=e=>{if(e.key==='Enter')goH()};
+   $('#pRes').onclick=()=>cmdResume(a);$('#pDctGo').onclick=()=>cmdDirect(a,$('#pDct').value);
+   panelEl.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const cur=a.spdMode==='mach'?Math.round(a.spdVal*100):Math.round(a.tas/sos(a.alt)*100);cmdSpeed(a,'mach',cur+(+b.dataset.m))});
+   const goS=()=>{const v=$('#pSp').value.trim().toUpperCase();if(v)runTokens(a,[v]);$('#pSp').value=''};$('#pSpGo').onclick=goS;$('#pSp').onkeydown=e=>{if(e.key==='Enter')goS()};$('#pSpA').onclick=()=>cmdSpeed(a,'auto');
+  }
+  if($('#pGuard')){$('#pGuard').onclick=()=>cmdGuard(a);$('#pAlert').onclick=()=>askAlert(a)}
+  if($('#pSepClr'))$('#pSepClr').onclick=()=>{sepA=sepB=null;renderPanel(true)};
+ }
+ const v=k=>panelEl.querySelector('[data-v="'+k+'"]');
+ const m=a.tas/sos(a.alt),c=machToCas(m,a.alt);
+ if(v('alt'))v('alt').textContent='FL'+pad3(a.alt/100)+(Math.abs(a.cfl*100-a.alt)>100?' → FL'+a.cfl:'');
+ if(v('vs'))v('vs').textContent=(a.vs>0?'+':'')+Math.round(a.vs/50)*50+' ft/min';
+ if(v('spd'))v('spd').textContent=Math.round(c)+' kt · M.'+String(Math.round(m*100)).padStart(2,'0')+' · TAS '+Math.round(a.tas);
+ if(v('trk'))v('trk').textContent=pad3(a.trk)+'° · '+Math.round(a.gs)+' kt';
+ if(v('xfl')){v('xfl').textContent=xflTxt(a)+(a.state==='assumed'?(xflOK(a)?' ✓':' ✗'):'');v('xfl').style.color=a.state==='assumed'?(xflOK(a)?'var(--ok)':'var(--call)'):''}
+ if(v('eta'))v('eta').textContent=a.state==='pre'||a.state==='offered'?fmtT(a.entryT-SIM.t):a.state==='assumed'?(a.tte!=null?fmtT(a.tte):'hors volume'):'—';
+ if(v('rdo'))v('rdo').textContent=a.alerted?'COMLOSS déclaré':a.noResp?'sans réponse ×'+a.noResp:a.called?'normal':'pas encore appelé';
+ if(v('cfl'))v('cfl').textContent='CFL '+a.cfl;
+ if(v('hdg'))v('hdg').textContent=a.mode==='hdg'?'guidage '+pad3(a.hdgSel||360)+'°':'navigation › '+(a.pts[a.leg]?a.pts[a.leg].id:'');
+ if(v('spdR'))v('spdR').textContent=a.spdMode==='mach'?'M.'+Math.round(a.spdVal*100):a.spdMode==='ias'?a.spdVal+' kt':'libre';
+ if(v('route'))v('route').innerHTML='<span class="m">'+a.dep+'</span> '+a.pts.map((p,i)=>'<span class="'+(i<a.leg?'past':i===a.leg?'next':'')+'">'+p.id+'</span>').join('')+' <span class="m">'+a.arr+'</span>';
+}
+let stripsKey='';
+function renderStrips(){
+ const inc=SIM.acs.filter(a=>a.concerned&&(a.state==='pre'||a.state==='offered')&&SIM.t>=a.preT).sort((a,b)=>a.entryT-b.entryT);
+ const ctl=SIM.acs.filter(a=>a.state==='assumed').sort((a,b)=>(a.tte??9999)-(b.tte??9999));
+ const xf=SIM.acs.filter(a=>a.state==='transferred'||a.state==='missed').sort((a,b)=>(b.transferredAt||0)-(a.transferredAt||0)).slice(0,5);
+ const strip=(a,kind)=>{const al=(stcaOf(a)&&isMine(a))||a.alerted;const t=kind==='in'?(a.state==='offered'&&!a.called&&SIM.t-a.offeredAt>40?'sans appel '+fmtT(SIM.t-a.offeredAt):'entrée '+fmtT(a.entryT-SIM.t)):kind==='ctl'?(a.tte!=null?'sortie '+fmtT(a.tte):'hors volume'):'';
+  const lv=kind==='in'?'E'+a.efl+' → X'+a.xfl:pad3(a.alt/100)+(a.cfl*100!==Math.round(a.alt)?'→'+a.cfl:'')+' · X'+a.xfl+(a.state==='assumed'&&!xflOK(a)?' !':'');
+  return '<div class="strip '+a.state+(al?' alert':'')+(a===sel?' sel':'')+'" data-id="'+a.id+'"><span class="cs"><span class="dg" title="'+DCAT[destCat(a.arr)][1]+'">'+DCAT[destCat(a.arr)][0]+'</span> '+a.cs+'</span><span class="r">'+a.type+'/'+a.wake+'</span><span>'+lv+'</span><span class="r">'+(kind==='in'?a.prev.code+'›':'›'+a.next.code)+'</span><span class="m">'+a.dep+'→'+a.arr+'</span><span class="r">'+t+'</span></div>'};
+ const als=SIM.alerts.filter(x=>x.stage<9);
+ let h=als.length?'<div class="secHead"><span>Défense aérienne</span><span>'+als.length+'</span></div>'+als.map(x=>'<div class="strip alert" data-id="'+x.a.id+'"><span class="cs">'+x.a.cs+'</span><span class="r">COMLOSS</span><span>'+ALSTAGE[x.stage]+'</span><span class="r">'+(x.lead?x.lead.cs:'')+'</span></div>').join(''):'';
+ h+='<div class="secHead s-in"><span>Entrants</span><span>'+inc.length+'</span></div>'+(inc.length?inc.map(a=>strip(a,'in')).join(''):'<div class="empty">Aucun vol pré-annoncé</div>');
+ h+='<div class="secHead s-ctl"><span>Sous contrôle</span><span>'+ctl.length+'</span></div>'+(ctl.length?ctl.map(a=>strip(a,'ctl')).join(''):'<div class="empty">Aucun vol assumé</div>');
+ h+='<div class="secHead s-x"><span>Transférés</span><span></span></div>'+(xf.length?xf.map(a=>strip(a,'x')).join(''):'<div class="empty">—</div>');
+ if(h!==stripsKey){stripsKey=h;stripsEl.innerHTML=h}
+}
+stripsEl.addEventListener('click',e=>{const s=e.target.closest('.strip');if(!s)return;const a=SIM.acs.find(q=>q.id===+s.dataset.id);if(a){selectAc(a);if(a.plot){VIEW.cx=a.plot.x;VIEW.cy=a.plot.y}}});
+stripsEl.addEventListener('dblclick',e=>{const s=e.target.closest('.strip');if(!s)return;const a=SIM.acs.find(q=>q.id===+s.dataset.id);if(!a)return;if(a.state==='offered')cmdAssume(a);else if(a.state==='assumed')askTransfer(a,e.clientX,e.clientY);else if(a.state==='transferred')askRetake(a,e.clientX,e.clientY)});
+function updateUI(){
+ document.getElementById('hdClock').textContent=utc(SIM.t);
+ document.getElementById('hdCtl').textContent=SIM.acs.filter(a=>a.state==='assumed').length;
+ document.getElementById('hdDone').textContent=SIM.done;
+ document.getElementById('hdSep').textContent=SIM.sepLoss;document.getElementById('hdSepChip').classList.toggle('crit',SIM.sepLoss>0);
+ document.getElementById('hdScore').textContent=SIM.score;
+ renderStrips();renderPanel(false);renderConfCard();
+}
+
+/* ===================== Ligne de commande ===================== */
+const cmdEl=document.getElementById('cmd');const hist=[];let hIdx=-1;
+function findAc(tok){tok=tok.toUpperCase();let m=SIM.acs.filter(a=>a.cs===tok);if(m.length)return m[0];m=SIM.acs.filter(a=>a.concerned&&(a.cs.endsWith(tok)||a.cs.slice(3)===tok||a.cs.includes(tok)));if(m.length===1)return m[0];if(m.length>1)return m.find(a=>a.state==='assumed'||a.state==='offered')||m[0];return null}
+function runTokens(a,toks){
+ for(let i=0;i<toks.length;i++){const t=toks[i];let m;
+  if(/^(A|ASS|ASSUME|ACC)$/.test(t))cmdAssume(a);
+  else if(/^(T|TFR|TRF|TRANSFER|X)$/.test(t))askTransfer(a);
+  else if(/^(REP|REPRENDRE|UNDO|RT)$/.test(t))askRetake(a);
+  else if(/^(GUARD|121\.5|1215)$/.test(t))cmdGuard(a);
+  else if(/^(ALERTE|ALERT|COMLOSS|NORDO)$/.test(t))askAlert(a);
+  else if((m=t.match(/^(?:FL|C|D)?(\d{2,3})$/)))cmdLevel(a,+m[1]<50?+m[1]*10:+m[1]);
+  else if((m=t.match(/^(H|HDG|HL|HR|L|R|G)(\d{1,3})$/))){const d=m[1]==='HL'||m[1]==='L'||m[1]==='G'?'L':m[1]==='HR'||m[1]==='R'?'R':null;cmdHdg(a,+m[2],d)}
+  else if(t==='DCT'||t==='DIR'){const p=toks[++i];if(p)cmdDirect(a,p);else log('bad','DCT : point manquant')}
+  else if(/^(RES|NAV|RN|RESUME)$/.test(t))cmdResume(a);
+  else if((m=t.match(/^M(?:0?\.)?(\d{2})$/)))cmdSpeed(a,'mach',+m[1]);
+  else if((m=t.match(/^(?:S|IAS|K)(\d{3})$/)))cmdSpeed(a,'ias',+m[1]);
+  else if(/^(SN|VL|NS|NSR)$/.test(t))cmdSpeed(a,'auto');
+  else if(PTS[t]&&i>0&&toks[i-1]!=='DCT')cmdDirect(a,t);
+  else log('bad','Commande non reconnue : '+t+' (voir Aide)');
+ }
+}
+function runCmd(txt){
+ const toks=txt.trim().toUpperCase().split(/\s+/).filter(Boolean);if(!toks.length)return;
+ if(toks[0]==='?'||toks[0]==='HELP'||toks[0]==='AIDE'){openHelp();return}
+ let a=null;const f=toks[0].length>=3&&!/^(FL\d+|\d{2,3}|[HLRG]\d{1,3}|H[LR]\d{1,3}|M\d{2}|M\.\d{2}|S\d{3}|DCT|RES|NAV|SN|A|T|TFR)$/.test(toks[0])?findAc(toks[0]):null;
+ if(f){a=f;toks.shift();selectAc(a)}else a=sel;
+ if(!a){log('bad','Aucun vol sélectionné ni reconnu : '+toks[0]);return}
+ if(!toks.length){selectAc(a);return}
+ runTokens(a,toks);
+}
+cmdEl.addEventListener('keydown',e=>{
+ if(e.key==='Enter'){const v=cmdEl.value;if(v.trim()){hist.unshift(v);hIdx=-1;runCmd(v)}cmdEl.value=''}
+ else if(e.key==='ArrowUp'){if(hist.length){hIdx=Math.min(hist.length-1,hIdx+1);cmdEl.value=hist[hIdx];e.preventDefault()}}
+ else if(e.key==='ArrowDown'){hIdx=Math.max(-1,hIdx-1);cmdEl.value=hIdx>=0?hist[hIdx]:'';e.preventDefault()}
+ else if(e.key==='Escape'){cmdEl.value='';selectAc(null);closeMenu()}
+});
+document.addEventListener('keydown',e=>{const tag=document.activeElement&&document.activeElement.tagName;if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA')return;
+ if(e.key===' '){e.preventDefault();setSpeed(SIM.speed===0?(SIM.prevSpeed||1):0)}else if(e.key==='Escape'){selectAc(null);closeMenu()}
+ else if(/^[a-zA-Z0-9]$/.test(e.key)&&SIM.running&&document.getElementById('startModal').hidden){cmdEl.focus()}});
+
+/* ===================== Barre d'état & réglages ===================== */
+function setSpeed(s){if(s>0)SIM.prevSpeed=s;SIM.speed=s;document.querySelectorAll('#speedSeg button').forEach(b=>b.classList.toggle('on',+b.dataset.s===s))}
+document.querySelectorAll('#speedSeg button').forEach(b=>b.onclick=()=>setSpeed(+b.dataset.s));
+document.getElementById('btnStrips').onclick=()=>{stripsEl.classList.toggle('closed');panelEl.classList.add('closed')};
+document.getElementById('btnPanel').onclick=()=>{panelEl.classList.toggle('closed');stripsEl.classList.add('closed')};
+const layersEl=document.getElementById('layers');
+const LAYNAMES=[['legend','Légende des symboles'],['routes','Routes'],['fixes','Points'],['vors','VOR'],['apts','Terrains'],['secs','Secteurs LFBB'],['bg','Trafic non concerné'],['vfilt','Filtre vertical'],['hist','Traînées radar']];
+layersEl.innerHTML=LAYNAMES.map(([k,n])=>'<label><input type="checkbox" data-l="'+k+'"> '+n+'</label>').join('');
+function renderLegend(){const el=document.getElementById('legend');el.hidden=!LAY.legend;el.innerHTML='<span class="lt">Destination</span>'+Object.values(DCAT).map(([g,n])=>'<b>'+g+'</b><span>'+n.split(' · ')[0].replace('Europe du Nord et de l\'Est','Europe')+'</span>').join('')+'<b>▲</b><span>Chasse (PO)</span>'}
+function syncLayers(){renderLegend();layersEl.querySelectorAll('[data-l]').forEach(c=>c.checked=!!LAY[c.dataset.l]);document.getElementById('vecSel').value=String(LAY.vec)}
+layersEl.addEventListener('change',e=>{const k=e.target.dataset.l;if(k){LAY[k]=e.target.checked;saveSettings();renderLegend()}});
+document.getElementById('btnLayers').onclick=e=>{layersEl.hidden=!layersEl.hidden;e.currentTarget.classList.toggle('on',!layersEl.hidden)};
+function openHelp(){document.getElementById('helpModal').hidden=false}
+document.getElementById('btnHelp').onclick=openHelp;document.getElementById('btnStartHelp').onclick=openHelp;
+document.getElementById('btnCloseHelp').onclick=()=>document.getElementById('helpModal').hidden=true;
+document.getElementById('helpModal').addEventListener('click',e=>{if(e.target.id==='helpModal')e.target.hidden=true});
+
+function saveSettings(){try{localStorage.setItem('opencrna.v1',JSON.stringify({nordo:selNordo.value,conv:selConv.value,cfg:selCfg.value,den:selDen.value,wind:chkWind.checked,voice:chkVoice.checked,lay:LAY}))}catch(e){}}
+function loadSettings(){try{const s=JSON.parse(localStorage.getItem('opencrna.v1')||'null');if(!s)return;if(s.cfg)selCfg.value=s.cfg;if(s.nordo!=null)selNordo.value=s.nordo;if(s.conv!=null)selConv.value=s.conv;if(s.den)selDen.value=s.den;chkWind.checked=s.wind!==false;chkVoice.checked=!!s.voice;if(s.lay)Object.assign(LAY,s.lay)}catch(e){}}
+const selNordo=document.getElementById('selNordo'),selConv=document.getElementById('selConv'),selCfg=document.getElementById('selConfig'),selDen=document.getElementById('selDensity'),chkWind=document.getElementById('chkWind'),chkVoice=document.getElementById('chkVoice');
+selCfg.innerHTML=CONFIGS.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');selCfg.value='US';
+function cfgInfo(){const c=CONFIGS.find(q=>q.id===selCfg.value);document.getElementById('cfgInfo').textContent='Volume : '+(c.sec[0]==='*'?'toute la région LFBB':'secteur'+(c.sec.length>1?'s ':' ')+c.sec.join(', '))+' · FL'+c.floor+' à '+(c.ceil>=660?'FL660':'FL'+c.ceil)+'. '+(c.floor>=300?'Secteur supérieur : survols en croisière, montées des départs Toulouse/Bordeaux et descentes des arrivées.':'Secteur inférieur : beaucoup de montées et descentes, transferts aux approches de Bordeaux, Toulouse, Biarritz, Pau.')}
+selCfg.onchange=cfgInfo;
+loadSettings();syncLayers();cfgInfo();
+
+function startGame(){
+ const cfg=CONFIGS.find(q=>q.id===selCfg.value);setupVolume(cfg);saveSettings();
+ Object.assign(SIM,{t:0,acs:[],score:0,done:0,sepLoss:0,pen:[],sepPairs:new Map(),stca:new Set(),acc:0,last1s:0,lastRadar:-99,queue:[],lambda:+selDen.value,voice:chkVoice.checked,running:true,mil:[],alerts:[],nordoRate:+selNordo.value,convInt:+selConv.value});SIM.nextConv=SIM.convInt?rnd(60,150):1e9;
+ SIM.startUTC=(Math.floor(rnd(7,19))*3600+Math.floor(rnd(0,59))*60);
+ WX.on=chkWind.checked;WX.dir=Math.round(rnd(250,300));WX.jet=Math.round(rnd(45,115));
+ const w=windAt(35000);document.getElementById('hdWind').innerHTML='<span class="k">Vent FL350</span>'+(WX.on?pad3(w.dir)+'°/'+Math.round(w.spd)+' kt':'calme');
+ document.getElementById('hdSector').innerHTML='<span class="k">LFBB</span>'+cfg.name.split(' · ')[0]+' · FL'+cfg.floor+'–'+(cfg.ceil>=660?'660':cfg.ceil);
+ logEl.innerHTML='';selectAc(null);
+ resize();fitSector();
+ // trafic initial : relève en cours
+ const n=Math.round(4+SIM.lambda/5);
+ for(let i=0;i<n;i++)trySpawn('c',rnd(-720,300));
+ for(let i=0;i<Math.round(6+SIM.lambda*.3);i++)trySpawn('b','start');
+ radarSweep();radarSweep();
+  const nb=SIM.acs.filter(a=>a.state==='assumed').length;
+ log('sys','Prise de position '+cfg.name+' · fréquence '+VOL.freq+'. Relève : '+nb+' vol'+(nb>1?'s':'')+' déjà sous contrôle, '+SIM.acs.filter(a=>a.state==='offered').length+' en appel.');
+ for(const a of SIM.acs)if(a.state==='offered')a.offeredAt=SIM.t;
+ setSpeed(+document.getElementById('selSpeed').value);
+ document.getElementById('startModal').hidden=true;cmdEl.focus();
+}
+document.getElementById('btnStart').onclick=startGame;
+document.getElementById('btnEnd').onclick=()=>{
+ const prev=SIM.speed;setSpeed(0);
+ const card=document.getElementById('endCard');const mins=Math.round(SIM.t/60);
+ card.innerHTML='<h1 style="font-size:26px">Relève</h1><p>'+mins+' min de position sur '+VOL.cfg.name+'.</p><dl class="kv" style="max-width:360px;margin-top:10px"><dt>Score</dt><dd>'+SIM.score+'</dd><dt>Vols transférés</dt><dd>'+SIM.done+'</dd><dt>Pertes de séparation</dt><dd>'+SIM.sepLoss+'</dd><dt>Fautes de coordination</dt><dd>'+SIM.pen.filter(p=>p.pts>-50).length+'</dd></dl>'+
+ (SIM.pen.length?'<h2>Évènements</h2><div class="route" style="line-height:1.6">'+SIM.pen.slice(-14).map(p=>'<div>'+utc(p.t)+' · '+p.msg.replace(/</g,'&lt;')+' ('+p.pts+')</div>').join('')+'</div>':'<p class="hint">Aucun évènement : position tenue proprement.</p>')+
+ '<div class="row" style="margin-top:16px"><button class="primary" id="eNew">Nouvelle position</button><button id="eBack">Reprendre</button></div>';
+ document.getElementById('endModal').hidden=false;
+ document.getElementById('eBack').onclick=()=>{document.getElementById('endModal').hidden=true;setSpeed(prev||1)};
+ document.getElementById('eNew').onclick=()=>{document.getElementById('endModal').hidden=true;SIM.running=false;document.getElementById('startModal').hidden=false};
+};
+// écran d'accueil : aperçu de la carte
+setupVolume(CONFIGS[0]);resize();fitSector();
+requestAnimationFrame(loop);
+</script>
