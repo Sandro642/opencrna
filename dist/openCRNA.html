@@ -96,6 +96,7 @@ footer{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);gap:6px;
 #log .bad{color:#ff9c95}
 #log .mil{color:#e6e6e6;font-style:italic}
 .alertBtn{border-color:#ff5b52!important;color:#ffd0cc!important}
+button:disabled{opacity:.4;cursor:default;pointer-events:none}
 #log .good{color:var(--ok)}
 #cmdBox{display:flex;flex-direction:column;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px}
 #cmd{width:100%;font-size:15px;padding:8px;text-transform:uppercase}
@@ -281,7 +282,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
     <p>Chaque vol qui traverse votre volume est <b>pré-annoncé</b> (strip ambre) puis <b>transféré</b> par le secteur amont : le pilote vous appelle et son indicatif clignote. Cliquez sur l'indicatif pour l'<b>assumer</b>. Vous seul pouvez alors lui donner des clairances. Avant qu'il quitte votre volume, amenez-le au <b>XFL</b> (niveau de sortie coordonné) puis cliquez à nouveau sur l'indicatif pour le <b>transférer</b> au secteur suivant affiché dans l'étiquette.</p>
     <p>Normes : 5 NM en horizontal ou 1 000 ft en vertical (RVSM FL290–FL410). Règle semi-circulaire : route vraie 000–179° niveaux impairs (FL310, 330…), 180–359° niveaux pairs (FL300, 320…).</p>
     <h2>Pertes de contact radio (COMLOSS)</h2>
-    <p>Certains équipages ne répondent pas : soit ils n'appellent jamais après le transfert (strip « sans appel »), soit ils deviennent muets en cours de route. Sans réponse, l'avion garde sa clairance puis suit son plan de vol. Un <b>Radio check</b> (commande <code>RC</code>) vérifie le contact : un équipage qui répond « 2 sur 5, très haché » risque de perdre la radio. Procédure : relancez-le ou faites un radio check, essayez <b>Appel 121.5</b> (fréquence de détresse), puis <b>Alertez la défense aérienne</b> depuis la fiche vol (commande <code>ALERTE</code>). La PO de Mont-de-Marsan fait décoller deux Rafale qui interceptent l'avion et se présentent devant le cockpit. Écartez le trafic autour du vol muet. Selon le réglage, plusieurs vols peuvent être muets en même temps. Une alerte rapide rapporte des points, une alerte sur un vol qui répond est une fausse alerte, et un vol muet qui quitte votre secteur sans alerte coûte cher.</p>
+    <p>Certains équipages ne répondent pas : soit ils n'appellent jamais après le transfert (strip « sans appel »), soit ils deviennent muets en cours de route. Sans réponse, l'avion garde sa clairance puis suit son plan de vol. Un <b>Radio check</b> (commande <code>RC</code>) vérifie le contact : un équipage qui répond « 2 sur 5, très haché » risque de perdre la radio. Procédure : relancez-le ou faites un radio check, essayez <b>Appel 121.5</b> (fréquence de détresse), puis <b>Alertez la défense aérienne</b> depuis la fiche vol (commande <code>ALERTE</code>). Vous choisissez la base de PO : Mont-de-Marsan (Rafale), Orange (Mirage 2000-5) ou Saint-Dizier (Rafale) ; une base dont la patrouille est déjà engagée n'est plus disponible tant que celle-ci n'est pas rentrée. Deux avions décollent, interceptent l'avion et se présentent devant le cockpit. Cliquez sur la patrouille (radar ou strip Défense aérienne) pour ouvrir sa fiche : infos de vol, autorisation de contact, et <b>Lever l'alerte</b> si c'était une fausse alerte ou si le contact est rétabli (commande <code>FIN</code>). Une fausse alerte levée avant le décollage coûte moins cher ; une alerte levée alors que l'avion ne répond toujours pas est pénalisée. Écartez le trafic autour du vol muet. Selon le réglage, plusieurs vols peuvent être muets en même temps. Une alerte rapide rapporte des points, une alerte sur un vol qui répond est une fausse alerte, et un vol muet qui quitte votre secteur sans alerte coûte cher.</p>
     <h2>Coordinations ATC</h2>
     <p>Les secteurs et centres voisins (Brest, Paris, Marseille, Madrid…) peuvent demander à vous passer un vol pré-annoncé à un autre niveau ou en cap. La demande apparaît dans la catégorie <b>Coordinations ATC</b> en haut des strips : <b>Accepter</b> ou <b>Refuser</b> dans la minute (sans réponse : pénalité, le vol arrive comme prévu). Un vol accepté en cap devra être remis en navigation (<code>RES</code> ou direct). Dans l'autre sens, pour un vol sous contrôle, demandez au secteur suivant un autre <b>niveau de sortie</b> (fiche vol → <b>Coordination sortie</b>, ou commande <code>XFL 350</code>) : il accepte ou refuse selon son trafic, le sens de vol et sa charge ; si c'est accepté, le nouveau XFL compte pour le transfert. Pendant une alerte COMLOSS, la PO demande les <b>infos de vol</b> de l'avion (bouton <b>Transmettre</b>, ou <b>Infos vol → PO</b> dans la fiche vol à tout moment), puis votre <b>autorisation</b> pour se présenter au cockpit et communiquer avec l'équipage : tant que vous n'avez pas autorisé, la patrouille reste en escorte.</p>
     <h2>Avions convergents</h2>
@@ -312,6 +313,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
       <tr><td>M78 · S280 · SN</td><td>Mach 0,78 · 280 kt indiqués · vitesse libre</td></tr>
       <tr><td>A · T · REP</td><td>Assumer · Transférer (avec confirmation) · Reprendre un vol transféré tant qu'il est encore dans votre secteur</td></tr>
       <tr><td>XFL 350</td><td>Demander au secteur suivant de prendre le vol à un autre niveau de sortie</td></tr>
+      <tr><td>FIN</td><td>Lever l'alerte défense aérienne (fausse alerte ou contact rétabli)</td></tr>
       <tr><td>RC · GUARD · ALERTE</td><td>Radio check sur la fréquence · Appel sur 121.5 · Alerter la défense aérienne (COMLOSS)</td></tr>
     </table></div>
     <h2>Écran</h2>
@@ -714,6 +716,7 @@ function cmdGuard(a){
   else{a.nordo.guardTried=true;a.noResp=(a.noResp||0)+1;log('sys','… 121.5 : aucune réponse de '+a.cs)}}});
 }
 function recoverNordo(a,how){
+ if(a.alerted&&how!=='radio')SIM.queue.push({t:SIM.t+8,a,fn:()=>log('sys','Contact rétabli avec '+a.cs+' : pensez à lever l\'alerte (fiche vol ou PO → Lever l\'alerte).')});
  a.silent=false;a.nordo.recovered=true;a.nordo.done=true;a.flags.reqT=SIM.t;a.called=true;const fl=Math.round(a.alt/100);
  pilot(a,a.fr?myName(1)+', '+a.say+', désolés, '+(how==='guard'?'on était resté sur la fréquence précédente':'on a eu une panne radio')+', niveau '+fl:myName(0)+', '+a.say+', apologies, '+(how==='guard'?'we were still on the previous frequency':'we had a radio failure')+', FL'+fl);
  if(!a.alerted){SIM.score+=10;log('good','Contact rétabli avec '+a.cs+' (+10)')}else{SIM.score+=10;log('good','COMLOSS résolu pour '+a.cs+' (+10)')}
@@ -722,16 +725,17 @@ function recoverNordo(a,how){
 function askAlert(a){
  if(!a.concerned||a.state==='pre'){log('sys','Alerte impossible : '+a.cs+' n\'est pas encore sous votre responsabilité');return}
  if(a.alerted){log('sys','Défense aérienne déjà alertée pour '+a.cs);return}
- menu.innerHTML='<div class="mt">COMLOSS '+a.cs+'</div><div class="mconf"><div>Déclarer la perte de contact radio et alerter la défense aérienne ?</div><div class="hint">Appels sans réponse : '+(a.noResp||0)+(a.nordo&&a.nordo.guardTried?' · 121.5 essayé':'')+'</div><div class="row"><button class="primary" id="mOk">Alerter</button><button id="mNo">Annuler</button></div></div>';
+ const free=PO_BASES.filter(b=>!baseBusy(b)).sort((x,y)=>poEta(x,a)-poEta(y,a));
+ menu.innerHTML='<div class="mt">COMLOSS '+a.cs+'</div><div class="mconf"><div>Déclarer la perte de contact radio et alerter la défense aérienne ?</div><div class="hint">Appels sans réponse : '+(a.noResp||0)+(a.nordo&&a.nordo.guardTried?' · 121.5 essayé':'')+'</div><div class="hint">PO à faire décoller :</div>'+PO_BASES.map(b=>'<div class="row"><button '+(baseBusy(b)?'disabled':'data-b="'+b.id+'"'+(b===free[0]?' class="primary"':''))+'>'+b.n+' · '+b.type+' · '+(baseBusy(b)?'engagée':'≈'+fmtT(poEta(b,a)))+'</button></div>').join('')+'<div class="row"><button id="mNo">Annuler</button></div></div>';
  const r=document.getElementById('scopeWrap').getBoundingClientRect();placeMenu(r.left+r.width/2-130,r.top+r.height/2-50);
- menu.querySelector('#mOk').onclick=()=>{closeMenu();cmdAlert(a)};menu.querySelector('#mNo').onclick=()=>closeMenu();
+ menu.querySelectorAll('[data-b]').forEach(el=>el.onclick=()=>{closeMenu();cmdAlert(a,PO_BASES.find(b=>b.id===el.dataset.b))});menu.querySelector('#mNo').onclick=()=>closeMenu();
 }
-function cmdAlert(a){
+function cmdAlert(a,base){
+ base=base||PO_BASES.find(b=>!baseBusy(b));if(!base){log('bad','Aucune PO disponible');return}
  a.alerted=true;const fl=Math.round(a.alt/100);const p=a.pts[a.leg];
  log('mil','▸ '+myName(1)+' → défense aérienne : COMLOSS '+a.cs+', '+a.type+', FL'+pad3(fl)+', route '+pad3(a.trk)+'°, '+Math.round(a.gs)+' kt, prochain point '+(p?p.id:'—')+', '+a.dep+' → '+a.arr);
- if(!a.silent){penalty(a,'fa',-10,'Fausse alerte : '+a.cs+' est en contact');SIM.queue.push({t:SIM.t+rnd(20,35),a,fn:()=>{log('mil','◂ Défense aérienne : '+a.cs+' est en contact avec vous, alerte levée.');a.alerted=false;if(sel===a)renderPanel(true)}});return}
- const delay=SIM.t-(a.nordo.onset??SIM.t);const pts=delay<=300?20:delay<=600?10:5;SIM.score+=pts;log('good','Alerte COMLOSS justifiée pour '+a.cs+' (+'+pts+')');
- SIM.alerts.push({a,stage:0,tAck:SIM.t+rnd(25,45),tUp:SIM.t+rnd(120,180)});
+ const al={a,base,stage:0,tAck:SIM.t+rnd(25,45),tUp:SIM.t+rnd(120,180),false:!a.silent};SIM.alerts.push(al);
+ if(a.silent){const delay=SIM.t-(a.nordo.onset??SIM.t);const pts=delay<=300?20:delay<=600?10:5;SIM.score+=pts;log('good','Alerte COMLOSS justifiée pour '+a.cs+' (+'+pts+')')}
  if(sel===a)renderPanel(true);
 }
 /* ===================== Coordinations ATC (centres voisins, PO) ===================== */
@@ -797,18 +801,41 @@ function poAskComm(al){const a=al.a;
  log('mil','◂ '+al.lead.cs+' : demande autorisation de contacter l\'équipage de '+a.cs+'.')}
 /* ===================== Défense aérienne / PO ===================== */
 const PO_CS=['RAMEX','VADOR','COBRA','FANGIO','TIGRE'];
+// Bases de permanence opérationnelle (PO) ; une patrouille par base, indisponible tant qu'elle n'est pas rentrée
+const PO_BASES=[{id:'LFBM',n:'Mont-de-Marsan',ba:'BA 118',type:'Rafale',lat:43.9117,lon:-0.5075},{id:'LFMO',n:'Orange',ba:'BA 115',type:'Mirage 2000-5',lat:44.1405,lon:4.8667},{id:'LFSI',n:'Saint-Dizier',ba:'BA 113',type:'Rafale',lat:48.636,lon:4.899}];
+const baseXY=b=>PTS[b.id]||(b.xy||(b.xy=P(b.lat,b.lon)));
+const baseBusy=b=>SIM.alerts.some(al=>al.base===b&&(al.stage<9||[al.lead,al.wing].some(f=>f&&!f.gone)));
+const poEta=(b,a)=>{const q=baseXY(b);return 150+90+dist(q.x,q.y,a.x,a.y)/12*60};
+let selPO=null;
+function alertOf(f){return SIM.alerts.find(al=>al.lead===f||al.wing===f)}
 const ALSTAGE=['Alerte transmise','PO en préparation','PO en vol','Interception','Contact visuel','Escorte'];
-function mkFighter(cs,tgt,wing){const b=PTS.LFBM;return{cs,mil:true,x:b.x+(wing?.25:0),y:b.y-(wing?.25:0),alt:300,hdg:brg(b.x,b.y,tgt.x,tgt.y),tas:200,gs:200,trk:0,vs:0,phase:'intercept',tgt,wing,hist:[],plot:null}}
+function mkFighter(cs,tgt,wing,base){const b=baseXY(base);return{cs,mil:true,base,x:b.x+(wing?.25:0),y:b.y-(wing?.25:0),alt:300,hdg:brg(b.x,b.y,tgt.x,tgt.y),tas:200,gs:200,trk:0,vs:0,phase:'intercept',tgt,wing,hist:[],plot:null}}
 function rtb(al){for(const f of [al.lead,al.wing])if(f)f.phase='rtb'}
+function askEndAlert(al){
+ if(!al||al.stage>=9){log('sys','Aucune alerte en cours');return}const a=al.a,mute=SIM.acs.includes(a)&&a.silent;
+ menu.innerHTML='<div class="mt">Fin d\'alerte '+a.cs+'</div><div class="mconf"><div>Lever l\'alerte et renvoyer la PO à '+al.base.n+' ?</div><div class="hint">'+(mute?a.cs+' ne répond toujours pas.':al.false?'Fausse alerte : '+a.cs+' était en contact.':'Contact rétabli avec '+a.cs+'.')+'</div><div class="row"><button class="primary" id="mOk">'+(mute?'Lever quand même':al.false?'Fausse alerte':'Contact rétabli')+'</button><button id="mNo">Annuler</button></div></div>';
+ const r=document.getElementById('scopeWrap').getBoundingClientRect();placeMenu(r.left+r.width/2-130,r.top+r.height/2-50);
+ menu.querySelector('#mOk').onclick=()=>{closeMenu();cmdEndAlert(al)};menu.querySelector('#mNo').onclick=()=>closeMenu();
+}
+function cmdEndAlert(al){
+ if(al.stage>=9)return;const a=al.a,alive=SIM.acs.includes(a),mute=alive&&a.silent,up=al.stage>=2;
+ log('mil','▸ '+myName(1)+' → défense aérienne : fin d\'alerte pour '+a.cs+', '+(mute?'toujours sans contact radio':al.false?'fausse alerte, l\'équipage était en contact':'contact radio rétabli')+'.');
+ if(mute)penalty(a,'end',-20,'Alerte levée alors que '+a.cs+' ne répond toujours pas');
+ else if(al.false)penalty(a,'fa',up?-10:-5,'Fausse alerte '+a.cs+(up?' : PO décollée pour rien':' levée avant décollage'));
+ else log('good','Fin d\'alerte coordonnée pour '+a.cs);
+ al.stage=9;a.alerted=false;rtb(al);SIM.coords=SIM.coords.filter(c=>!(c.a===a&&/^po/.test(c.kind)));
+ SIM.queue.push({t:SIM.t+rnd(6,12),a,fn:()=>log('mil','◂ Défense aérienne : bien reçu, alerte '+a.cs+' levée'+(up?', '+al.lead.cs+' retour '+al.base.n:', décollage annulé')+'.')});
+ if(sel===a||selPO===al)renderPanel(true);
+}
 function processAlerts(now){
  for(const al of SIM.alerts){const a=al.a;if(al.stage>=9)continue;const alive=SIM.acs.includes(a);
-  if(al.stage===0&&now>=al.tAck){al.stage=1;log('mil','◂ Défense aérienne : COMLOSS '+a.cs+' pris en compte. Décollage sur alerte de la PO de Mont-de-Marsan.')}
+  if(al.stage===0&&now>=al.tAck){al.stage=1;log('mil','◂ Défense aérienne : COMLOSS '+a.cs+' pris en compte. Décollage sur alerte de la PO de '+al.base.n+'.')}
   if(al.stage===1&&now>=al.tUp){
-   if(!alive||!a.silent){al.stage=9;log('mil','◂ Défense aérienne : '+(alive?'contact rétabli avec '+a.cs:a.cs+' hors zone')+', décollage annulé.');continue}
+   if(!alive||!a.silent){al.stage=9;a.alerted=false;log('mil','◂ Défense aérienne : '+(alive?'contact rétabli avec '+a.cs:a.cs+' hors zone')+', décollage annulé.');if(al.false&&alive)penalty(a,'fa',-15,'Fausse alerte jamais levée : '+a.cs+' était en contact');continue}
    al.stage=2;const nm=pick(PO_CS),n0=Math.floor(rnd(1,9))*10;
-   al.lead=mkFighter(nm+' '+(n0+1),a,0);al.wing=mkFighter(nm+' '+(n0+2),a,1);al.wing.lead=al.lead;SIM.mil.push(al.lead,al.wing);
-   const d=dist(PTS.LFBM.x,PTS.LFBM.y,a.x,a.y);
-   log('mil','◂ PO Mont-de-Marsan : '+al.lead.cs+' et '+al.wing.cs+', patrouille de deux Rafale, décollés. Interception de '+a.cs+' estimée dans '+fmtT(90+d/12*60)+'.');
+   al.lead=mkFighter(nm+' '+(n0+1),a,0,al.base);al.wing=mkFighter(nm+' '+(n0+2),a,1,al.base);al.wing.lead=al.lead;SIM.mil.push(al.lead,al.wing);
+   const bq=baseXY(al.base),d=dist(bq.x,bq.y,a.x,a.y);
+   log('mil','◂ PO '+al.base.n+' : '+al.lead.cs+' et '+al.wing.cs+', patrouille de deux '+al.base.type+', décollés. Interception de '+a.cs+' estimée dans '+fmtT(90+d/12*60)+'.');
    log('mil','◂ Défense aérienne : merci de garder le trafic à 10 NM ou 2 000 ft de '+a.cs+'.');al.tInfo=now+rnd(15,30)}
   if(al.stage===2&&al.tInfo&&now>=al.tInfo){al.tInfo=0;poAskInfo(al)}
   if(al.stage===2&&al.lead&&al.lead.phase==='escort'){al.stage=3;al.tRes=0;al.reask=now+rnd(5,10);
@@ -817,8 +844,8 @@ function processAlerts(now){
   if(al.stage===3&&al.tRes&&now>=al.tRes){
    if(alive&&a.silent&&Math.random()<.8){al.stage=4;al.tRec=now+rnd(8,16);log('mil','◂ '+al.lead.cs+' : l\'équipage nous a vus et répond par signaux, il devrait vous rappeler.')}
    else{al.stage=5;log('mil','◂ '+al.lead.cs+' : pas de réaction de l\'équipage, on reste en escorte.')}}
-  if(al.stage===4&&now>=al.tRec){al.stage=9;if(alive&&a.silent)recoverNordo(a,'radio');log('mil','◂ '+al.lead.cs+' : on dégage, retour Mont-de-Marsan.');rtb(al)}
-  if(al.stage>=2&&al.stage!==4&&al.stage<9&&al.lead&&(!alive||!inPoly(a.x,a.y,LFBB))){al.stage=9;log('mil','◂ Défense aérienne : '+a.cs+' a quitté la région, suivi relayé à la zone voisine. '+al.lead.cs+' retour Mont-de-Marsan.');rtb(al)}
+  if(al.stage===4&&now>=al.tRec){al.stage=9;if(alive&&a.silent)recoverNordo(a,'radio');a.alerted=false;log('mil','◂ '+al.lead.cs+' : on dégage, retour '+al.base.n+'.');rtb(al)}
+  if(al.stage>=2&&al.stage!==4&&al.stage<9&&al.lead&&(!alive||!inPoly(a.x,a.y,LFBB))){al.stage=9;log('mil','◂ Défense aérienne : '+a.cs+' a quitté la région, suivi relayé à la zone voisine. '+al.lead.cs+' retour '+al.base.n+'.');rtb(al)}
   if(al.stage>=2&&al.stage<9&&!alive){al.stage=9;rtb(al)}
  }
 }
@@ -827,7 +854,7 @@ function stepFighter(f,dt){
  if(f.phase==='escort'){const off=f.wing?[1.4,215]:[.7,262];const an=(T.trk+off[1])*D2R;const px=T.x+off[0]*Math.sin(an),py=T.y+off[0]*Math.cos(an);
   const k=Math.min(1,dt*.3);f.x+=(px-f.x)*k;f.y+=(py-f.y)*k;f.alt+=(T.alt+(f.wing?300:0)-f.alt)*Math.min(1,dt*.2);f.hdg=f.trk=T.trk;f.gs=T.gs;f.tas=T.tas;f.vs=T.vs;return}
  let tx,ty,talt,tasT;
- if(f.phase==='rtb'){const b=PTS.LFBM;tx=b.x;ty=b.y;const d=dist(f.x,f.y,b.x,b.y);if(d<3){f.gone=true;return}talt=d<35?3000:Math.min(Math.max(f.alt,20000),32000);tasT=d<35?casToTas(300,f.alt):.9*sos(f.alt)}
+ if(f.phase==='rtb'){const b=baseXY(f.base);tx=b.x;ty=b.y;const d=dist(f.x,f.y,b.x,b.y);if(d<3){f.gone=true;return}talt=d<35?3000:Math.min(Math.max(f.alt,20000),32000);tasT=d<35?casToTas(300,f.alt):.9*sos(f.alt)}
  else{
   const L=f.lead;
   if(f.wing&&L&&L.phase!=='rtb'){if(L.phase==='escort'&&dist(f.x,f.y,T.x,T.y)<4){f.phase='escort';return}
@@ -848,6 +875,7 @@ function drawMil(){
  for(const f of SIM.mil){if(!f.plot)continue;const p=f.plot,X=sx(p.x),Y=sy(p.y);
   ctx.fillStyle='#ffffff';for(let i=0;i<f.hist.length;i++){ctx.globalAlpha=.6-i*.09;const h=f.hist[i];ctx.fillRect(sx(h.x)-1.3,sy(h.y)-1.3,2.6,2.6)}ctx.globalAlpha=1;
   if(LAY.vec>0){const L=p.gs*LAY.vec/60;ctx.strokeStyle='#ffffff';ctx.beginPath();ctx.moveTo(X,Y);ctx.lineTo(sx(p.x+L*Math.sin(p.trk*D2R)),sy(p.y+L*Math.cos(p.trk*D2R)));ctx.stroke()}
+  if(selPO&&(f===selPO.lead||f===selPO.wing)){ctx.strokeStyle='#ffffff';ctx.lineWidth=1;ctx.strokeRect(X-10,Y-11,20,20)}
   ctx.fillStyle='#ffffff';ctx.beginPath();ctx.moveTo(X,Y-7);ctx.lineTo(X+6,Y+5);ctx.lineTo(X,Y+2);ctx.lineTo(X-6,Y+5);ctx.closePath();ctx.fill();
   const tr=p.vs>400?'↑':p.vs<-400?'↓':' ';const m=p.gs/sos(p.alt);
   if(f.phase==='escort'&&f.wing)continue;
@@ -1250,6 +1278,7 @@ document.getElementById('btnConf').onclick=e=>{if(pickMode){pickMode=0;e.current
 /* ===================== Interaction écran ===================== */
 let sel=null;const ptrs=new Map();let drag=null,pinch=null;
 function hitLabel(X,Y){for(let i=labelBoxes.length-1;i>=0;i--){const b=labelBoxes[i];if(X>=b.x&&X<=b.x+b.w&&Y>=b.y&&Y<=b.y+b.h){for(const f of b.fields)if(X>=f.x&&X<=f.x+f.w&&Y>=f.y&&Y<=f.y+f.h)return{a:b.a,f:f.k,box:b};return{a:b.a,f:null,box:b}}}return null}
+function hitFighter(X,Y,r){let best=null,bd=r||12;for(const f of SIM.mil){if(!f.plot||f.gone)continue;const d=Math.hypot(sx(f.plot.x)-X,sy(f.plot.y)-Y);if(d<bd){bd=d;best=f}}return best}
 function hitTarget(X,Y){let best=null,bd=12;for(const a of SIM.acs){if(!visible(a))continue;const d=Math.hypot(sx(a.plot.x)-X,sy(a.plot.y)-Y);if(d<bd){bd=d;best=a}}return best}
 cv.addEventListener('contextmenu',e=>e.preventDefault());
 cv.addEventListener('pointerdown',e=>{
@@ -1258,6 +1287,7 @@ cv.addEventListener('pointerdown',e=>{
  if(e.button===2||measureMode){const t=hitTarget(X,Y);if(e.button===2&&t&&sel&&t!==sel){sepA=sel;sepB=t;renderConfCard();return}if(e.button===2&&t&&(t===sepA||t===sepB)){sepA=sepB=null;return}
   measure={x0:wx(X),y0:wy(Y),x1:wx(X),y1:wy(Y)};drag={type:'measure'};return}
  if(pickMode&&e.button===0){const hl=hitLabel(X,Y);const t=hitTarget(X,Y)||(hl&&hl.a);if(t){if(pickMode===1){sepA=t;pickMode=2}else if(t!==sepA){sepB=t;pickMode=0;document.getElementById('btnConf').classList.remove('on')}renderConfCard()}return}
+ const ft=hitFighter(X,Y,8),fal=ft&&alertOf(ft);if(fal){selectPO(fal);drag=null;return}
  const h=hitLabel(X,Y);
  if(h){drag={type:'label',a:h.a,f:h.f,X0:X,Y0:Y,lx:h.a.lx,ly:h.a.ly,moved:false,cx:e.clientX,cy:e.clientY};return}
  const t=hitTarget(X,Y);if(t){selectAc(t);drag=null;return}
@@ -1330,10 +1360,32 @@ function speedMenu(a,cx,cy){
 /* ===================== Panneau vol & strips ===================== */
 const panelEl=document.getElementById('panel'),stripsEl=document.getElementById('strips');
 const STATE_TXT={pre:'Pré-annoncé',offered:'Appelle',assumed:'Sous contrôle',transferred:'Transféré',bg:'Non concerné',missed:'Non pris',done:'Transféré'};
-function selectAc(a){sel=a;renderPanel(true);if(a&&window.innerWidth<=860)panelEl.classList.remove('closed');document.getElementById('cmdHint').textContent=a?'Vol sélectionné : '+a.cs+' · tapez une commande (370, H270, DCT LMG, M78, A, T…)':'Cliquez sur une étiquette ou un strip pour sélectionner un vol. Entrée pour envoyer, Échap pour désélectionner.'}
+function selectPO(al){selectAc(null);selPO=al;renderPanel(true);if(window.innerWidth<=860)panelEl.classList.remove('closed')}
+function selectAc(a){sel=a;selPO=null;renderPanel(true);if(a&&window.innerWidth<=860)panelEl.classList.remove('closed');document.getElementById('cmdHint').textContent=a?'Vol sélectionné : '+a.cs+' · tapez une commande (370, H270, DCT LMG, M78, A, T…)':'Cliquez sur une étiquette ou un strip pour sélectionner un vol. Entrée pour envoyer, Échap pour désélectionner.'}
 let panelKey='';
 function fmtT(s){if(s<0)return '—';if(s>=99999)return '> 30\'';const m=Math.floor(s/60),ss=Math.floor(s%60);return m+"'"+String(ss).padStart(2,'0')+'"'}
+function renderPO(force){
+ const al=selPO,a=al.a,f=al.lead,pend=SIM.coords.find(c=>c.a===a&&c.kind==='poComm'),pinfo=SIM.coords.find(c=>c.a===a&&c.kind==='poInfo');
+ const key='po'+SIM.alerts.indexOf(al)+al.stage+(f?f.phase:'')+(pend?'P':'')+(pinfo?'I':'')+(al.tRes?'T':'')+(SIM.acs.includes(a)&&a.silent?'S':'');
+ if(force||key!==panelKey){panelKey=key;
+  let h='<div class="fpHead"><span class="fpCs">'+(f?f.cs.replace(/ \d+$/,'')+' PO':'PO '+al.base.n)+'</span><span class="state'+(al.stage<9?' alert':'')+'">'+(al.stage<9?ALSTAGE[al.stage]:'Terminée')+'</span></div>';
+  h+='<div class="hint" style="margin-top:-6px">Patrouille de deux '+al.base.type+' · '+al.base.ba+' '+al.base.n+'</div>';
+  h+='<dl class="kv"><dt>Vol suivi</dt><dd>'+a.cs+' · '+a.type+'</dd><dt>Situation</dt><dd>'+(al.false&&!a.silent?'en contact (fausse alerte ?)':a.silent?'COMLOSS':'contact rétabli')+'</dd>'+(f?'<dt>Indicatifs</dt><dd>'+f.cs+' / '+(al.wing?al.wing.cs:'')+'</dd><dt>Niveau / vitesse</dt><dd data-v="poAlt"></dd><dt>Distance cible</dt><dd data-v="poDist"></dd>':'<dt>Décollage</dt><dd data-v="poUp"></dd>')+'<dt>Contact équipage</dt><dd>'+(al.tRes?'autorisé':pend?'demande en attente':'—')+'</dd></dl>';
+  if(al.stage<9){h+='<div class="ctl"><h4>Actions</h4><div class="row">'+(pend?'<button class="primary" id="poOk">Autoriser le contact</button><button id="poNo">Refuser</button>':'')+(f?'<button id="poInfo">Infos vol → PO</button>':'')+'<button id="poTgt">Sélectionner '+a.cs+'</button></div><div class="row"><button id="poEnd" class="alertBtn">Lever l\'alerte (fausse alerte / contact rétabli)</button></div></div>'}
+  else h+='<p class="hint">Mission terminée'+(f&&!f.gone?' · retour '+al.base.n:'')+'.</p>';
+  panelEl.innerHTML=h;const $=id=>panelEl.querySelector(id);
+  if($('#poOk')){$('#poOk').onclick=()=>answerCoord(pend.id,true);$('#poNo').onclick=()=>answerCoord(pend.id,false)}
+  if($('#poInfo'))$('#poInfo').onclick=()=>{if(pinfo)answerCoord(pinfo.id,true);else poInfo(al)};
+  if($('#poTgt'))$('#poTgt').onclick=()=>{if(SIM.acs.includes(a))selectAc(a)};
+  if($('#poEnd'))$('#poEnd').onclick=()=>askEndAlert(al);
+ }
+ const v=k=>panelEl.querySelector('[data-v="'+k+'"]');
+ if(f&&v('poAlt'))v('poAlt').textContent='FL'+pad3(f.alt/100)+' · '+(f.gs/sos(f.alt)>1?'M'+(f.gs/sos(f.alt)).toFixed(1):Math.round(f.gs)+' kt')+(f.phase==='rtb'?' · retour base':f.phase==='escort'?' · escorte':' · interception');
+ if(f&&v('poDist'))v('poDist').textContent=SIM.acs.includes(a)?Math.round(dist(f.x,f.y,a.x,a.y)*10)/10+' NM':'—';
+ if(v('poUp'))v('poUp').textContent=al.stage<2?'dans '+fmtT(Math.max(0,al.tUp-SIM.t)):'—';
+}
 function renderPanel(force){
+ if(!sel&&selPO){renderPO(force);return}
  const a=sel;
  if(!a){if(force||panelKey!=='none'){panelKey='none';panelEl.innerHTML='<div class="secHead" style="position:static;padding:0">Fiche vol</div><p class="hint">Aucun vol sélectionné. Cliquez sur une étiquette radar ou un strip.</p><p class="hint">Les vols qui vous appellent clignotent en jaune : cliquez sur leur indicatif pour les assumer.</p><p class="hint">Les étiquettes se déplacent par glisser-déposer. Clic droit sur un second vol : point de rapprochement minimal.</p>'}return}
  const key=a.id+(a.alerted?'A':'')+(canRetake(a)?'R':'')+a.state+a.mode+a.spdMode+a.leg+a.pts.length;
@@ -1355,7 +1407,7 @@ function renderPanel(force){
    h+='<div class="ctl"><h4>Cap <span data-v="hdg"></span></h4><div class="row"><button data-r="-20">G20</button><button data-r="-10">G10</button><button data-r="10">D10</button><button data-r="20">D20</button><input id="pHd" inputmode="numeric" maxlength="3" placeholder="270" style="width:56px"><button id="pHdGo">Cap</button></div><div class="row"><button id="pRes">Reprendre nav</button><select id="pDct">'+a.pts.slice(a.leg).map(p=>'<option>'+p.id+'</option>').join('')+'</select><button id="pDctGo">Direct</button></div></div>';
    h+='<div class="ctl"><h4>Vitesse <span data-v="spdR"></span></h4><div class="row"><button data-m="-2">−M.02</button><button data-m="2">+M.02</button><input id="pSp" placeholder="M78 / 280" style="width:86px"><button id="pSpGo">OK</button><button id="pSpA">Libre</button></div></div>';
   }
-  if(a.concerned&&a.state!=='pre'&&a.state!=='transferred')h+='<div class="ctl"><h4>Contact radio <span data-v="rdo"></span></h4><div class="row"><button id="pRc">Radio check</button><button id="pGuard">Appel 121.5</button><button id="pAlert" class="alertBtn">Alerter la défense aérienne</button>'+(SIM.alerts.some(x=>x.a===a&&x.stage>=2&&x.stage<9&&x.lead)?'<button id="pPoInfo">Infos vol → PO</button>':'')+'</div></div>';
+  if(a.concerned&&a.state!=='pre'&&a.state!=='transferred')h+='<div class="ctl"><h4>Contact radio <span data-v="rdo"></span></h4><div class="row"><button id="pRc">Radio check</button><button id="pGuard">Appel 121.5</button><button id="pAlert" class="alertBtn">Alerter la défense aérienne</button>'+(SIM.alerts.some(x=>x.a===a&&x.stage>=2&&x.stage<9&&x.lead)?'<button id="pPoInfo">Infos vol → PO</button>':'')+(SIM.alerts.some(x=>x.a===a&&x.stage<9)?'<button id="pPoSel">Voir la PO</button><button id="pEndAl">Lever l\'alerte</button>':'')+'</div></div>';
   h+='<div class="ctl"><h4>Plan de vol</h4><div class="route" data-v="route"></div></div>';
   if(sepA&&sepB&&(a===sepA||a===sepB))h+='<button id="pSepClr">Fermer l\'analyse de trajectoires</button>';
   else h+='<p class="hint">Bouton Trajectoires puis clic sur un autre vol (ou clic droit dessus) : croisement, CPA et dangerosité des caps avec '+a.cs+'.</p>';
@@ -1372,7 +1424,8 @@ function renderPanel(force){
    const goS=()=>{const v=$('#pSp').value.trim().toUpperCase();if(v)runTokens(a,[v]);$('#pSp').value=''};$('#pSpGo').onclick=goS;$('#pSp').onkeydown=e=>{if(e.key==='Enter')goS()};$('#pSpA').onclick=()=>cmdSpeed(a,'auto');
   }
   if($('#pXcGo')){const goX=()=>{const v=+$('#pXc').value;if(v)cmdAskXfl(a,v<50?v*10:v)};$('#pXcGo').onclick=goX;$('#pXc').onkeydown=e=>{if(e.key==='Enter')goX()}}
-  if($('#pGuard')){$('#pRc').onclick=()=>cmdRadioCheck(a);$('#pGuard').onclick=()=>cmdGuard(a);$('#pAlert').onclick=()=>askAlert(a);if($('#pPoInfo'))$('#pPoInfo').onclick=()=>{const al=SIM.alerts.find(x=>x.a===a&&x.stage<9&&x.lead);if(al){const c=SIM.coords.find(c=>c.a===a&&c.kind==='poInfo');if(c)answerCoord(c.id,true);else poInfo(al)}}}
+  if($('#pGuard')){$('#pRc').onclick=()=>cmdRadioCheck(a);$('#pGuard').onclick=()=>cmdGuard(a);$('#pAlert').onclick=()=>askAlert(a);if($('#pEndAl')){const al=SIM.alerts.find(x=>x.a===a&&x.stage<9);$('#pEndAl').onclick=()=>askEndAlert(al);$('#pPoSel').onclick=()=>selectPO(al)}
+  if($('#pPoInfo'))$('#pPoInfo').onclick=()=>{const al=SIM.alerts.find(x=>x.a===a&&x.stage<9&&x.lead);if(al){const c=SIM.coords.find(c=>c.a===a&&c.kind==='poInfo');if(c)answerCoord(c.id,true);else poInfo(al)}}}
   if($('#pSepClr'))$('#pSepClr').onclick=()=>{sepA=sepB=null;renderPanel(true)};
  }
  const v=k=>panelEl.querySelector('[data-v="'+k+'"]');
@@ -1398,7 +1451,7 @@ function renderStrips(){
   const lv=kind==='in'?'E'+a.efl+' → X'+a.xfl:pad3(a.alt/100)+(a.cfl*100!==Math.round(a.alt)?'→'+a.cfl:'')+' · X'+a.xfl+(a.state==='assumed'&&!xflOK(a)?' !':'');
   return '<div class="strip '+a.state+(al?' alert':'')+(a===sel?' sel':'')+'" data-id="'+a.id+'"><span class="cs"><span class="dg" title="'+DCAT[destCat(a.arr)][1]+'">'+DCAT[destCat(a.arr)][0]+'</span> '+a.cs+'</span><span class="r">'+a.type+'/'+a.wake+'</span><span>'+lv+'</span><span class="r">'+(kind==='in'?a.prev.code+'›':'›'+a.next.code)+'</span><span class="m">'+a.dep+'→'+a.arr+'</span><span class="r">'+t+'</span></div>'};
  const als=SIM.alerts.filter(x=>x.stage<9);
- let h=als.length?'<div class="secHead"><span>Défense aérienne</span><span>'+als.length+'</span></div>'+als.map(x=>'<div class="strip alert" data-id="'+x.a.id+'"><span class="cs">'+x.a.cs+'</span><span class="r">COMLOSS</span><span>'+ALSTAGE[x.stage]+'</span><span class="r">'+(x.lead?x.lead.cs:'')+'</span></div>').join(''):'';
+ let h=als.length?'<div class="secHead"><span>Défense aérienne</span><span>'+als.length+'</span></div>'+als.map(x=>'<div class="strip alert'+(selPO===x?' sel':'')+'" data-al="'+SIM.alerts.indexOf(x)+'"><span class="cs">'+x.a.cs+'</span><span class="r">COMLOSS</span><span>'+ALSTAGE[x.stage]+'</span><span class="r">'+(x.lead?x.lead.cs:'')+'</span></div>').join(''):'';
  const co=SIM.coords;
  if(co.length)h+='<div class="secHead"><span>Coordinations ATC</span><span>'+co.length+'</span></div>'+co.map(c=>'<div class="strip coord" data-id="'+c.a.id+'"><span class="cs">'+c.a.cs+'</span><span class="r">'+c.from+'</span><span class="ctxt">'+c.text+'</span>'+(c.mine?'':'<span class="cbtn"><button class="primary" data-co="'+c.id+'" data-ok="1">'+c.ok+'</button>'+(c.no?'<button data-co="'+c.id+'" data-ok="0">'+c.no+'</button>':'')+'</span><span class="r">'+fmtT(Math.max(0,c.deadline-SIM.t))+'</span>')+'</div>').join('');
  h+='<div class="secHead s-in"><span>Entrants</span><span>'+inc.length+'</span></div>'+(inc.length?inc.map(a=>strip(a,'in')).join(''):'<div class="empty">Aucun vol pré-annoncé</div>');
@@ -1407,7 +1460,7 @@ function renderStrips(){
  if(h!==stripsKey){stripsKey=h;stripsEl.innerHTML=h}
 }
 stripsEl.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-co]');if(!b)return;e.preventDefault();e.stopPropagation();answerCoord(+b.dataset.co,b.dataset.ok==='1')});
-stripsEl.addEventListener('click',e=>{if(e.target.closest('[data-co]'))return;const s=e.target.closest('.strip');if(!s)return;const a=SIM.acs.find(q=>q.id===+s.dataset.id);if(a){selectAc(a);if(a.plot){VIEW.cx=a.plot.x;VIEW.cy=a.plot.y}}});
+stripsEl.addEventListener('click',e=>{if(e.target.closest('[data-co]'))return;const sa=e.target.closest('[data-al]');if(sa){const al=SIM.alerts[+sa.dataset.al];if(al){selectPO(al);const f=al.lead;const q=f&&f.plot?f.plot:al.a.plot;if(q){VIEW.cx=q.x;VIEW.cy=q.y}}return}const s=e.target.closest('.strip');if(!s)return;const a=SIM.acs.find(q=>q.id===+s.dataset.id);if(a){selectAc(a);if(a.plot){VIEW.cx=a.plot.x;VIEW.cy=a.plot.y}}});
 stripsEl.addEventListener('dblclick',e=>{const s=e.target.closest('.strip');if(!s)return;const a=SIM.acs.find(q=>q.id===+s.dataset.id);if(!a)return;if(a.state==='offered')cmdAssume(a);else if(a.state==='assumed')askTransfer(a,e.clientX,e.clientY);else if(a.state==='transferred')askRetake(a,e.clientX,e.clientY)});
 function updateUI(){
  document.getElementById('hdClock').textContent=utc(SIM.t);
@@ -1430,6 +1483,7 @@ function runTokens(a,toks){
   else if((m=t.match(/^(?:XFL|CX)(\d{2,3})?$/))){const v=m[1]||toks[++i];if(v&&/^\d{2,3}$/.test(v))cmdAskXfl(a,+v<50?+v*10:+v);else log('bad','XFL : niveau manquant')}
   else if(/^(GUARD|121\.5|1215)$/.test(t))cmdGuard(a);
   else if(/^(ALERTE|ALERT|COMLOSS|NORDO)$/.test(t))askAlert(a);
+  else if(/^(FIN|LEVER|FA|ENDALERT)$/.test(t))askEndAlert(SIM.alerts.find(x=>x.a===a&&x.stage<9));
   else if((m=t.match(/^(?:FL|C|D)?(\d{2,3})$/)))cmdLevel(a,+m[1]<50?+m[1]*10:+m[1]);
   else if((m=t.match(/^(H|HDG|HL|HR|L|R|G)(\d{1,3})$/))){const d=m[1]==='HL'||m[1]==='L'||m[1]==='G'?'L':m[1]==='HR'||m[1]==='R'?'R':null;cmdHdg(a,+m[2],d)}
   else if(t==='DCT'||t==='DIR'){const p=toks[++i];if(p)cmdDirect(a,p);else log('bad','DCT : point manquant')}
