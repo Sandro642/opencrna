@@ -301,7 +301,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
       <span><i style="background:var(--xfer)"></i>Transféré au suivant</span>
       <span><i style="background:#6d6d6d"></i>Non concerné</span>
       <span><i style="background:var(--crit)"></i>STCA / perte de séparation</span>
-      <span>Forme du symbole = destination : ▽ arrivée en région LFBB · ○ France · ◇ Espagne, Portugal, Canaries · □ Royaume-Uni, Irlande · ⬡ reste de l'Europe · ☆ long-courrier · ▲ Rafale de la PO. Point plein au centre = vol sous votre contrôle.</span>
+      <span>Forme du symbole = destination : ▽ arrivée en région LFBB · ○ France · ◇ Espagne, Portugal, Canaries · □ Royaume-Uni, Irlande · ⬡ reste de l'Europe · ☆ long-courrier · ✕ militaire (U-2 de reconnaissance de l'US Air Force, transit Fairford ⇄ Morón vers FL610–650, lent : Mach 0,62, plafond FL700) · ▲ chasseurs de la PO. Point plein au centre = vol sous votre contrôle.</span>
     </div>
     <h2>Ligne de commande</h2>
     <p class="hint">Format : <code>[indicatif] commande [commande…]</code>. L'indicatif peut être partiel (6142). Sans indicatif, la commande s'applique au vol sélectionné.</p>
@@ -375,6 +375,7 @@ const PERF={
  A359:{n:'Airbus A350-900',w:'H',roc:[2600,2200,1700,1200,800,500],ceil:430,cl:[300,.84],cr:.85,ds:[300,.85]},
  B77W:{n:'Boeing 777-300ER',w:'H',roc:[2200,1800,1400,900,500,200],ceil:430,cl:[310,.83],cr:.84,ds:[310,.84]},
  B789:{n:'Boeing 787-9',w:'H',roc:[2600,2200,1800,1300,900,500],ceil:430,cl:[300,.84],cr:.85,ds:[300,.85]},
+ U2:{n:'Lockheed U-2S',w:'M',roc:[5000,4200,3400,2600,2000,1400],ceil:700,cl:[160,.60],cr:.62,ds:[180,.62]},
  C56X:{n:'Cessna Citation Excel',w:'M',roc:[3800,3200,2500,1800,1200,800],ceil:450,cl:[270,.70],cr:.74,ds:[280,.74]},
 };
 const ROCALT=[0,10000,20000,30000,37000,41000];
@@ -384,6 +385,7 @@ function rodAt(pf,h){const f=pf.w==='H'?.9:1;return(h<10000?1700:h<24000?2300:27
 
 /* ===================== Compagnies ===================== */
 const AL={
+ DRG:{say:'Dragon',mil:1,t:[['U2',1]],cs:['n2']},
  AFR:{say:'Air France',fr:1,t:[['A320',4],['A321',2],['A319',2],['A20N',2],['A21N',1],['E190',1],['CRJ9',.6]],h:['B77W','A359','A332'],cs:['n4','n2a2']},
  TVF:{say:'France Soleil',fr:1,t:[['B738',1]],cs:['n4','n3a']},
  EZY:{say:'Easy',t:[['A320',4],['A20N',3],['A319',2],['A21N',1]],cs:['n2a2','n4','n3a']},
@@ -448,6 +450,8 @@ const AP_UK=['EGLL','EGKK','EGSS','EGGW','EGCC','EGBB','EGPH','EIDW','EGGD'],AP_
 const AP_DE=['EDDF','EDDM','EDDL','EDDS','EDDH','EDDB','LSZH','LOWW','EPWA'],AP_ITA=['LIMC','LIML','LIRF','LIPZ','LIMF'];
 const AP_IBW=['LPPT','LPPR','LPFR','GCLP','GCTS','GCRR','LEST','LEVX','GMMN'],AP_ESE=['LEVC','LEAL','LEPA','LEIB','LEMI'],AP_BCN=['LEBL','LEGE','LERS'],AP_SAM=['SBGR','SBGL','SCEL','SAEZ'];
 const FLOWDEF=[
+ // Avion de reconnaissance U-2 (USAF) : transit très haute altitude Fairford ⇄ Morón
+ {r:'NORAX AMB POI CNA BMC LANDO BTZ PPN SIE',from:['EGVA'],to:['LEMO'],al:[['DRG',1]],mil:1,rfl:[610,650],w:3.5},
  {r:'LFPO ORVEL VIERX POI CNA BMC LANDO BTZ PPN SIE',to:['LEMD','LEMG','LEZL','LEMD'],al:[['AFR',3],['IBE',3],['VLG',3],['TVF',2],['EZY',2],['AEA',1],['IBS',1]],rfl:[340,400],w:3},
  {r:'LFPG ORVEL VIERX POI CNA BMC LANDO BTZ PPN SIE',to:['LEMD','LEMG','LEZL'],al:[['AFR',4],['IBE',3],['VLG',2],['EZY',1]],rfl:[340,400],w:2},
  {r:'NORAX AMB POI CNA BMC LANDO BTZ PPN SIE',from:AP_UK.concat(AP_BNL),to:['LEMD','LEMG','LEZL','LEMD'],al:[['BAW',3],['EZY',4],['RYR',4],['EXS',2],['TOM',1],['IBE',2],['VLG',2],['KLM',1],['TRA',1],['NJE',.4]],rfl:[340,400],w:5},
@@ -594,11 +598,11 @@ function makeFlight(flow){
  const pf=PERF[type];
  const p0=pts[0],pl=pts[pts.length-1];const east=brg(p0.x,p0.y,pl.x,pl.y)<180;
  let cap=470;if(depAp&&arrAp){let L=0;for(let i=0;i<pts.length-1;i++)L+=dist(pts[i].x,pts[i].y,pts[i+1].x,pts[i+1].y);cap=Math.max(240,120+L*.7)}
- let rfl=type==='C56X'?chooseRFL(410,450,east,pf,470):chooseRFL(flow.rfl[0],flow.rfl[1],east,pf,cap);
+ let rfl=flow.mil?(east?pick([610,650]):630):type==='C56X'?chooseRFL(410,450,east,pf,470):chooseRFL(flow.rfl[0],flow.rfl[1],east,pf,cap);
  let cs;do{cs=genCs(alc)}while(SIM.acs.some(x=>x.cs===cs));
  const a={id:++SIM.seq,cs,al:alc,say:al.say+' '+cs.slice(3),fr:!!al.fr,type,pf,wake:pf.w,dep:from,arr:to,depAp,arrAp,rfl,tok,pts,
   x:p0.x,y:p0.y,leg:1,hdg:brg(p0.x,p0.y,pts[1].x,pts[1].y),mode:'nav',hdgSel:0,turnDir:null,spdMode:'auto',spdVal:0,
-  alt:depAp?2500:rfl*100,vs:0,tas:0,gs:0,trk:0,pfac:rnd(.88,1.1),tod:false,routeEnd:false,
+  alt:depAp?2500:rfl*100,vs:0,tas:0,gs:0,trk:0,pfac:rnd(.88,1.1),tod:false,mil:!!al.mil,routeEnd:false,
   state:'bg',concerned:false,cfl:rfl,hist:[],plot:null,lx:16,ly:-34,flags:{}};
  a.tas=depAp?casToTas(230,2500):Math.min(pf.cr*sos(a.alt),casToTas(310,a.alt));
  return a;
@@ -653,7 +657,7 @@ function spawnConverging(){
   const inA=A.pred.filter(s=>s.t>=Math.max(A.entryT+60,SIM.t+240)&&s.t<=A.exitT-60&&inVol(s.x,s.y,s.alt));
   if(inA.length<4)continue;
   for(let n=0;n<60;n++){
-   const flow=wpick(FLOWS.map(f=>[f,f.w]));const B=makeFlight(flow);const S=predict(B,5400);
+   const flow=wpick(FLOWS.map(f=>[f,f.w]));if(flow.mil)continue;const B=makeFlight(flow);const S=predict(B,5400);
    let best=null;
    for(const sb of S){if(Math.abs(sb.x-inA[0].x)>250)continue;for(const sa of inA){const d=Math.abs(sa.x-sb.x)+Math.abs(sa.y-sb.y);if(d<2.5&&(!best||d<best.d))best={d,sa,sb}}}
    if(!best)continue;
@@ -1134,7 +1138,8 @@ function draw(){
  if(!SIM.running||SIM.speed===0){ctx.fillStyle='rgba(255,255,255,.85)';ctx.font='600 13px '+fUI;ctx.fillText(SIM.running?'PAUSE':'',12,20)}
 }
 const fUI="'Barlow Semi Condensed',Arial,sans-serif",fMono="'JetBrains Mono',ui-monospace,monospace";
-const DCAT={loc:['▽','Arrivée région LFBB'],fr:['○','France'],ib:['◇','Espagne · Portugal · Canaries'],uk:['□','Royaume-Uni · Irlande'],eu:['⬡','Europe du Nord et de l\'Est · Italie · Suisse'],lh:['☆','Long-courrier']};
+const DCAT={loc:['▽','Arrivée région LFBB'],fr:['○','France'],ib:['◇','Espagne · Portugal · Canaries'],uk:['□','Royaume-Uni · Irlande'],eu:['⬡','Europe du Nord et de l\'Est · Italie · Suisse'],lh:['☆','Long-courrier'],mil:['✕','Militaire (U-2)']};
+const catOf=a=>a.mil?'mil':destCat(a.arr);
 const LFBB_APTS=new Set(['LFBD','LFBO','LFBZ','LFBP','LFBT','LFBE','LFBL','LFBA','LFBI','LFBG','LFBU','LFBV','LFBX','LFCR','LFBM','LFBC','LFBY','LFCK']);
 function destCat(ic){if(!ic)return'eu';if(LFBB_APTS.has(ic))return'loc';if(ic.startsWith('LF'))return'fr';if(/^(LE|LP|GC|GM)/.test(ic))return'ib';if(/^(EG|EI)/.test(ic))return'uk';if(/^(S|K|C|M|T|F|O|V|R|Z|Y|U|W|N|H|D|A|B|P)/.test(ic))return'lh';return'eu'}
 function drawShape(cat,X,Y,r){ctx.beginPath();
@@ -1143,6 +1148,7 @@ function drawShape(cat,X,Y,r){ctx.beginPath();
  else if(cat==='ib'){const q=r*1.25;ctx.moveTo(X,Y-q);ctx.lineTo(X+q,Y);ctx.lineTo(X,Y+q);ctx.lineTo(X-q,Y);ctx.closePath()}
  else if(cat==='uk'){const q=r*.85;ctx.rect(X-q,Y-q,2*q,2*q)}
  else if(cat==='eu'){for(let k=0;k<6;k++){const an=k*Math.PI/3+Math.PI/6;const px=X+r*1.05*Math.cos(an),py=Y+r*1.05*Math.sin(an);k?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath()}
+ else if(cat==='mil'){const q=r*1.05;ctx.moveTo(X-q,Y-q);ctx.lineTo(X+q,Y+q);ctx.moveTo(X+q,Y-q);ctx.lineTo(X-q,Y+q)}
  else{for(let k=0;k<10;k++){const an=-Math.PI/2+k*Math.PI/5;const rr=k%2?r*.55:r*1.35;const px=X+rr*Math.cos(an),py=Y+rr*Math.sin(an);k?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath()}
  ctx.stroke()}
 function acColor(a){if(a.state==='pre'&&SIM.t<a.preT)return COL.bg;if(a.state==='assumed')return COL.mine1;if(a.state==='offered')return COL.call;if(a.state==='pre')return COL.pre;if(a.state==='transferred')return COL.xfer;if(a.state==='missed')return COL.miss;return COL.bg}
@@ -1165,7 +1171,7 @@ function drawTraffic(){
   if(LAY.vec>0){const L=p.gs*LAY.vec/60;ctx.strokeStyle=col;ctx.globalAlpha=.8;ctx.beginPath();ctx.moveTo(X,Y);ctx.lineTo(sx(p.x+L*Math.sin(p.trk*D2R)),sy(p.y+L*Math.cos(p.trk*D2R)));ctx.stroke();ctx.globalAlpha=1}
   // symbole
   ctx.strokeStyle=alert?COL.crit:col;ctx.fillStyle=alert?COL.crit:col;ctx.lineWidth=1.3;
-  drawShape(destCat(a.arr),X,Y,a.concerned?4.6:3.6);
+  drawShape(catOf(a),X,Y,a.concerned?4.6:3.6);
   if(a.state==='assumed')ctx.fillRect(X-1.4,Y-1.4,2.8,2.8);
   ctx.lineWidth=1;
   // étiquette
@@ -1451,7 +1457,7 @@ function renderStrips(){
  const xf=SIM.acs.filter(a=>a.state==='transferred'||a.state==='missed').sort((a,b)=>(b.transferredAt||0)-(a.transferredAt||0)).slice(0,5);
  const strip=(a,kind)=>{const al=(stcaOf(a)&&isMine(a))||a.alerted;const t=kind==='in'?(a.state==='offered'&&!a.called&&SIM.t-a.offeredAt>40?'sans appel '+fmtT(SIM.t-a.offeredAt):'entrée '+fmtT(a.entryT-SIM.t)):kind==='ctl'?(a.tte!=null?'sortie '+fmtT(a.tte):'hors volume'):'';
   const lv=kind==='in'?'E'+a.efl+' → X'+a.xfl:pad3(a.alt/100)+(a.cfl*100!==Math.round(a.alt)?'→'+a.cfl:'')+' · X'+a.xfl+(a.state==='assumed'&&!xflOK(a)?' !':'');
-  return '<div class="strip '+a.state+(al?' alert':'')+(a===sel?' sel':'')+'" data-id="'+a.id+'"><span class="cs"><span class="dg" title="'+DCAT[destCat(a.arr)][1]+'">'+DCAT[destCat(a.arr)][0]+'</span> '+a.cs+'</span><span class="r">'+a.type+'/'+a.wake+'</span><span>'+lv+'</span><span class="r">'+(kind==='in'?a.prev.code+'›':'›'+a.next.code)+'</span><span class="m">'+a.dep+'→'+a.arr+'</span><span class="r">'+t+'</span></div>'};
+  return '<div class="strip '+a.state+(al?' alert':'')+(a===sel?' sel':'')+'" data-id="'+a.id+'"><span class="cs"><span class="dg" title="'+DCAT[catOf(a)][1]+'">'+DCAT[catOf(a)][0]+'</span> '+a.cs+'</span><span class="r">'+a.type+'/'+a.wake+'</span><span>'+lv+'</span><span class="r">'+(kind==='in'?a.prev.code+'›':'›'+a.next.code)+'</span><span class="m">'+a.dep+'→'+a.arr+'</span><span class="r">'+t+'</span></div>'};
  const als=SIM.alerts.filter(x=>x.stage<9);
  let h=als.length?'<div class="secHead"><span>Défense aérienne</span><span>'+als.length+'</span></div>'+als.map(x=>'<div class="strip alert'+(selPO===x?' sel':'')+'" data-al="'+SIM.alerts.indexOf(x)+'"><span class="cs">'+x.a.cs+'</span><span class="r">COMLOSS</span><span>'+ALSTAGE[x.stage]+'</span><span class="r">'+(x.lead?x.lead.cs:'')+'</span></div>').join(''):'';
  const co=SIM.coords;
