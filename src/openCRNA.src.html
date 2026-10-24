@@ -301,7 +301,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
       <span><i style="background:var(--xfer)"></i>Transféré au suivant</span>
       <span><i style="background:#6d6d6d"></i>Non concerné</span>
       <span><i style="background:var(--crit)"></i>STCA / perte de séparation</span>
-      <span>Forme du symbole = destination : ▽ arrivée en région LFBB · ○ France · ◇ Espagne, Portugal, Canaries · □ Royaume-Uni, Irlande · ⬡ reste de l'Europe · ☆ long-courrier · ✕ militaire (U-2 de reconnaissance de l'US Air Force, transit Fairford ⇄ Morón vers FL610–650, lent : Mach 0,62, plafond FL700) · ▲ chasseurs de la PO. Point plein au centre = vol sous votre contrôle.</span>
+      <span>Forme du symbole = destination : ▽ arrivée en région LFBB · ○ France · ◇ Espagne, Portugal, Canaries · □ Royaume-Uni, Irlande · ⬡ reste de l'Europe · ☆ long-courrier · ✕ militaire : U-2 de reconnaissance de l'US Air Force (transit Fairford ⇄ Morón vers FL610–650, lent : Mach 0,62, plafond FL700), ravitailleurs KC-135 « Quid » et A330 MRTT Phénix « Cotam » (FL220–270), AWACS E-3 de l'OTAN « NATO » (FL290–310). Ravitailleurs et AWACS font plusieurs tours d'orbite en hippodrome entre deux points (MEDIX ⇄ LANDO, PERIX ⇄ CAHIX, CASTX ⇄ TOU) avant de reprendre leur route : séparez le trafic qui croise leur orbite · ▲ chasseurs de la PO. Point plein au centre = vol sous votre contrôle.</span>
     </div>
     <h2>Ligne de commande</h2>
     <p class="hint">Format : <code>[indicatif] commande [commande…]</code>. L'indicatif peut être partiel (6142). Sans indicatif, la commande s'applique au vol sélectionné.</p>
@@ -375,6 +375,9 @@ const PERF={
  A359:{n:'Airbus A350-900',w:'H',roc:[2600,2200,1700,1200,800,500],ceil:430,cl:[300,.84],cr:.85,ds:[300,.85]},
  B77W:{n:'Boeing 777-300ER',w:'H',roc:[2200,1800,1400,900,500,200],ceil:430,cl:[310,.83],cr:.84,ds:[310,.84]},
  B789:{n:'Boeing 787-9',w:'H',roc:[2600,2200,1800,1300,900,500],ceil:430,cl:[300,.84],cr:.85,ds:[300,.85]},
+ K35R:{n:'Boeing KC-135R Stratotanker',w:'H',roc:[2800,2200,1600,1000,500,200],ceil:410,cl:[280,.74],cr:.76,ds:[290,.78]},
+ MRTT:{n:'Airbus A330 MRTT Phénix',w:'H',roc:[2400,2000,1600,1100,700,300],ceil:410,cl:[300,.80],cr:.80,ds:[300,.82]},
+ E3TF:{n:'Boeing E-3 Sentry (AWACS)',w:'H',roc:[2000,1600,1200,800,400,150],ceil:400,cl:[280,.72],cr:.72,ds:[280,.74]},
  U2:{n:'Lockheed U-2S',w:'M',roc:[5000,4200,3400,2600,2000,1400],ceil:700,cl:[160,.60],cr:.62,ds:[180,.62]},
  C56X:{n:'Cessna Citation Excel',w:'M',roc:[3800,3200,2500,1800,1200,800],ceil:450,cl:[270,.70],cr:.74,ds:[280,.74]},
 };
@@ -386,6 +389,9 @@ function rodAt(pf,h){const f=pf.w==='H'?.9:1;return(h<10000?1700:h<24000?2300:27
 /* ===================== Compagnies ===================== */
 const AL={
  DRG:{say:'Dragon',mil:1,t:[['U2',1]],cs:['n2']},
+ QID:{say:'Quid',mil:1,t:[['K35R',1]],cs:['n2']},
+ CTM:{say:'Cotam',fr:1,mil:1,t:[['MRTT',1]],cs:['n4']},
+ NAT:{say:'NATO',mil:1,t:[['E3TF',1]],cs:['n2']},
  AFR:{say:'Air France',fr:1,t:[['A320',4],['A321',2],['A319',2],['A20N',2],['A21N',1],['E190',1],['CRJ9',.6]],h:['B77W','A359','A332'],cs:['n4','n2a2']},
  TVF:{say:'France Soleil',fr:1,t:[['B738',1]],cs:['n4','n3a']},
  EZY:{say:'Easy',t:[['A320',4],['A20N',3],['A319',2],['A21N',1]],cs:['n2a2','n4','n3a']},
@@ -452,6 +458,10 @@ const AP_IBW=['LPPT','LPPR','LPFR','GCLP','GCTS','GCRR','LEST','LEVX','GMMN'],AP
 const FLOWDEF=[
  // Avion de reconnaissance U-2 (USAF) : transit très haute altitude Fairford ⇄ Morón
  {r:'NORAX AMB POI CNA BMC LANDO BTZ PPN SIE',from:['EGVA'],to:['LEMO'],al:[['DRG',1]],mil:1,rfl:[610,650],w:3.5},
+ // Militaires en orbite (hippodrome entre deux points, quelques tours puis reprise de la route) : AWACS de l'OTAN au-dessus des Landes, ravitailleurs
+ {r:'NORAX AMB POI CNA MEDIX LANDO BTZ PPN SIE',from:['ETNG'],to:['LETO'],al:[['NAT',1]],mil:1,orb:['MEDIX','LANDO'],rfl:[290,310],w:1.2},
+ {r:'NTS OLONE RUFAX PERIX CAHIX TOU ANDOX VLA',from:['EGUN'],to:['LEZG'],al:[['QID',1]],mil:1,orb:['PERIX','CAHIX'],rfl:[240,270],w:1.2},
+ {r:'FJR CASTX TOU TAN ORTHX SSN',from:['LFMI'],to:['LFBC'],al:[['CTM',1]],mil:1,orb:['CASTX','TOU'],rfl:[220,260],w:1.2},
  {r:'LFPO ORVEL VIERX POI CNA BMC LANDO BTZ PPN SIE',to:['LEMD','LEMG','LEZL','LEMD'],al:[['AFR',3],['IBE',3],['VLG',3],['TVF',2],['EZY',2],['AEA',1],['IBS',1]],rfl:[340,400],w:3},
  {r:'LFPG ORVEL VIERX POI CNA BMC LANDO BTZ PPN SIE',to:['LEMD','LEMG','LEZL'],al:[['AFR',4],['IBE',3],['VLG',2],['EZY',1]],rfl:[340,400],w:2},
  {r:'NORAX AMB POI CNA BMC LANDO BTZ PPN SIE',from:AP_UK.concat(AP_BNL),to:['LEMD','LEMG','LEZL','LEMD'],al:[['BAW',3],['EZY',4],['RYR',4],['EXS',2],['TOM',1],['IBE',2],['VLG',2],['KLM',1],['TRA',1],['NJE',.4]],rfl:[340,400],w:5},
@@ -553,14 +563,15 @@ function stepAc(a,dt){
  a.x+=vx*dt/3600;a.y+=vy*dt/3600;a.gs=Math.hypot(vx,vy);a.trk=norm(Math.atan2(vx,vy)*R2D);
  if(a.mode==='nav'){const w=a.pts[a.leg];if(w){const dd=dist(a.x,a.y,w.x,w.y);let ant=1;const nx=a.pts[a.leg+1];
    if(nx){const turn=Math.abs(angDiff(brg(w.x,w.y,nx.x,nx.y),a.trk));const R=a.gs/(rate*62.83);ant=clamp(R*Math.tan(Math.min(turn,120)/2*D2R),.8,9)}
-   if(dd<ant){if(a.leg<a.pts.length-1)a.leg++;else a.routeEnd=true}}}
+   if(a.orb&&a.orbLaps>0&&a.leg===a.orb[1])ant=Math.min(ant,3);
+   if(dd<ant){if(a.orb&&a.orbLaps>0&&a.leg===a.orb[1]){a.orbLaps--;a.leg=a.orb[0]}else if(a.leg<a.pts.length-1)a.leg++;else a.routeEnd=true}}}
 }
 function arrived(a){if(a.routeEnd)return true;if(a.arrAp){const p=a.pts[a.pts.length-1];return dist(a.x,a.y,p.x,p.y)<12&&a.alt<7000}return false}
 
 /* ===================== Prédiction de trajectoire ===================== */
 function predict(a0,horizon){
  const a={...a0};const S=[];const dt=5;let t=0;
- while(t<=horizon){if(t%10===0)S.push({t,x:a.x,y:a.y,alt:a.alt,hdg:a.hdg,tas:a.tas,vs:a.vs,leg:a.leg,tod:a.tod});
+ while(t<=horizon){if(t%10===0)S.push({t,x:a.x,y:a.y,alt:a.alt,hdg:a.hdg,tas:a.tas,vs:a.vs,leg:a.leg,tod:a.tod,ol:a.orbLaps});
   a.cfl=plannedCfl(a);stepAc(a,dt);t+=dt;if(arrived(a))break}
  return S;
 }
@@ -598,16 +609,17 @@ function makeFlight(flow){
  const pf=PERF[type];
  const p0=pts[0],pl=pts[pts.length-1];const east=brg(p0.x,p0.y,pl.x,pl.y)<180;
  let cap=470;if(depAp&&arrAp){let L=0;for(let i=0;i<pts.length-1;i++)L+=dist(pts[i].x,pts[i].y,pts[i+1].x,pts[i+1].y);cap=Math.max(240,120+L*.7)}
- let rfl=flow.mil?(east?pick([610,650]):630):type==='C56X'?chooseRFL(410,450,east,pf,470):chooseRFL(flow.rfl[0],flow.rfl[1],east,pf,cap);
+ let rfl=flow.mil&&flow.rfl[0]>=600?(east?pick([610,650]):630):type==='C56X'?chooseRFL(410,450,east,pf,470):chooseRFL(flow.rfl[0],flow.rfl[1],east,pf,cap);
  let cs;do{cs=genCs(alc)}while(SIM.acs.some(x=>x.cs===cs));
  const a={id:++SIM.seq,cs,al:alc,say:al.say+' '+cs.slice(3),fr:!!al.fr,type,pf,wake:pf.w,dep:from,arr:to,depAp,arrAp,rfl,tok,pts,
   x:p0.x,y:p0.y,leg:1,hdg:brg(p0.x,p0.y,pts[1].x,pts[1].y),mode:'nav',hdgSel:0,turnDir:null,spdMode:'auto',spdVal:0,
-  alt:depAp?2500:rfl*100,vs:0,tas:0,gs:0,trk:0,pfac:rnd(.88,1.1),tod:false,mil:!!al.mil,routeEnd:false,
+  alt:depAp?2500:rfl*100,vs:0,tas:0,gs:0,trk:0,pfac:rnd(.88,1.1),tod:false,mil:!!al.mil,orb:null,orbLaps:0,routeEnd:false,
   state:'bg',concerned:false,cfl:rfl,hist:[],plot:null,lx:16,ly:-34,flags:{}};
  a.tas=depAp?casToTas(230,2500):Math.min(pf.cr*sos(a.alt),casToTas(310,a.alt));
+ if(flow.orb){const i=Math.min(tok.indexOf(flow.orb[0]),tok.indexOf(flow.orb[1]));if(i>=0){a.orb=[i,i+1];a.orbLaps=Math.floor(rnd(2,5))}}
  return a;
 }
-function applySample(a,s){a.x=s.x;a.y=s.y;a.alt=s.alt;a.hdg=s.hdg;a.tas=s.tas;a.vs=s.vs;a.leg=s.leg;a.tod=s.tod;a.trk=s.hdg;a.gs=s.tas}
+function applySample(a,s){if(s.ol!=null)a.orbLaps=s.ol;a.x=s.x;a.y=s.y;a.alt=s.alt;a.hdg=s.hdg;a.tas=s.tas;a.vs=s.vs;a.leg=s.leg;a.tod=s.tod;a.trk=s.hdg;a.gs=s.tas}
 
 function spawnConflict(a,limitT){
  for(const b of SIM.acs){if(dist(a.x,a.y,b.x,b.y)<9&&Math.abs(a.alt-b.alt)<1500)return true}
@@ -702,6 +714,7 @@ function pilotCall(a){
  const fl=Math.round(a.alt/100),c=a.cfl;let s;
  if(a.fr)s=myName(1)+' '+greet(1)+', '+a.say+', '+(Math.abs(a.alt-c*100)>300?(a.vs>0?'en montée ':'en descente ')+'niveau '+c+', passant '+fl:'niveau '+fl);
  else s=myName(0)+', '+greet(0)+', '+a.say+', '+(Math.abs(a.alt-c*100)>300?'passing FL'+fl+(a.vs>0?' climbing ':' descending ')+'FL'+c:'FL'+fl);
+ if(a.orb&&a.orbLaps>0){const o1=a.pts[a.orb[0]].id,o2=a.pts[a.orb[1]].id;s+=a.fr?', pour orbite entre '+o1+' et '+o2:', request orbit between '+o1+' and '+o2}
  if(a.mode==='hdg'&&a.coordHdg)s+=a.fr?', cap '+pad3(a.hdgSel||360):', heading '+pad3(a.hdgSel||360);
  pilot(a,s);
 }
@@ -1138,7 +1151,7 @@ function draw(){
  if(!SIM.running||SIM.speed===0){ctx.fillStyle='rgba(255,255,255,.85)';ctx.font='600 13px '+fUI;ctx.fillText(SIM.running?'PAUSE':'',12,20)}
 }
 const fUI="'Barlow Semi Condensed',Arial,sans-serif",fMono="'JetBrains Mono',ui-monospace,monospace";
-const DCAT={loc:['▽','Arrivée région LFBB'],fr:['○','France'],ib:['◇','Espagne · Portugal · Canaries'],uk:['□','Royaume-Uni · Irlande'],eu:['⬡','Europe du Nord et de l\'Est · Italie · Suisse'],lh:['☆','Long-courrier'],mil:['✕','Militaire (U-2)']};
+const DCAT={loc:['▽','Arrivée région LFBB'],fr:['○','France'],ib:['◇','Espagne · Portugal · Canaries'],uk:['□','Royaume-Uni · Irlande'],eu:['⬡','Europe du Nord et de l\'Est · Italie · Suisse'],lh:['☆','Long-courrier'],mil:['✕','Militaire (U-2, ravitailleur, AWACS)']};
 const catOf=a=>a.mil?'mil':destCat(a.arr);
 const LFBB_APTS=new Set(['LFBD','LFBO','LFBZ','LFBP','LFBT','LFBE','LFBL','LFBA','LFBI','LFBG','LFBU','LFBV','LFBX','LFCR','LFBM','LFBC','LFBY','LFCK']);
 function destCat(ic){if(!ic)return'eu';if(LFBB_APTS.has(ic))return'loc';if(ic.startsWith('LF'))return'fr';if(/^(LE|LP|GC|GM)/.test(ic))return'ib';if(/^(EG|EI)/.test(ic))return'uk';if(/^(S|K|C|M|T|F|O|V|R|Z|Y|U|W|N|H|D|A|B|P)/.test(ic))return'lh';return'eu'}
@@ -1406,6 +1419,7 @@ function renderPanel(force){
   else if(canRetake(a))h+='<button class="big" id="pAct">Reprendre le vol (annuler le transfert)</button>';
   h+='<dl class="kv"><dt>Trajet</dt><dd>'+a.dep+' → '+a.arr+'</dd><dt>RFL</dt><dd>FL'+a.rfl+'</dd>';
   if(a.concerned)h+='<dt>Entrée</dt><dd>'+a.prev.sh+' · E'+a.efl+' · '+a.entryPt+'</dd><dt>Sortie</dt><dd>'+a.next.sh+' · '+a.exitPt+'</dd><dt>XFL</dt><dd data-v="xfl"></dd>';
+  if(a.orb)h+='<dt>Orbite</dt><dd data-v="orb"></dd>';
   h+='<dt>Niveau</dt><dd data-v="alt"></dd><dt>Vario</dt><dd data-v="vs"></dd><dt>Vitesses</dt><dd data-v="spd"></dd><dt>Route / GS</dt><dd data-v="trk"></dd>';
   if(a.concerned)h+='<dt>'+(a.state==='pre'||a.state==='offered'?'Entrée dans':'Sortie dans')+'</dt><dd data-v="eta"></dd>';
   h+='</dl>';
@@ -1442,6 +1456,7 @@ function renderPanel(force){
  if(v('vs'))v('vs').textContent=(a.vs>0?'+':'')+Math.round(a.vs/50)*50+' ft/min';
  if(v('spd'))v('spd').textContent=Math.round(c)+' kt · M.'+String(Math.round(m*100)).padStart(2,'0')+' · TAS '+Math.round(a.tas);
  if(v('trk'))v('trk').textContent=pad3(a.trk)+'° · '+Math.round(a.gs)+' kt';
+ if(v('orb'))v('orb').textContent=a.pts[a.orb[0]].id+' ⇄ '+a.pts[a.orb[1]].id+' · '+(a.orbLaps>0?a.orbLaps+' tour'+(a.orbLaps>1?'s':'')+' restant'+(a.orbLaps>1?'s':''):'terminée');
  if(v('xfl')){v('xfl').textContent=xflTxt(a)+(a.state==='assumed'?(xflOK(a)?' ✓':' ✗'):'');v('xfl').style.color=a.state==='assumed'?(xflOK(a)?'var(--ok)':'var(--call)'):''}
  if(v('eta'))v('eta').textContent=a.state==='pre'||a.state==='offered'?fmtT(a.entryT-SIM.t):a.state==='assumed'?(a.tte!=null?fmtT(a.tte):'hors volume'):'—';
  if(v('rdo'))v('rdo').textContent=a.alerted?'COMLOSS déclaré':a.noResp?'sans réponse ×'+a.noResp:a.called?'normal':'pas encore appelé';

@@ -60,7 +60,7 @@ Dans la page, l'état est global : `SIM`, `VOL`, `sel`, fonctions `stepAc`, `tic
 - **Points** (`PTS`) : VOR réels + terrains + points 5 lettres **fictifs** (`FIXDEF`).
 - **Unités voisines** (`UNITS`, `SECFREQ`, `APPS`) : fréquences **fictives**.
 - **Configurations** (`CONFIGS`) : secteurs VATSpy LFBB (H, L, N, P, R, T, X, Z inférieurs FL115–345 ; UN, US supérieurs FL345–660 ; regroupements).
-- **Militaire** : U-2 (`PERF.U2`, plafond FL700, Mach 0,62), indicatif `DRG` « Dragon », flux `mil:1` Fairford EGVA ⇄ Morón LEMO à FL610–650 (`a.mil`, symbole via `catOf`) ; exclu de `spawnConverging`.
+- **Militaire** : U-2 (`PERF.U2`, plafond FL700, Mach 0,62), indicatif `DRG` « Dragon », flux `mil:1` Fairford EGVA ⇄ Morón LEMO à FL610–650 (`a.mil`, symbole via `catOf`) ; exclu de `spawnConverging`. Orbites : ravitailleurs KC-135 `QID` « Quid », A330 MRTT `CTM` « Cotam » (fr), AWACS E-3 `NAT` « NATO » ; flux avec `orb:[p1,p2]` → `a.orb` (indices de route consécutifs) + `a.orbLaps` (2–4) : `stepAc` renvoie à `orb[0]` en bout d'hippodrome tant qu'il reste des tours ; `orbLaps` stocké dans les échantillons de `predict` (`ol`) et restauré par `applySample`.
 - **Flux** (`FLOWDEF`) : ~30 routes réalistes avec origines/destinations, compagnies, plage de RFL ; inverses générés automatiquement.
 - **Vent** : courant-jet uniforme dont la force dépend de l'altitude.
 - **Modèle avion** : `stepAc(a,dt)` (vertical avec capture, vitesse, virage taux limité par l'inclinaison de 25°, navigation avec correction de vent, séquencement des points) ; `plannedCfl` = profil plan de vol (montée RFL, descente 3:1 vers l'arrivée).
@@ -81,7 +81,7 @@ Dans la page, l'état est global : `SIM`, `VOL`, `sel`, fonctions `stepAc`, `tic
 ## Conventions et choix déjà validés par l'utilisateur
 
 - Thème **noir et gris** ; seules couleurs : ambre = entrants, vert = sous contrôle, bleu = transférés, rouge = alertes (STCA, perte de séparation, COMLOSS).
-- Forme du symbole radar = destination : ▽ arrivée région LFBB, ○ France, ◇ Espagne/Portugal/Canaries, □ Royaume-Uni/Irlande, ⬡ reste de l'Europe, ☆ long-courrier, ✕ militaire (U-2), ▲ plein = chasseurs PO. Point plein = vol sous mon contrôle.
+- Forme du symbole radar = destination : ▽ arrivée région LFBB, ○ France, ◇ Espagne/Portugal/Canaries, □ Royaume-Uni/Irlande, ⬡ reste de l'Europe, ☆ long-courrier, ✕ militaire (U-2, ravitailleurs, AWACS), ▲ plein = chasseurs PO. Point plein = vol sous mon contrôle.
 - Transfert et reprise de transfert **toujours avec confirmation**. Alerte défense aérienne aussi.
 - Plancher et plafond affichés au centre de la zone contrôlée.
 - Les données « réelles » : limites VATSpy (approximation), VOR OurAirports. Le reste est simplifié/fictif et doit le rester **clairement indiqué** dans l'aide (points 5 lettres, fréquences, limites verticales).
