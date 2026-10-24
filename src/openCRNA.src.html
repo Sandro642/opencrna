@@ -250,7 +250,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
         <select id="selSpeed"><option value="1" selected>Temps réel (1×)</option><option value="2">Accéléré 2×</option><option value="4">Accéléré 4×</option></select>
       </label>
       <label>Pertes de contact radio
-        <select id="selNordo"><option value="0">Aucune</option><option value="2" selected>Occasionnelles · ≈2/h</option><option value="5">Fréquentes · ≈5/h</option></select>
+        <select id="selNordo"><option value="0">Aucune</option><option value="2" selected>Occasionnelles · ≈2/h</option><option value="5">Fréquentes · ≈5/h</option><option value="10">Très fréquentes · ≈10/h</option><option value="20">Intenses · ≈20/h</option></select>
       </label>
       <label>Avions convergents
         <select id="selConv"><option value="0">Trafic naturel seulement</option><option value="420" selected>Quelques convergences · ≈1 / 7 min</option><option value="200">Fréquentes · ≈1 / 3 min</option></select>
@@ -273,7 +273,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
     <p>Chaque vol qui traverse votre volume est <b>pré-annoncé</b> (strip ambre) puis <b>transféré</b> par le secteur amont : le pilote vous appelle et son indicatif clignote. Cliquez sur l'indicatif pour l'<b>assumer</b>. Vous seul pouvez alors lui donner des clairances. Avant qu'il quitte votre volume, amenez-le au <b>XFL</b> (niveau de sortie coordonné) puis cliquez à nouveau sur l'indicatif pour le <b>transférer</b> au secteur suivant affiché dans l'étiquette.</p>
     <p>Normes : 5 NM en horizontal ou 1 000 ft en vertical (RVSM FL290–FL410). Règle semi-circulaire : route vraie 000–179° niveaux impairs (FL310, 330…), 180–359° niveaux pairs (FL300, 320…).</p>
     <h2>Pertes de contact radio (COMLOSS)</h2>
-    <p>Certains équipages ne répondent pas : soit ils n'appellent jamais après le transfert (strip « sans appel »), soit ils deviennent muets en cours de route. Sans réponse, l'avion garde sa clairance puis suit son plan de vol. Procédure : relancez-le, essayez <b>Appel 121.5</b> (fréquence de détresse), puis <b>Alertez la défense aérienne</b> depuis la fiche vol (commande <code>ALERTE</code>). La PO de Mont-de-Marsan fait décoller deux Rafale qui interceptent l'avion et se présentent devant le cockpit. Écartez le trafic autour du vol muet. Une alerte rapide rapporte des points, une alerte sur un vol qui répond est une fausse alerte, et un vol muet qui quitte votre secteur sans alerte coûte cher.</p>
+    <p>Certains équipages ne répondent pas : soit ils n'appellent jamais après le transfert (strip « sans appel »), soit ils deviennent muets en cours de route. Sans réponse, l'avion garde sa clairance puis suit son plan de vol. Un <b>Radio check</b> (commande <code>RC</code>) vérifie le contact : un équipage qui répond « 2 sur 5, très haché » risque de perdre la radio. Procédure : relancez-le ou faites un radio check, essayez <b>Appel 121.5</b> (fréquence de détresse), puis <b>Alertez la défense aérienne</b> depuis la fiche vol (commande <code>ALERTE</code>). La PO de Mont-de-Marsan fait décoller deux Rafale qui interceptent l'avion et se présentent devant le cockpit. Écartez le trafic autour du vol muet. Selon le réglage, plusieurs vols peuvent être muets en même temps. Une alerte rapide rapporte des points, une alerte sur un vol qui répond est une fausse alerte, et un vol muet qui quitte votre secteur sans alerte coûte cher.</p>
     <h2>Avions convergents</h2>
     <p>Selon le réglage, le simulateur injecte des vols dont la route croise celle d'un autre vol au même niveau, au même moment, dans votre secteur. Utilisez l'outil Trajectoires pour les repérer tôt.</p>
     <h2>Étiquette radar</h2>
@@ -301,7 +301,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
       <tr><td>RES</td><td>Reprendre la navigation (direct prochain point de la route)</td></tr>
       <tr><td>M78 · S280 · SN</td><td>Mach 0,78 · 280 kt indiqués · vitesse libre</td></tr>
       <tr><td>A · T · REP</td><td>Assumer · Transférer (avec confirmation) · Reprendre un vol transféré tant qu'il est encore dans votre secteur</td></tr>
-      <tr><td>GUARD · ALERTE</td><td>Appel sur 121.5 · Alerter la défense aérienne (COMLOSS)</td></tr>
+      <tr><td>RC · GUARD · ALERTE</td><td>Radio check sur la fréquence · Appel sur 121.5 · Alerter la défense aérienne (COMLOSS)</td></tr>
     </table></div>
     <h2>Écran</h2>
     <p class="hint">Molette ou pincement : zoom. Glisser : déplacer la carte. Glisser une étiquette : la déplacer. Clic droit + glisser (ou bouton Mesure) : relèvement et distance. Bouton Trajectoires (ou vol sélectionné puis clic droit sur un autre vol) : prolonge les routes des deux avions, calcule leur point de croisement, le rapprochement minimal (CPA) et l'écart vertical, puis indique si les caps actuels sont dangereux et propose un cap d'évitement. Le transfert demande toujours une confirmation. Barre d'espace : pause.</p>
@@ -620,7 +620,7 @@ function trySpawn(kind,tau){
  return null;
 }
 function maybeNordo(a){
- if(!SIM.nordoRate||SIM.acs.some(q=>q.nordo&&!q.nordo.done))return;
+ if(!SIM.nordoRate||SIM.acs.filter(q=>q.nordo&&!q.nordo.done).length>=Math.max(1,Math.ceil(SIM.nordoRate/4)))return;
  if(Math.random()<SIM.nordoRate/Math.max(10,SIM.lambda)){const never=SIM.t<a.offerT-20&&Math.random()<.6;a.nordo={kind:never?'never':'mid'};if(never){a.silent=true;a.nordo.onset=a.offerT}}
 }
 function adopt(a,S,k,an){
@@ -675,6 +675,12 @@ function pilotCall(a){
 }
 function queue(a,delay,fn){SIM.queue.push({t:SIM.t+delay,a,fn:()=>{if(a.silent){noResponse(a);return}fn()}})}
 function noResponse(a){if(SIM.t-(a.lastNR??-99)<6)return;a.lastNR=SIM.t;a.noResp=(a.noResp||0)+1;log('sys','… '+a.cs+' : pas de réponse'+(a.noResp>1?' ('+a.noResp+' appels sans réponse)':''))}
+function cmdRadioCheck(a){
+ if(!a.concerned||a.state==='pre'||a.state==='transferred'){log('sys',a.cs+' n\'est pas sur votre fréquence');return}
+ atc(a.fr?a.say+', '+myName(1)+', vérification radio, comment me recevez-vous ?':a.say+', '+myName(0)+', radio check, how do you read?');
+ const weak=a.nordo&&a.nordo.kind==='mid'&&!a.nordo.done&&a.nordo.onset;
+ queue(a,rnd(3,6),()=>{a.called=true;pilot(a,weak?(a.fr?myName(1)+', '+a.say+', on vous reçoit 2 sur 5, très haché':a.say+', reading you two, very broken'):(a.fr?myName(1)+', '+a.say+', 5 sur 5':a.say+', reading you five'))});
+}
 function cmdGuard(a){
  if(!a.concerned||a.state==='pre'){log('sys',a.cs+' n\'est pas encore sous votre responsabilité');return}
  atc(a.fr?a.say+', '+myName(1)+' sur 121.5, si vous recevez, contactez '+myName(1)+' sur '+VOL.freq:a.say+', '+myName(0)+' on guard, if you read, contact '+myName(0)+' on '+VOL.freq);
@@ -1260,7 +1266,7 @@ function renderPanel(force){
    h+='<div class="ctl"><h4>Cap <span data-v="hdg"></span></h4><div class="row"><button data-r="-20">G20</button><button data-r="-10">G10</button><button data-r="10">D10</button><button data-r="20">D20</button><input id="pHd" inputmode="numeric" maxlength="3" placeholder="270" style="width:56px"><button id="pHdGo">Cap</button></div><div class="row"><button id="pRes">Reprendre nav</button><select id="pDct">'+a.pts.slice(a.leg).map(p=>'<option>'+p.id+'</option>').join('')+'</select><button id="pDctGo">Direct</button></div></div>';
    h+='<div class="ctl"><h4>Vitesse <span data-v="spdR"></span></h4><div class="row"><button data-m="-2">−M.02</button><button data-m="2">+M.02</button><input id="pSp" placeholder="M78 / 280" style="width:86px"><button id="pSpGo">OK</button><button id="pSpA">Libre</button></div></div>';
   }
-  if(a.concerned&&a.state!=='pre'&&a.state!=='transferred')h+='<div class="ctl"><h4>Contact radio <span data-v="rdo"></span></h4><div class="row"><button id="pGuard">Appel 121.5</button><button id="pAlert" class="alertBtn">Alerter la défense aérienne</button></div></div>';
+  if(a.concerned&&a.state!=='pre'&&a.state!=='transferred')h+='<div class="ctl"><h4>Contact radio <span data-v="rdo"></span></h4><div class="row"><button id="pRc">Radio check</button><button id="pGuard">Appel 121.5</button><button id="pAlert" class="alertBtn">Alerter la défense aérienne</button></div></div>';
   h+='<div class="ctl"><h4>Plan de vol</h4><div class="route" data-v="route"></div></div>';
   if(sepA&&sepB&&(a===sepA||a===sepB))h+='<button id="pSepClr">Fermer l\'analyse de trajectoires</button>';
   else h+='<p class="hint">Bouton Trajectoires puis clic sur un autre vol (ou clic droit dessus) : croisement, CPA et dangerosité des caps avec '+a.cs+'.</p>';
@@ -1276,7 +1282,7 @@ function renderPanel(force){
    panelEl.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const cur=a.spdMode==='mach'?Math.round(a.spdVal*100):Math.round(a.tas/sos(a.alt)*100);cmdSpeed(a,'mach',cur+(+b.dataset.m))});
    const goS=()=>{const v=$('#pSp').value.trim().toUpperCase();if(v)runTokens(a,[v]);$('#pSp').value=''};$('#pSpGo').onclick=goS;$('#pSp').onkeydown=e=>{if(e.key==='Enter')goS()};$('#pSpA').onclick=()=>cmdSpeed(a,'auto');
   }
-  if($('#pGuard')){$('#pGuard').onclick=()=>cmdGuard(a);$('#pAlert').onclick=()=>askAlert(a)}
+  if($('#pGuard')){$('#pRc').onclick=()=>cmdRadioCheck(a);$('#pGuard').onclick=()=>cmdGuard(a);$('#pAlert').onclick=()=>askAlert(a)}
   if($('#pSepClr'))$('#pSepClr').onclick=()=>{sepA=sepB=null;renderPanel(true)};
  }
  const v=k=>panelEl.querySelector('[data-v="'+k+'"]');
@@ -1327,6 +1333,7 @@ function runTokens(a,toks){
   if(/^(A|ASS|ASSUME|ACC)$/.test(t))cmdAssume(a);
   else if(/^(T|TFR|TRF|TRANSFER|X)$/.test(t))askTransfer(a);
   else if(/^(REP|REPRENDRE|UNDO|RT)$/.test(t))askRetake(a);
+  else if(/^(RC|RADIO|RCHECK|RADIOCHECK)$/.test(t))cmdRadioCheck(a);
   else if(/^(GUARD|121\.5|1215)$/.test(t))cmdGuard(a);
   else if(/^(ALERTE|ALERT|COMLOSS|NORDO)$/.test(t))askAlert(a);
   else if((m=t.match(/^(?:FL|C|D)?(\d{2,3})$/)))cmdLevel(a,+m[1]<50?+m[1]*10:+m[1]);
