@@ -29,23 +29,31 @@ async function install(info){
   const bundle=path.resolve(process.execPath,'../../..');
   if(!bundle.endsWith('.app'))throw new Error('Bundle introuvable : '+bundle);
   if(bundle.includes('/AppTranslocation/'))throw new Error('Déplace openCRNA.app dans le dossier Applications puis relance-la avant de mettre à jour.');
-  fs.accessSync(path.dirname(bundle),fs.constants.W_OK);
+  try{fs.accessSync(path.dirname(bundle),fs.constants.W_OK);fs.accessSync(bundle,fs.constants.W_OK)}
+  catch(e){throw new Error('Pas le droit de remplacer '+bundle+'.\nDans le Terminal : sudo chown -R "$USER" '+bundle)}
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'opencrna-maj-')),zip=path.join(dir,'maj.zip');
   await download(info.url,info.size,zip);
   await run('/usr/bin/ditto',['-x','-k',zip,dir]);
   const fresh=path.join(dir,'openCRNA.app');
   if(!fs.existsSync(path.join(fresh,'Contents/MacOS')))throw new Error('Archive invalide');
-  const q=s=>"'"+s.replace(/'/g,"'\\''")+"'",old=path.join(dir,'ancien.app'),sh=path.join(dir,'maj.sh');
+  const q=s=>"'"+s.replace(/'/g,"'\\''")+"'",old=path.join(dir,'ancien.app'),sh=path.join(dir,'maj.sh'),log=path.join(app.getPath('userData'),'maj-echec.txt');
   fs.writeFileSync(sh,`#!/bin/sh
 while kill -0 ${process.pid} 2>/dev/null; do sleep 0.3; done
-if mv ${q(bundle)} ${q(old)}; then
-  if mv ${q(fresh)} ${q(bundle)}; then rm -rf ${q(old)}; else mv ${q(old)} ${q(bundle)}; fi
+rm -f ${q(log)}
+if mv ${q(bundle)} ${q(old)} 2>>${q(log)}; then
+  if mv ${q(fresh)} ${q(bundle)} 2>>${q(log)}; then rm -rf ${q(dir)}; rm -f ${q(log)}; else mv ${q(old)} ${q(bundle)}; fi
 fi
 xattr -cr ${q(bundle)} 2>/dev/null
 open ${q(bundle)}
 `);
   spawn('/bin/sh',[sh],{detached:true,stdio:'ignore'}).unref();
   app.quit();
+}
+// Au lancement : signale l'échec éventuel de la mise à jour précédente (journal laissé par maj.sh)
+function reportFailure(){
+  const log=path.join(app.getPath('userData'),'maj-echec.txt');if(!fs.existsSync(log))return;
+  const t=fs.readFileSync(log,'utf8').trim();fs.rmSync(log,{force:true});
+  dialog.showMessageBox(win(),{type:'warning',message:'La mise à jour n’a pas pu être installée',detail:(t||'Le remplacement de l’application a échoué.')+'\n\nEssaie : sudo chown -R "$USER" '+path.resolve(process.execPath,'../../..')});
 }
 async function check(manual){
   if(busy)return;busy=true;let acted=false;
@@ -60,4 +68,4 @@ async function check(manual){
   }catch(e){if(manual||acted)dialog.showMessageBox(win(),{type:'warning',message:'Mise à jour impossible',detail:String(e.message||e)})}
   finally{busy=false}
 }
-module.exports={check};
+module.exports={check,reportFailure};

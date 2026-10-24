@@ -21,7 +21,7 @@ app.whenReady().then(()=>{
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
   app.setAboutPanelOptions({applicationName:'openCRNA',applicationVersion:app.getVersion(),copyright:'Simulateur de contrôle en route · profil LFBB',credits:'Données : VATSpy (VATSIM), OurAirports'});
   createWindow();
-  setTimeout(()=>updater.check(false),4000);
+  updater.reportFailure();setTimeout(()=>updater.check(false),4000);
   app.on('activate',()=>{if(BrowserWindow.getAllWindows().length===0)createWindow()});
 });
 app.on('window-all-closed',()=>app.quit());
