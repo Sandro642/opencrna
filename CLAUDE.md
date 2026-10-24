@@ -20,6 +20,8 @@ Le message de commit devient les « Nouveautés » affichées dans l'app : l'éc
 L'app (`mac/app/updater.js`) vérifie la dernière release 4 s après le lancement (et via le menu
 openCRNA → Rechercher les mises à jour…), télécharge le zip, remplace le bundle et relance.
 Pas de Squirrel/electron-updater : impossible sans signature Apple. Node n'est pas installé localement.
+Claude Code tourne en root : toute app copiée dans /Applications doit être rendue à l'utilisateur
+(`chown -R sandrombp:staff /Applications/openCRNA.app`), sinon l'updater ne peut pas la remplacer.
 
 ## Arborescence
 
