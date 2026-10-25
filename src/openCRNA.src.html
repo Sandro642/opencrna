@@ -70,6 +70,13 @@ header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
 #atcList .ar{display:grid;grid-template-columns:auto 1fr auto;gap:8px;padding:2px 10px}
 #atcList .ar.nx{background:var(--panel2);color:#fff}
 #atcList .ar .c{color:var(--accent)} #atcList .ar .f{color:var(--mute)}
+.tm{display:grid;grid-template-columns:auto auto auto minmax(0,1fr);gap:0;border:1px solid var(--line2);font-family:var(--f-mono);font-size:12px;background:var(--pvd)}
+.tm .tmc{display:flex;flex-direction:column;padding:4px 8px;border-right:1px solid var(--line);gap:1px;min-width:0}
+.tm .tmc b{color:#fff;font-weight:600}.tm .tmc .m{color:var(--mute)}
+.tm .tmr{border-right:0}.tm .tmr span{word-break:break-word}
+.tmTag{display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-family:var(--f-mono);font-size:11px;color:var(--mute)}
+.tmTag input{width:62px;padding:3px 4px}.tmTag .sp{flex:1}
+.tmTag button{padding:2px 7px;font-family:var(--f-mono);font-size:11px}
 .tagEdit{display:grid;grid-template-columns:auto 1fr auto 1fr auto 1fr auto;gap:4px;align-items:center;font-family:var(--f-mono);font-size:11px;color:var(--mute)}
 .tagEdit input{width:100%;min-width:0;padding:3px 4px}
 aside{background:var(--panel);border:1px solid var(--line);border-radius:4px;min-height:0;overflow:auto;min-width:0}
@@ -135,6 +142,14 @@ button:disabled{opacity:.4;cursor:default;pointer-events:none}
 #log .good{color:var(--ok)}
 #cmdBox{display:flex;flex-direction:column;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px}
 #cmd{width:100%;font-size:14px;padding:6px;text-transform:uppercase}
+#cmdBox{position:relative}
+#cmdSug{position:absolute;left:6px;right:6px;bottom:calc(100% - 4px);z-index:20;background:var(--win);border:1px solid var(--line2);border-radius:3px;box-shadow:0 -6px 20px rgba(0,0,0,.45);max-height:260px;overflow:auto;font-size:12px}
+#cmdSug .sg{display:grid;grid-template-columns:minmax(64px,auto) minmax(0,1.1fr) minmax(0,1.6fr);gap:10px;padding:3px 8px;cursor:pointer;align-items:baseline}
+#cmdSug .sg b{font-family:var(--f-mono);color:#fff;font-weight:600}
+#cmdSug .sg .ex{font-family:var(--f-mono);color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cmdSug .sg .d{color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cmdSug .sg.cur,#cmdSug .sg:hover{background:var(--panel2)}
+#cmdSug .sg.dim{opacity:.45}
 #cmdBox .hint{font-size:12px}
 #menu{position:fixed;z-index:50;background:var(--win);border:1px solid var(--line2);border-radius:3px;box-shadow:0 6px 24px rgba(0,0,0,.5);max-height:min(560px,80vh);overflow:auto;min-width:120px;font-family:var(--f-mono);font-size:12.5px}
 #menu .mt{font-family:var(--f-ui);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);padding:5px 8px;border-bottom:1px solid var(--line2);position:sticky;top:0;background:var(--winT)}
@@ -186,6 +201,8 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
 #toast{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#3a1414;border:1px solid var(--crit);color:#ffd6d2;padding:6px 12px;border-radius:3px;font-weight:600;z-index:6;pointer-events:none}
 .mobileOnly{display:none}
 
+.win{min-width:min(200px,100%)}
+@media (max-width:1100px){#wCom{width:calc(100% - 8px)!important}#wTraffic{bottom:196px!important;width:min(600px,calc(100% - 8px))!important}}
 @media (max-width:860px){
   .win{left:4px!important;right:4px!important;width:auto!important}
   #wStrips,#wTraffic,#wAtc{top:4px!important;height:58%!important}
@@ -275,8 +292,9 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
     <section class="win" id="wCom" data-w="com"><div class="wt"><span>COMBOX</span><button class="wx" title="Fermer">✕</button></div>
       <div id="log" aria-live="polite"></div>
       <div id="cmdBox">
+        <div id="cmdSug" hidden></div>
         <input id="cmd" autocomplete="off" spellcheck="false" placeholder="AFR6142 370   ·   H270   ·   DCT LMG   ·   A / T">
-        <div class="hint" id="cmdHint">Cliquez sur une étiquette ou un strip pour sélectionner un vol. Clic droit sur un avion : menu. Entrée pour envoyer, Échap pour désélectionner.</div>
+        <div class="hint" id="cmdHint">Tapez un indicatif ou une commande : suggestions avec exemple, Tab pour compléter, ↑↓ pour choisir, Entrée pour envoyer.</div>
       </div>
     </section>
   </div>
@@ -396,6 +414,9 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
       <tr><td>A · T · REP</td><td>Assumer · Transférer (avec confirmation) · Reprendre un vol transféré tant qu'il est encore dans votre secteur</td></tr>
       <tr><td>XFL 350</td><td>Demander au secteur suivant de prendre le vol à un autre niveau de sortie</td></tr>
       <tr><td>MAN 5 30 D · M1.4</td><td>Vol d'essais : manœuvre à 5 G pendant 30 s, virage à droite (G = gauche) · Mach 1,4 (en zone active)</td></tr>
+      <tr><td>OK · NO · PO</td><td>Accepter / refuser la coordination en attente du vol · infos de vol à la patrouille</td></tr>
+      <tr><td>ROUTE · FPL · HL CFL · VEC · TRAJ AFR123 · CTR</td><td>Route · plan de vol · highlight d'un champ · vecteur · trajectoires avec un autre vol · centrer</td></tr>
+      <tr><td>ZONE D31D · PAUSE · X2 · SECT</td><td>Sans indicatif : zone (poste Essais) · pause · vitesse ×1/×2/×4 · recentrer</td></tr>
       <tr><td>CSQ</td><td>Faire confirmer le code transpondeur (« confirmez transpondeur 7500 »)</td></tr>
       <tr><td>URG</td><td>Accuser réception d'un MAYDAY (priorité, déroutement approuvé)</td></tr>
       <tr><td>SQ 4521 · SQ</td><td>Transpondez 4521 · nouveau code attribué automatiquement</td></tr>
@@ -1663,7 +1684,7 @@ function labelClick(a,f,cx,cy){
 /* ===================== Interface façon Aurora : fenêtres flottantes, barres, thème ===================== */
 let THEME='aurora';
 function applyTheme(t){THEME=t==='noir'?'noir':'aurora';document.body.dataset.theme=THEME;Object.assign(COL,THEME==='noir'?COL_NOIR:COL_AURORA)}
-const WINDEF={strips:{l:4,t:4,w:250,h:'60%'},traffic:{r:4,t:4,w:320,h:'calc(100% - 8px)'},com:{l:4,b:4,w:'calc(100% - 340px)',h:170},atc:{l:262,t:4,w:240,h:260}};
+const WINDEF={strips:{l:4,t:4,w:250,h:'calc(100% - 196px)'},traffic:{r:4,b:4,w:600,h:'min(420px,calc(100% - 8px))'},com:{l:4,b:4,w:'calc(100% - 616px)',h:184},atc:{r:4,t:4,w:240,h:260}};
 let WINS={};try{WINS=JSON.parse(localStorage.getItem('opencrna.win')||'{}')}catch(e){}
 function saveWins(){try{localStorage.setItem('opencrna.win',JSON.stringify(WINS))}catch(e){}}
 function winEl(k){return document.querySelector('.win[data-w="'+k+'"]')}
@@ -1704,6 +1725,14 @@ function showMenu(title,items,cx,cy,back){
   if(it.sub){const sub=typeof it.sub==='function'?it.sub():it.sub;showMenu(title+' · '+it.t,sub,cx,cy,()=>showMenu(title,items,cx,cy,back));return}
   closeMenu();it.fn&&it.fn(cx,cy)});
 }
+// Traffic manager (Aurora) : 4 colonnes du plan de vol + ligne de tag
+const ALTN={LFPG:'LFPO',LFPO:'LFPG',LFBD:'LFBO',LFBO:'LFBD',LFBZ:'LFBP',LFBP:'LFBT',LFBT:'LFBP',LFML:'LFMN',LFMN:'LFML',LFLL:'LFLS',LFRS:'LFRN',LEMD:'LEZG',LEBL:'LEGE',LEMG:'LEAL',LEZL:'LEMG',LEBB:'LEVT',LPPT:'LPPR',LPPR:'LPPT',LPFR:'LPPT',EGLL:'EGKK',EGKK:'EGLL',EGSS:'EGGW',EGCC:'EGNM',EDDF:'EDDS',EDDM:'EDDN',EHAM:'EHRD',LSZH:'LSGG',LSGG:'LSZH',EIDW:'EINN',LIRF:'LIRN',LIMC:'LIML',GCLP:'GCTS',GCTS:'GCLP'};
+function fplTas(a){return 'N0'+Math.round((a.pf.cr||.78)*sos((a.rfl||300)*100))}
+function fplRmk(a){if(a.test||a.mil)return 'STS/STATE RMK/'+(a.train?'ENTRAINEMENT':a.test?'VOL D ESSAIS':'MIL');return 'PBN/A1B1D1O1S1 DOF/'+new Date().toISOString().slice(2,10).replace(/-/g,'')+' RMK/TCAS'}
+function tmBlock(a){if(!a.eobt){const m=Math.floor(((SIM.startUTC+SIM.t)/60-rnd(30,150)+1440)%1440);a.eobt=String(Math.floor(m/60)).padStart(2,'0')+String(m%60).padStart(2,'0')}
+ const tel=(AL[a.al]&&AL[a.al].say||a.say.replace(/ \S+$/,'')).toUpperCase();
+ return '<div class="tm"><div class="tmc"><b>'+a.arr+'</b><span>I</span><span data-v="tmSq">'+(a.sq||'—')+'</span></div><div class="tmc"><b>F'+pad3(a.rfl)+'</b><span>'+a.type+' '+a.wake+'</span><span>'+fplTas(a)+'</span><span class="m">'+(ALTN[a.arr]||'—')+'</span></div><div class="tmc"><b>'+a.cs+'</b><span>'+tel+'</span><span>'+a.dep+'</span><span class="m">'+a.eobt+'</span></div><div class="tmc tmr"><span>'+(a.tok||[]).join(' ')+'</span><span class="m">'+fplRmk(a)+'</span></div></div>'+
+ '<div class="tmTag"><span>WP</span><input id="tWp" placeholder="'+(a.mode==='hdg'?'H'+pad3(a.hdgSel):(a.pts[a.leg]?a.pts[a.leg].id:''))+'"><span>ALT</span><input id="tAlt" inputmode="numeric" placeholder="'+pad3(a.cfl)+'"><span>SPD</span><input id="tSpd" placeholder="'+(a.spdMode==='mach'?'M'+Math.round(a.spdVal*100):a.spdMode==='ias'?a.spdVal:'—')+'"><button id="tGo" title="Envoyer (Entrée)">✓</button><button id="tDel" title="Effacer">DEL</button><span class="sp"></span><span>SQK</span><input id="pSq" inputmode="numeric" maxlength="4" placeholder="'+(a.sq||'')+'" style="width:52px"><button id="pSqN">REQ SSR</button><button id="tPm" title="Message au pilote : ligne de commande">PM</button></div>'}
 function showFpl(a,cx,cy){const tas=Math.round((a.pf.cr||.78)*sos((a.rfl||300)*100));
  const route=(a.tok||[]).filter(t=>!/^L[A-Z]{3}$/.test(t)||t===a.dep||t===a.arr).join(' ');
  menu.innerHTML='<div class="mt">FL.PLAN · '+a.cs+'</div><pre class="fpl">(FPL-'+a.cs+'-I'+(a.mil?'M':'S')+'\n-'+a.type+'/'+a.wake+'\n-'+a.dep+'\n-N0'+tas+'F'+pad3(a.rfl)+' '+route+'\n-'+a.arr+'\n-SSR/'+(a.sq||'—')+(a.say?' RTF/'+a.say.toUpperCase():'')+')</pre>';placeMenu(cx,cy)}
@@ -1811,6 +1840,7 @@ function renderPanel(force){
   const ctl=a.state==='assumed';
   let h='<div class="fpHead"><span class="fpCs">'+a.cs+'</span><span class="state '+a.state+'">'+STATE_TXT[a.state]+'</span></div>';
   h+='<div class="hint" style="margin-top:-6px">'+a.say+' · '+a.pf.n+' ('+a.type+'/'+a.wake+')</div>';
+  h+=tmBlock(a);
   if(a.state==='offered'||a.state==='missed')h+='<button class="big primary" id="pAct">Assumer '+a.cs+'</button>';
   else if(a.state==='assumed')h+='<button class="big primary" id="pAct">Transférer → '+a.next.sh+' '+a.next.freq+'</button>';
   else if(canRetake(a))h+='<button class="big" id="pAct">Reprendre le vol (annuler le transfert)</button>';
@@ -1825,14 +1855,13 @@ function renderPanel(force){
   if(a.concerned)h+='<dt>'+(a.state==='pre'||a.state==='offered'?'Entrée dans':'Sortie dans')+'</dt><dd data-v="eta"></dd>';
   h+='</dl>';
   if(ctl){
-   h+='<div class="ctl"><h4>Tag</h4><div class="tagEdit"><span>WP</span><input id="tWp" placeholder="'+(a.mode==='hdg'?'H'+pad3(a.hdgSel):(a.pts[a.leg]?a.pts[a.leg].id:''))+'"><span>ALT</span><input id="tAlt" inputmode="numeric" placeholder="'+pad3(a.cfl)+'"><span>SPD</span><input id="tSpd" placeholder="'+(a.spdMode==='mach'?'M'+Math.round(a.spdVal*100):a.spdMode==='ias'?a.spdVal:'auto')+'"><button id="tGo" title="Envoyer (Entrée)">✓</button></div></div>';
    h+='<div class="ctl"><h4>Niveau <span data-v="cfl"></span></h4><div class="row"><input id="pFl" inputmode="numeric" maxlength="3" placeholder="370"><button id="pFlGo">Autoriser</button><button id="pFlX">XFL '+a.xfl+'</button>'+(a.rfl!==a.xfl?'<button id="pFlR">RFL '+a.rfl+'</button>':'')+'</div></div>';
    if(a.test)h+='<div class="ctl"><h4>Manœuvre (en zone active)</h4><div class="row"><select id="pG">'+[2,3,4,5,6,7,8,9].map(g=>'<option'+(g===5?' selected':'')+'>'+g+'</option>').join('')+'</select><span class="hint">G</span><input id="pGs" inputmode="numeric" maxlength="3" value="30" style="width:48px"><span class="hint">s</span><button id="pGL">Gauche</button><button id="pGR">Droite</button></div></div>';
    if(a.state==='assumed'&&a.next)h+='<div class="ctl"><h4>Coordination sortie → '+a.next.sh+'</h4>'+(SIM.coords.some(c=>c.a===a&&c.kind==='xfl')?'<p class="hint">Demande en cours…</p>':'<div class="row"><input id="pXc" inputmode="numeric" maxlength="3" placeholder="'+a.xfl+'"><button id="pXcGo">Demander XFL</button></div>')+'</div>';
    h+='<div class="ctl"><h4>Cap <span data-v="hdg"></span></h4><div class="row"><button data-r="-20">G20</button><button data-r="-10">G10</button><button data-r="10">D10</button><button data-r="20">D20</button><input id="pHd" inputmode="numeric" maxlength="3" placeholder="270" style="width:56px"><button id="pHdGo">Cap</button></div><div class="row"><button id="pRes">Reprendre nav</button><select id="pDct">'+a.pts.slice(a.leg).map(p=>'<option>'+p.id+'</option>').join('')+'</select><button id="pDctGo">Direct</button></div></div>';
    h+='<div class="ctl"><h4>Vitesse <span data-v="spdR"></span></h4><div class="row"><button data-m="-2">−M.02</button><button data-m="2">+M.02</button><input id="pSp" placeholder="M78 / 280" style="width:86px"><button id="pSpGo">OK</button><button id="pSpA">Libre</button></div></div>';
   }
-  if(a.concerned&&a.state!=='pre'&&a.state!=='transferred')h+='<div class="ctl"><h4>Contact radio <span data-v="rdo"></span></h4><div class="row"><input id="pSq" inputmode="numeric" maxlength="4" placeholder="'+(a.sq||'')+'" style="width:56px"><button id="pSqGo">Transpondez</button><button id="pSqN">Nouveau code</button></div><div class="row"><button id="pRc">Radio check</button><button id="pGuard">Appel 121.5</button><button id="pAlert" class="alertBtn">Alerter la défense aérienne</button>'+(SIM.alerts.some(x=>x.a===a&&x.stage>=2&&x.stage<9&&x.lead)?'<button id="pPoInfo">Infos vol → PO</button>':'')+(SIM.alerts.some(x=>x.a===a&&x.stage<9)?'<button id="pPoSel">Voir la PO</button><button id="pEndAl">Lever l\'alerte</button>':'')+'</div></div>';
+  if(a.concerned&&a.state!=='pre'&&a.state!=='transferred')h+='<div class="ctl"><h4>Contact radio <span data-v="rdo"></span></h4><div class="row"><button id="pRc">Radio check</button><button id="pGuard">Appel 121.5</button><button id="pAlert" class="alertBtn">Alerter la défense aérienne</button>'+(SIM.alerts.some(x=>x.a===a&&x.stage>=2&&x.stage<9&&x.lead)?'<button id="pPoInfo">Infos vol → PO</button>':'')+(SIM.alerts.some(x=>x.a===a&&x.stage<9)?'<button id="pPoSel">Voir la PO</button><button id="pEndAl">Lever l\'alerte</button>':'')+'</div></div>';
   if(a.test&&!a.ai)h+='<div class="ctl"><h4>Programme d\'essais</h4><div data-v="tests"></div></div>';
   h+='<div class="ctl"><h4>Plan de vol</h4><div class="route" data-v="route"></div></div>';
   if(sepA&&sepB&&(a===sepA||a===sepB))h+='<button id="pSepClr">Fermer l\'analyse de trajectoires</button>';
@@ -1856,7 +1885,7 @@ function renderPanel(force){
    $('#tGo').onclick=goT;['#tWp','#tAlt','#tSpd'].forEach(q=>$(q).onkeydown=e=>{if(e.key==='Enter')goT()})}
   if($('#pGL')){const goG=d=>cmdMan(a,+$('#pG').value,+$('#pGs').value||30,d);$('#pGL').onclick=()=>goG('L');$('#pGR').onclick=()=>goG('R')}
   if($('#pXcGo')){const goX=()=>{const v=+$('#pXc').value;if(v)cmdAskXfl(a,v<50?v*10:v)};$('#pXcGo').onclick=goX;$('#pXc').onkeydown=e=>{if(e.key==='Enter')goX()}}
-  if($('#pSqGo')){const goQ=()=>{const v=$('#pSq').value.trim();cmdSquawk(a,v||null)};$('#pSqGo').onclick=goQ;$('#pSq').onkeydown=e=>{if(e.key==='Enter')goQ()};$('#pSqN').onclick=()=>cmdSquawk(a,null)}
+  if($('#pSqN')){$('#pSq').onkeydown=e=>{if(e.key==='Enter'){const v=$('#pSq').value.trim();if(v)cmdSquawk(a,v);$('#pSq').value=''}};$('#pSqN').onclick=()=>cmdSquawk(a,null);$('#tDel').onclick=()=>{['#tWp','#tAlt','#tSpd','#pSq'].forEach(q=>$(q).value='');a.hl=null};$('#tPm').onclick=()=>{cmdEl.value=a.cs+' ';cmdEl.focus();renderSugs()}}
   if($('#pGuard')){$('#pRc').onclick=()=>cmdRadioCheck(a);$('#pGuard').onclick=()=>cmdGuard(a);$('#pAlert').onclick=()=>askAlert(a);if($('#pEndAl')){const al=SIM.alerts.find(x=>x.a===a&&x.stage<9);$('#pEndAl').onclick=()=>askEndAlert(al);$('#pPoSel').onclick=()=>selectPO(al)}
   if($('#pPoInfo'))$('#pPoInfo').onclick=()=>{const al=SIM.alerts.find(x=>x.a===a&&x.stage<9&&x.lead);if(al){const c=SIM.coords.find(c=>c.a===a&&c.kind==='poInfo');if(c)answerCoord(c.id,true);else poInfo(al)}}}
   if($('#pSepClr'))$('#pSepClr').onclick=()=>{sepA=sepB=null;renderPanel(true)};
@@ -1868,6 +1897,7 @@ function renderPanel(force){
  if(v('spd'))v('spd').textContent=Math.round(c)+' kt · M.'+String(Math.round(m*100)).padStart(2,'0')+' · TAS '+Math.round(a.tas);
  if(v('trk'))v('trk').textContent=pad3(a.trk)+'° · '+Math.round(a.gs)+' kt';
   if(v('sq'))v('sq').style.fontWeight=/^7[567]00$/.test(a.sq)?'600':'';
+ if(v('tmSq'))v('tmSq').textContent=a.sq||'—';
  if(v('sq')){v('sq').textContent=(a.sq||'—')+(a.sq==='7500'?' · intervention illicite':a.sq==='7700'?' · urgence':a.sq==='7600'?' · panne radio':a.dupe?' · en double !':'');v('sq').style.color=a.sq==='7600'?'var(--crit)':a.dupe?'var(--call)':''}
  if(v('tz')){const z=zoneAt(a.x,a.y,a.alt),q=TZONES.find(q=>inZone(q,a.x,a.y,a.alt));v('tz').textContent=z?'dans '+z.id+' (active)':q?'dans '+q.id+' (NON active)':'hors zone · demande '+a.wantZ}
  if(v('tests'))v('tests').innerHTML=a.tests.map(t=>'<div class="tline'+(t.done?' ok':'')+'">'+(t.done?'✓':Math.round(t.prog/t.need*100)+' %')+' · '+t.txt+'</div>').join('')+(a.manLeft>0?'<div class="tline">Manœuvre '+a.manG+' G en cours : '+Math.ceil(a.manLeft)+' s</div>':'')+(a.testDone?'<div class="tline ok">Programme terminé : retour LFBD, transfert à Bordeaux Approche</div>':'');
@@ -1935,21 +1965,97 @@ function runTokens(a,toks){
   else if(t==='MAN'){const g=+toks[i+1],sec=+toks[i+2];let dir='R';if(/^(G|L|D|R)$/.test(toks[i+3]||'')){dir=/^(G|L)$/.test(toks[i+3])?'L':'R';i++}if(g&&sec){i+=2;cmdMan(a,g,sec,dir)}else log('bad','MAN : facteur de charge et durée attendus (ex. MAN 5 30 D)')}
   else if((m=t.match(/^(?:S|IAS|K)(\d{3})$/)))cmdSpeed(a,'ias',+m[1]);
   else if(/^(SN|VL|NS|NSR)$/.test(t))cmdSpeed(a,'auto');
+  else if(t==='PO'){const al=SIM.alerts.find(x=>x.a===a&&x.stage<9&&x.lead);if(!al){log('sys','Pas de patrouille en vol pour '+a.cs);continue}const c=SIM.coords.find(c=>c.a===a&&c.kind==='poInfo');if(c)answerCoord(c.id,true);else poInfo(al)}
+  else if(/^(OK|ACCEPT|NO|NON|REFUS)$/.test(t)){const c=SIM.coords.find(c=>c.a===a&&!c.mine);if(!c){log('sys','Aucune coordination en attente pour '+a.cs);continue}if(!c.no&&!/^(OK|ACCEPT)$/.test(t)){log('sys','Cette demande ne se refuse pas');continue}answerCoord(c.id,/^(OK|ACCEPT)$/.test(t))}
+  else if(t==='ROUTE'){a.showRoute=!a.showRoute}
+  else if(/^(FPL|FLPLAN|PLAN)$/.test(t)){const r=cv.getBoundingClientRect();showFpl(a,r.left+r.width/2-150,r.top+80)}
+  else if(t==='HL'){const f={CFL:'cfl',ALT:'cfl',SPD:'spd',WP:'nav',CS:'cs',OFF:null,AUCUN:null}[toks[i+1]];if(toks[i+1]&&f!==undefined){i++;a.hl=f}else log('bad','HL : CFL, SPD, WP, CS ou OFF')}
+  else if(/^(VEC|VECTOR)$/.test(t)){a.vecOn=!a.vecOn}
+  else if(t==='TRAJ'){const b=toks[i+1]&&findAc(toks[i+1]);if(b&&b!==a){i++;sepA=a;sepB=b;renderConfCard()}else log('bad','TRAJ : indicatif du second vol attendu (ex. TRAJ AFR123)')}
+  else if(/^(CTR|CENTRE|CENTER)$/.test(t)){VIEW.cx=a.plot.x;VIEW.cy=a.plot.y}
   else if(PTS[t]&&i>0&&toks[i-1]!=='DCT')cmdDirect(a,t);
   else log('bad','Commande non reconnue : '+t+' (voir Aide)');
  }
 }
+// Commandes sans indicatif : zones, pause, vitesse de simulation, recentrage, coordination en attente
+function runGlobal(toks){const t=toks[0];let m;
+ if(t==='ZONE'||t==='ZON'){const z=TZ[toks[1]];if(!z){log('bad','ZONE : identifiant attendu (ex. ZONE D31D)');return true}if(!VOL.cfg.test){log('sys','Les zones sont gérées par d\'autres organismes sur ce poste');return true}toggleZone(z);return true}
+ if(t==='PAUSE'||t==='P'){setSpeed(SIM.speed===0?(SIM.prevSpeed||1):0);return true}
+ if((m=t.match(/^X([124])$/))){setSpeed(+m[1]);return true}
+ if(t==='SECT'){fitSector();return true}
+ if(/^(OK|NO|NON)$/.test(t)&&toks.length===1&&!sel){const c=SIM.coords.find(c=>!c.mine);if(!c){log('sys','Aucune coordination en attente');return true}answerCoord(c.id,t==='OK'||!c.no);return true}
+ return false}
 function runCmd(txt){
  const toks=txt.trim().toUpperCase().split(/\s+/).filter(Boolean);if(!toks.length)return;
  if(toks[0]==='?'||toks[0]==='HELP'||toks[0]==='AIDE'){openHelp();return}
- let a=null;const f=toks[0].length>=3&&!/^(FL\d+|\d{2,3}|[HLRG]\d{1,3}|H[LR]\d{1,3}|M\d{2}|M\.\d{2}|S\d{3}|DCT|RES|NAV|SN|A|T|TFR)$/.test(toks[0])?findAc(toks[0]):null;
+ if(runGlobal(toks))return;
+ let a=null;const f=toks[0].length>=3&&!CMD_WORD.test(toks[0])?findAc(toks[0]):null;
  if(f){a=f;toks.shift();selectAc(a)}else a=sel;
  if(!a){log('bad','Aucun vol sélectionné ni reconnu : '+toks[0]);return}
  if(!toks.length){selectAc(a);return}
  runTokens(a,toks);
 }
+// Catalogue des commandes : sert à l'autocomplétion (exemple construit sur le vol courant) et à reconnaître un mot de commande
+const CMD_WORD=/^(FL\d+|\d{2,3}|[HLRG]\d{1,3}|H[LR]\d{1,3}|M\d{2,3}|M\.\d{2}|M1[.,]\d{1,2}|S\d{3}|DCT|DIR|RES|NAV|SN|A|T|TFR|REP|RC|SQ|SQK|CSQ|XFL|GUARD|ALERTE|FIN|URG|MAN|PO|OK|NO|ROUTE|FPL|HL|VEC|TRAJ|CTR)$/;
+const CMDS=[
+ {c:'A',d:'Assumer le vol qui appelle',st:['offered','missed']},
+ {c:'370',d:'Niveau autorisé (montée/descente)',ex:a=>a.xfl||a.cfl,st:['assumed']},
+ {c:'H270',d:'Cap (HL = par la gauche, HR = par la droite)',ex:a=>'H'+pad3(Math.round(a.hdg/5)*5||360),st:['assumed']},
+ {c:'DCT',d:'Direct vers un point',ex:a=>'DCT '+((a.pts[a.leg+1]||a.pts[a.leg]||{}).id||'LMG'),st:['assumed']},
+ {c:'RES',d:'Reprendre la navigation',st:['assumed']},
+ {c:'M78',d:'Vitesse Mach',ex:a=>'M'+Math.round(a.tas/sos(a.alt)*100),st:['assumed']},
+ {c:'S280',d:'Vitesse indiquée (kt)',st:['assumed']},
+ {c:'SN',d:'Vitesse libre',st:['assumed']},
+ {c:'T',d:'Transférer au secteur suivant (avec confirmation)',st:['assumed']},
+ {c:'XFL',d:'Demander un autre niveau de sortie au secteur suivant',ex:a=>'XFL '+((a.xfl||300)-20),st:['assumed']},
+ {c:'REP',d:'Reprendre un vol transféré',st:['transferred']},
+ {c:'RC',d:'Radio check (Force ACT)',st:['offered','missed','assumed']},
+ {c:'SQ',d:'Transpondeur : code donné, ou nouveau code (REQ SSR)',ex:()=>'SQ 4521',st:['assumed']},
+ {c:'CSQ',d:'Faire confirmer le code transpondeur (7500)',st:['assumed']},
+ {c:'GUARD',d:'Appel sur 121.5',st:['offered','missed','assumed']},
+ {c:'ALERTE',d:'Alerter la défense aérienne (COMLOSS, 7500)',st:['offered','missed','assumed']},
+ {c:'FIN',d:'Lever l\'alerte défense aérienne',st:['offered','missed','assumed','transferred']},
+ {c:'PO',d:'Transmettre les infos de vol à la patrouille',st:['offered','missed','assumed']},
+ {c:'URG',d:'Accuser réception d\'un MAYDAY',st:['assumed']},
+ {c:'MAN',d:'Vol d\'essais : manœuvre sous facteur de charge',ex:()=>'MAN 5 30 D',st:['assumed']},
+ {c:'OK',d:'Accepter la coordination en attente'},{c:'NO',d:'Refuser la coordination en attente'},
+ {c:'ROUTE',d:'Afficher / masquer la route (Tab)'},{c:'FPL',d:'Plan de vol (F8)'},
+ {c:'HL',d:'Highlight d\'un champ de l\'étiquette',ex:()=>'HL CFL'},{c:'VEC',d:'Vecteur vitesse de ce vol'},
+ {c:'TRAJ',d:'Trajectoires et CPA avec un autre vol',ex:()=>'TRAJ '+((SIM.acs.find(q=>q.state==='assumed'&&q!==sel)||{}).cs||'AFR123')},
+ {c:'CTR',d:'Centrer l\'écran sur ce vol'}];
+const GCMDS=[{c:'ZONE',d:'Activer / désactiver une zone (poste Essais)',ex:()=>'ZONE D31D'},{c:'PAUSE',d:'Pause / reprise'},{c:'X2',d:'Vitesse de simulation ×1, ×2, ×4'},{c:'SECT',d:'Recentrer sur le secteur'},{c:'AIDE',d:'Commandes et règles'}];
+const sugEl=document.getElementById('cmdSug');let sugs=[],sugI=0;
+function mkSug(tokIns,lbl,ex,d){return{ins:tokIns,lbl,ex,d}}
+function computeSugs(){
+ const v=cmdEl.value.toUpperCase(),trail=/\s$/.test(v),toks=v.trim().split(/\s+/).filter(Boolean),cur=trail?'':(toks.length?toks[toks.length-1]:''),prev=trail?toks[toks.length-1]:toks[toks.length-2];
+ let a=null;if(toks.length&&(toks.length>1||trail)&&!CMD_WORD.test(toks[0]))a=findAc(toks[0]);if(!a)a=sel;const cs=a?a.cs:'AFR6142',out=[];
+ const acList=q=>SIM.acs.filter(x=>x.concerned&&x.cs.startsWith(q)).sort((x,y)=>(y.state==='assumed')-(x.state==='assumed')||(y.state==='offered')-(x.state==='offered')).slice(0,6).map(x=>mkSug(x.cs,x.cs,x.cs+' '+(x.state==='offered'?'A':pad3(x.cfl)),x.type+' · FL'+pad3(x.alt/100)+' · '+(STATE_TXT[x.state]||'')));
+ if(prev==='DCT'||prev==='DIR'){const pts=(a?a.pts.slice(a.leg).map(p=>p.id):[]).concat(Object.keys(PTS).filter(k=>PTS[k].type!=='apt'||k.startsWith('LF')));[...new Set(pts)].filter(id=>id.startsWith(cur)).slice(0,8).forEach(id=>out.push(mkSug(id,id,cs+' DCT '+id,PTS[id].name||'')));return out}
+ if(prev==='TRAJ')return acList(cur).filter(x=>!a||x.ins!==a.cs);
+ if(prev==='HL')return[['CFL','niveau autorisé'],['SPD','vitesse'],['WP','cap / point'],['CS','indicatif'],['OFF','aucun']].filter(([k])=>k.startsWith(cur)).map(([k,d])=>mkSug(k,k,cs+' HL '+k,d));
+ if(prev==='ZONE')return TZONES.filter(z=>z.id.startsWith(cur)).slice(0,8).map(z=>mkSug(z.id,z.id,'ZONE '+z.id,z.n+' · '+z.lim+(z.st!=='off'?' · active':'')));
+ if(prev==='SQ'||prev==='SQK')return[mkSug('','(vide)',cs+' SQ','nouveau code attribué automatiquement'),mkSug('4521','4521',cs+' SQ 4521','code donné (4 chiffres de 0 à 7)')];
+ if(prev==='MAN')return[mkSug('5 30 D','5 30 D',cs+' MAN 5 30 D','5 G pendant 30 s, virage à droite (G = gauche)')];
+ const first=toks.length<=1&&!trail;
+ if(first&&cur&&!/^\d/.test(cur))acList(cur).forEach(x=>out.push(x));
+ if(first)GCMDS.filter(g=>g.c.startsWith(cur)&&cur).forEach(g=>out.push(mkSug(g.c,g.c,g.ex?g.ex():g.c,g.d)));
+ if(a&&!(first&&out.length&&cur.length>=3&&!CMD_WORD.test(cur))){
+  if(/^\d{1,3}$/.test(cur))out.push(mkSug(cur,cur.length===3?'FL'+cur:'niveau',cs+' '+(cur.length===3?cur:a.xfl),'Niveau autorisé'));
+  else if(/^H[LR]?\d{0,3}$/.test(cur)&&cur.length>1)out.push(mkSug(cur,cur,cs+' '+(cur.length>=4?cur:'H'+pad3(Math.round(a.hdg/5)*5||360)),'Cap'));
+  const rec=CMDS.filter(c=>c.c.startsWith(cur)&&!/^\d/.test(c.c)||(!cur));const ok=c=>!c.st||c.st.includes(a.state);
+  rec.sort((x,y)=>ok(y)-ok(x)).slice(0,cur?8:10).forEach(c=>out.push(Object.assign(mkSug(c.c==='370'?String(c.ex(a)):c.c==='H270'||c.c==='M78'?c.ex(a):c.c,c.c==='370'?'FL…':c.c==='H270'?'H…':c.c==='M78'?'M…':c.c,cs+' '+(c.ex?c.ex(a):c.c),c.d),{dim:!ok(c)})))}
+ return out.slice(0,10)}
+function renderSugs(){if(!sugEl)return;sugs=document.activeElement===cmdEl?computeSugs():[];sugI=Math.min(sugI,Math.max(0,sugs.length-1));
+ sugEl.hidden=!sugs.length;sugEl.innerHTML=sugs.map((g,i)=>'<div class="sg'+(i===sugI?' cur':'')+(g.dim?' dim':'')+'" data-i="'+i+'"><b>'+g.lbl+'</b><span class="ex">'+g.ex+'</span><span class="d">'+g.d+'</span></div>').join('')}
+function applySug(g){const v=cmdEl.value,trail=/\s$/.test(v),base=trail?v:v.replace(/\S+$/,'');cmdEl.value=(base+g.ins).replace(/\s+$/,'')+(g.ins?' ':'');cmdEl.focus();sugI=0;renderSugs()}
+if(sugEl)sugEl.addEventListener('pointerdown',e=>{const d=e.target.closest('[data-i]');if(!d)return;e.preventDefault();applySug(sugs[+d.dataset.i])});
+cmdEl.addEventListener('input',()=>{sugI=0;renderSugs()});cmdEl.addEventListener('focus',renderSugs);cmdEl.addEventListener('blur',()=>setTimeout(()=>{if(sugEl)sugEl.hidden=true},120));
 cmdEl.addEventListener('keydown',e=>{
- if(e.key==='Enter'){const v=cmdEl.value;if(v.trim()){hist.unshift(v);hIdx=-1;runCmd(v)}cmdEl.value=''}
+ if(e.key==='Tab'){e.preventDefault();if(sugs.length)applySug(sugs[sugI]);return}
+ if(sugs.length&&cmdEl.value.trim()&&(e.key==='ArrowDown'||e.key==='ArrowUp')){e.preventDefault();sugI=(sugI+(e.key==='ArrowDown'?1:-1)+sugs.length)%sugs.length;renderSugs();e.stopImmediatePropagation();return}
+},true);
+cmdEl.addEventListener('keydown',e=>{
+ if(e.key==='Enter'){const v=cmdEl.value;if(v.trim()){hist.unshift(v);hIdx=-1;runCmd(v)}cmdEl.value='';renderSugs()}
  else if(e.key==='ArrowUp'){if(hist.length){hIdx=Math.min(hist.length-1,hIdx+1);cmdEl.value=hist[hIdx];e.preventDefault()}}
  else if(e.key==='ArrowDown'){hIdx=Math.max(-1,hIdx-1);cmdEl.value=hIdx>=0?hist[hIdx]:'';e.preventDefault()}
  else if(e.key==='Escape'){cmdEl.value='';selectAc(null);closeMenu()}
