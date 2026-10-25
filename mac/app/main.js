@@ -1,11 +1,19 @@
-const {app,BrowserWindow,Menu,shell}=require('electron');
+const {app,BrowserWindow,Menu,shell,ipcMain,net}=require('electron');
 const path=require('path');
 const updater=require('./updater');
 app.setName('openCRNA');
+// Trafic réel : l'API OpenSky n'autorise pas les appels depuis la page (CORS), on passe donc par le processus principal
+ipcMain.handle('opensky',async(e,b)=>{
+  const n=v=>Number.isFinite(v)?v:0,u='https://opensky-network.org/api/states/all?lamin='+n(b.lamin)+'&lomin='+n(b.lomin)+'&lamax='+n(b.lamax)+'&lomax='+n(b.lomax);
+  try{const r=await net.fetch(u,{headers:{'User-Agent':'openCRNA'}});return{status:r.status,remaining:r.headers.get('x-rate-limit-remaining'),body:r.ok?await r.json():null}}
+  catch(err){return{status:0,error:String(err.message||err)}}
+});
 function createWindow(){
   const win=new BrowserWindow({width:1480,height:920,minWidth:1024,minHeight:660,backgroundColor:'#000000',title:'openCRNA',show:false,
-    webPreferences:{contextIsolation:true,nodeIntegration:false,sandbox:true,spellcheck:false}});
+    webPreferences:{contextIsolation:true,nodeIntegration:false,sandbox:true,spellcheck:false,preload:path.join(__dirname,'preload.js')}});
   win.once('ready-to-show',()=>win.show());
+  // Auto-test (OPENCRNA_SELFTEST=1) : vérifie la requête OpenSky via le pont puis quitte
+  if(process.env.OPENCRNA_SELFTEST)win.webContents.once('did-finish-load',()=>win.webContents.executeJavaScript("window.opencrna.opensky({lamin:44,lomin:0,lamax:45,lomax:1}).then(r=>JSON.stringify({status:r.status,avions:r.body&&r.body.states?r.body.states.length:null,quota:r.remaining}))").then(v=>{console.log('SELFTEST '+v);app.quit()},err=>{console.log('SELFTEST ERREUR '+err);app.quit()}));
   win.loadFile(path.join(__dirname,'index.html'));
   win.webContents.setWindowOpenHandler(({url})=>{if(/^https?:/.test(url))shell.openExternal(url);return{action:'deny'}});
   win.webContents.on('will-navigate',(e,url)=>{if(!url.startsWith('file:')){e.preventDefault();shell.openExternal(url)}});

@@ -256,6 +256,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
       <button data-s="2">2×</button>
       <button data-s="4">4×</button>
     </div>
+    <span class="chip" id="hdRt" hidden></span>
     <span class="chip hideNarrow" id="hdWind"><span class="k">Vent FL350</span>—</span>
     <span class="grow"></span>
     <span class="chip"><span class="k">Sous contrôle</span><span id="hdCtl">0</span></span>
@@ -339,6 +340,9 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
           <option value="60">Pointe · ≈60 vols/h</option>
         </select>
       </label>
+      <label>Trafic
+        <select id="selTraffic"><option value="sim" selected>Simulé (densité ci-dessous)</option><option value="real">Réel en direct · OpenSky (app Mac)</option></select>
+      </label>
       <label>Vitesse de départ
         <select id="selSpeed"><option value="1" selected>Temps réel (1×)</option><option value="2">Accéléré 2×</option><option value="4">Accéléré 4×</option></select>
       </label>
@@ -382,6 +386,8 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
     <p><b>Clic droit sur un avion</b> : menu selon son état — Assume, Force ACT (radio check), Transfer, niveau / cap / vitesse / direct, coordination XFL, SQK (REQ SSR, confirmer le code), 121.5, défense aérienne, MAYDAY reçu, Highlight d'un champ de l'étiquette, Route (touche Tab), FL.PLAN (touche F8), Vector, trajectoires avec le vol sélectionné. <b>Clic droit sur le fond</b> : QDM, centrer ici, recentrer sur le secteur, trajectoires, barres et fenêtres. Clic droit maintenu et glissé : mesure de relèvement et distance.</p>
     <h2>Demandes</h2>
     <p>Une demande d'un <b>contrôleur</b> (secteur voisin qui veut vous passer un vol à un autre niveau ou en cap, PO) s'affiche en carte <b>REQ</b> en haut à gauche de l'écran radar, avec le délai et les boutons Accepter / Refuser, et l'étiquette du vol porte <b>REQ</b> clignotant. Vos propres demandes (XFL) apparaissent en carte <b>ACT</b> tant que le voisin n'a pas répondu. Une demande d'un <b>pilote</b> (montée, descente) fait clignoter un <b>?</b> dans l'étiquette. Dans tous les cas : clic sur REQ / ?, clic droit sur le vol, ou <code>OK</code> / <code>NO</code>. Le traffic manager n'affiche que les informations du vol (plan de vol en 4 colonnes et route) : les ordres se donnent au clic droit ou à la ligne de commande.</p>
+    <h2>Trafic réel en direct</h2>
+    <p>Réglage « Trafic : Réel en direct » (app Mac, Internet) : au lieu de trafic inventé, l'app charge les <b>vrais avions</b> qui volent au même moment au-dessus de LFBB, via l'API publique d'OpenSky Network (positions ADS-B) : vrais indicatifs, niveaux, vitesses, routes et codes transpondeur ; l'heure UTC est l'heure réelle. Toutes les 90 s, les nouveaux avions apparaissent, ceux qui ne sont pas à vous sont recalés sur leur position réelle et ceux qui ont disparu du flux sont retirés ; les vols que vous contrôlez suivent vos clairances. L'API gratuite ne donne ni le type ni la destination : le type est déduit de la compagnie, l'arrivée d'une descente vers un terrain de la région, et la route est faite des balises le long de la trajectoire réelle (sinon destination « ???? », symbole +). Quota anonyme d'OpenSky : environ 400 crédits par jour (2 par mise à jour), affiché en haut ; une fois épuisé, le trafic continue en simulation. Non disponible dans la version web (l'API n'autorise pas les appels depuis une page).</p>
     <h2>Le métier</h2>
     <p>Chaque vol qui traverse votre volume est <b>pré-annoncé</b> (strip ambre) puis <b>transféré</b> par le secteur amont : le pilote vous appelle et son indicatif clignote. Cliquez sur l'indicatif pour l'<b>assumer</b>. Vous seul pouvez alors lui donner des clairances. Avant qu'il quitte votre volume, amenez-le au <b>XFL</b> (niveau de sortie coordonné) puis cliquez à nouveau sur l'indicatif pour le <b>transférer</b> au secteur suivant affiché dans l'étiquette.</p>
     <p>Normes : 5 NM en horizontal ou 1 000 ft en vertical (RVSM FL290–FL410). Règle semi-circulaire : route vraie 000–179° niveaux impairs (FL310, 330…), 180–359° niveaux pairs (FL300, 320…).</p>
@@ -635,7 +641,7 @@ const WX={dir:280,jet:80,on:true};
 function windAt(h){if(!WX.on)return{dir:0,spd:0,vx:0,vy:0};const f=clamp(h/35000,0,1);let s=6+(WX.jet-6)*Math.pow(f,1.4);if(h>37000)s*=Math.max(.6,1-(h-37000)/25000);const dir=WX.dir-25*(1-f);const to=(dir+180)*D2R;return{dir,spd:s,vx:s*Math.sin(to),vy:s*Math.cos(to)}}
 
 /* ===================== État de la simulation ===================== */
-const SIM={caps:[],capInt:0,nextCap:1e9,testInt:0,nextTest:1e9,trainInt:0,nextTrain:1e9,mil:[],alerts:[],coords:[],coordRate:0,coordSeq:0,nordoRate:0,convInt:0,nextConv:1e9,t:0,speed:1,running:false,acs:[],cfg:null,vol:null,lambda:30,startUTC:0,score:0,done:0,sepLoss:0,pen:[],events:[],sepPairs:new Map(),stca:new Set(),acc:0,last1s:0,lastRadar:-99,voice:false,queue:[],seq:0};
+const SIM={real:false,rtNext:1e9,caps:[],capInt:0,nextCap:1e9,testInt:0,nextTest:1e9,trainInt:0,nextTrain:1e9,mil:[],alerts:[],coords:[],coordRate:0,coordSeq:0,nordoRate:0,convInt:0,nextConv:1e9,t:0,speed:1,running:false,acs:[],cfg:null,vol:null,lambda:30,startUTC:0,score:0,done:0,sepLoss:0,pen:[],events:[],sepPairs:new Map(),stca:new Set(),acc:0,last1s:0,lastRadar:-99,voice:false,queue:[],seq:0};
 let VOL=null;
 function setupVolume(cfg){sepA=sepB=null;
  const polys=cfg.test?[LFBB,...TZONES.map(z=>z.Q)]:cfg.sec[0]==='*'?[LFBB]:cfg.sec.map(k=>SECT[k]);
@@ -718,7 +724,7 @@ function analyze(a,S){
  const si=S[i],sp=S[i-1],sj=S[j],sq=S[j-1];
  const r={entryT:si.t,exitT:sj.t,iEntry:i,iExit:j};
  if(latIn(sp.x,sp.y)){if(sp.alt<VOL.floor*100){r.entryKind='below';r.efl=floor10(VOL.floor);r.eflKind='climb'}else{r.entryKind='above';r.efl=Math.ceil(VOL.ceil/10)*10;if(r.efl<=VOL.ceil)r.efl+=10;r.eflKind='desc'}}
- else{r.entryKind='lat';const dz=si.alt-sp.alt;if(Math.abs(dz)<150){r.efl=Math.round(si.alt/100);r.eflKind='level'}else{r.efl=Math.round(si.alt/1000)*10;r.eflKind=dz>0?'climb':'desc'}
+ else{r.entryKind='lat';const dz=si.alt-sp.alt;if(Math.abs(dz)<150){r.efl=Math.round(si.alt/1000)*10;r.eflKind='level'}else{r.efl=Math.round(si.alt/1000)*10;r.eflKind=dz>0?'climb':'desc'}
   if(r.efl<VOL.floor){r.efl=Math.ceil(VOL.floor/10)*10;if(r.efl<VOL.floor)r.efl+=10}if(r.efl>=VOL.ceil)r.efl=floor10(VOL.ceil-1);
   if(r.eflKind==='climb'&&r.efl>=a.rfl){r.efl=a.rfl;r.eflKind='level'}}
  if(found&&latIn(sj.x,sj.y)){if(sj.alt<VOL.floor*100){r.exitKind='down';r.xfl=floor10(VOL.floor);r.xflKind='desc'}else{r.exitKind='up';r.xfl=Math.ceil(VOL.ceil/10)*10;if(r.xfl<=VOL.ceil)r.xfl+=10;r.xflKind='climb'}}
@@ -786,6 +792,57 @@ function trySpawn(kind,tau){
  }
  return null;
 }
+/* ===================== Trafic réel en direct (OpenSky Network, app Mac) =====================
+   La page demande l'état du ciel au processus principal (window.opencrna.opensky, voir mac/app/preload.js).
+   L'API gratuite donne indicatif, position, altitude, vitesse, route, vario, transpondeur — pas le type ni la destination :
+   type déduit de la flotte de la compagnie, arrivée déduite d'une descente vers un terrain LFBB, route = balises le long de la trace. */
+const RT_BOX={lamin:42.0,lomin:-3.5,lamax:48.0,lomax:5.0};
+const RT={busy:false,remaining:null,count:0,missing:new Map()};
+const rtAvailable=()=>!!(window.opencrna&&window.opencrna.opensky);
+async function rtFetch(){if(RT.busy)return null;RT.busy=true;
+ try{const r=await window.opencrna.opensky(RT_BOX);RT.remaining=r&&r.remaining;
+  if(!r||r.status!==200||!r.body){log('bad','Trafic réel : OpenSky a répondu '+(r?r.status||r.error:'—')+(r&&r.status===429?' (quota du jour épuisé, réessai plus tard)':''));return null}
+  return r.body.states||[]}
+ catch(e){log('bad','Trafic réel indisponible : '+e.message);return null}finally{RT.busy=false}}
+function rtRoute(a){const pts=[{id:'',x:a.x,y:a.y}],used=new Set(),tr=a.trk*D2R;
+ for(let d=25;d<=325;d+=25){const px=a.x+d*Math.sin(tr),py=a.y+d*Math.cos(tr);let best=null,bd=14;
+  for(const id in PTS){const p=PTS[id];if(p.type==='zone'||p.type==='apt'||used.has(id))continue;const dd=dist(px,py,p.x,p.y);if(dd<bd){bd=dd;best=p}}
+  if(best){used.add(best.id);pts.push(best)}}
+ pts.push({id:'SORTIE',x:a.x+340*Math.sin(tr),y:a.y+340*Math.cos(tr)});return pts}
+// Téléphonies des compagnies absentes du catalogue AL (trafic réel) ; h = long-courrier
+const RT_TEL={WZZ:['Wizz Air'],NSZ:['Rednose'],CFE:['Flyer'],RUK:['Bluemax'],EZS:['Topswiss'],BEL:['Beeline'],SAS:['Scandinavian'],FIN:['Finnair'],LOT:['Pollot'],EIN:['Shamrock'],AUA:['Austrian'],AEE:['Aegean'],TVS:['Skytravel'],JAF:['Beauty'],HOP:['Air Hop',0,1],
+ AAL:['American',1],UAL:['United',1],DAL:['Delta',1],UAE:['Emirates',1],QTR:['Qatari',1],THY:['Turkish'],ETD:['Etihad',1],ACA:['Air Canada',1],RAM:['Royalair Maroc'],AFL:['Aeroflot'],ELY:['Elal',1],SVA:['Saudia',1],CCA:['Air China',1],MSR:['Egyptair']};
+function mkReal(s){
+ const cs=(s[1]||'').trim()||String(s[0]).toUpperCase(),code=cs.slice(0,3),al=AL[code],tel=RT_TEL[code],type=al?wpick(al.t):tel&&tel[1]?pick(['B77W','A359','B789']):'A320',pf=PERF[type];
+ const vr=(s[11]||0)*196.85,a0=s[7]*3.28084,q=P(s[6],s[5]),alt=Math.abs(vr)<300&&Math.abs(a0-Math.round(a0/1000)*1000)<400?Math.round(a0/1000)*1000:a0,gs=(s[9]||200)*1.94384,trk=s[10]||0,vs=(s[11]||0)*196.85;
+ const a={id:++SIM.seq,cs,al:al?code:'',say:al?al.say+' '+cs.slice(3):tel?tel[0]+' '+cs.slice(3):cs,fr:al?!!al.fr:tel?!!tel[2]:s[2]==='France',type,pf,wake:pf.w,dep:'????',arr:'????',depAp:null,arrAp:null,rfl:0,tok:[],pts:[],
+  x:q.x,y:q.y,leg:1,hdg:trk,mode:'nav',hdgSel:0,turnDir:null,spdMode:'auto',spdVal:0,alt,vs,tas:Math.min(gs,(pf.cr+.02)*sos(alt)),gs,trk,pfac:1,tod:false,routeEnd:false,mil:false,orb:null,orbLaps:0,
+  state:'bg',concerned:false,cfl:0,hist:[],plot:null,lx:16,ly:-34,flags:{},sq:s[14]||genSq(),real:true,icao:s[0]};
+ if(vs<-400&&alt<32000){let best=null,bd=130;for(const ic of LFBB_APTS){const p=PTS[ic];if(!p)continue;const d=dist(a.x,a.y,p.x,p.y);if(Math.abs(angDiff(brg(a.x,a.y,p.x,p.y),trk))<45&&d<bd&&d>alt/1000*1.5){bd=d;best=ic}}if(best){a.arrAp=a.arr=best;a.tod=true}}
+ if(vs>400&&alt<24000){let best=null,bd=70;for(const ic of LFBB_APTS){const p=PTS[ic];if(!p)continue;const d=dist(a.x,a.y,p.x,p.y);if(Math.abs(angDiff(brg(p.x,p.y,a.x,a.y),trk))<45&&d<bd){bd=d;best=ic}}if(best)a.dep=best}
+ const fl=Math.round(alt/100);
+ a.rfl=a.arrAp?Math.max(floor10(fl),100):Math.abs(vs)<300?Math.round(fl/10)*10:vs>0?chooseRFL(Math.min(fl+30,390),400,trk<180,pf,470):Math.max(floor10(fl-80),120);a.cfl=a.rfl;
+ a.pts=a.arrAp?[{id:'',x:a.x,y:a.y},PTS[a.arrAp]]:rtRoute(a);a.tok=a.pts.slice(1).map(p=>p.id);
+ return a}
+// Classe un vol réel comme les vols générés : non concerné, pré-annoncé, en appel ou déjà sous contrôle (relève)
+function rtPlace(a){let S=predict(a,5400);if(S.length<3)return;let an=analyze(a,S);
+ if(an&&an.start){const tr=a.trk*D2R;for(const back of [40,90,160]){const b={t:-10,x:a.x-back*Math.sin(tr),y:a.y-back*Math.cos(tr),alt:a.alt,hdg:a.hdg,tas:a.tas,vs:0,leg:1,tod:a.tod};if(!inVol(b.x,b.y,b.alt)){an=analyze(a,[b].concat(S));break}}if(an&&an.start)an=null}
+ a.pred=S.map(x=>({...x,t:x.t+SIM.t}));a.bornT=SIM.t;
+ if(an){a.concerned=true;Object.assign(a,{entryT:an.entryT+SIM.t,exitT:an.exitT+SIM.t,entryKind:an.entryKind,exitKind:an.exitKind,efl:an.efl,eflKind:an.eflKind,xfl:an.xfl,xflKind:an.xflKind,prev:an.prev,next:an.next,entryPt:an.entryPt||'',exitPt:an.exitPt||''});
+  a.offerT=a.entryT-(a.entryKind==='lat'?150:90);a.preT=a.entryT-660;a.state='pre';maybeNordo(a);
+  if(SIM.t>=a.entryT&&inVol(a.x,a.y,a.alt)){a.state='assumed';a.assumedAt=SIM.t;a.wasIn=true;a.cfl=Math.round(a.alt/1000)*10;a.initial=true;a.called=true}
+  else if(SIM.t>=a.offerT){a.state='offered';a.offeredAt=SIM.t;a.needCall=true}}
+ SIM.acs.push(a);a.plot={x:a.x,y:a.y,alt:a.alt,gs:a.gs,trk:a.trk,vs:a.vs}}
+async function rtRefresh(){SIM.rtNext=SIM.t+90;const st=await rtFetch();if(!st||!SIM.running||!SIM.real)return false;const seen=new Set();let add=0;
+ for(const s of st){if(s[8]||s[5]==null||s[6]==null||!(s[7]>600))continue;seen.add(s[0]);const ex=SIM.acs.find(a=>a.icao===s[0]);
+  if(ex){if(ex.state==='bg'){const q=P(s[6],s[5]);Object.assign(ex,{x:q.x,y:q.y,alt:s[7]*3.28084,trk:s[10]??ex.trk,hdg:s[10]??ex.hdg,gs:(s[9]||0)*1.94384||ex.gs,vs:(s[11]||0)*196.85})}continue}
+  const q=P(s[6],s[5]),cs=(s[1]||'').trim();if(Math.hypot(q.x,q.y)>300||(cs&&SIM.acs.some(a=>a.cs===cs)))continue;rtPlace(mkReal(s));add++}
+ for(const a of SIM.acs.slice()){if(!a.real)continue;if(seen.has(a.icao)){RT.missing.delete(a.icao);continue}if(a.state!=='bg')continue;const m=(RT.missing.get(a.icao)||0)+1;RT.missing.set(a.icao,m);if(m>=2){SIM.acs.splice(SIM.acs.indexOf(a),1);if(a===sel)selectAc(null)}}
+ RT.count=SIM.acs.filter(a=>a.real).length;rtChip();return add}
+function rtChip(){const el=document.getElementById('hdRt');if(!el)return;el.hidden=!SIM.real;el.innerHTML='<span class="k">Trafic réel</span>'+RT.count+' avions'+(RT.remaining!=null?' · quota '+RT.remaining:'')}
+function simInitial(T){const n=Math.round(4+SIM.lambda/5);
+ if(!T)for(let i=0;i<n;i++)trySpawn('c',rnd(-720,300));
+ for(let i=0;i<Math.round((T?12:6)+SIM.lambda*(T?.55:.3));i++)trySpawn('b','start')}
 function maybeNordo(a){
  if(!SIM.nordoRate||SIM.acs.filter(q=>q.nordo&&!q.nordo.done).length>=Math.max(1,Math.ceil(SIM.nordoRate/4)))return;
  if(Math.random()<SIM.nordoRate/Math.max(10,SIM.lambda)){const never=SIM.t<a.offerT-20&&Math.random()<.6;a.nordo={kind:never?'never':'mid'};if(never){a.silent=true;a.nordo.onset=a.offerT}}
@@ -932,8 +989,10 @@ function tickEmergencies(now){
   if(e.kind==='dep'&&!e.reqT&&a.alt<=10500){e.reqT=now;pilot(a,a.fr?myName(1)+', '+a.say+', niveau 100, situation stabilisée, demandons déroutement vers '+apName(e.ap):myName(0)+', '+a.say+', level FL100, situation stable, request diversion to '+apName(e.ap))}
   if(a.state==='assumed'&&!e.dct&&now-(e.remind||e.t)>120&&(e.kind!=='dep'||e.reqT)){e.remind=now;pilot(a,a.fr?myName(1)+', '+a.say+', on attend toujours le cap vers '+apName(e.ap):myName(0)+', '+a.say+', still requesting routing to '+apName(e.ap))}}
 }
-function tickSquawks(){const n=new Map();for(const a of SIM.acs)if(a.sq&&a.sq!=='7600')n.set(a.sq,(n.get(a.sq)||0)+1);
- for(const a of SIM.acs){a.dupe=a.sq!=='7600'&&n.get(a.sq)>1;
+// codes partagés par nature (1000 = conspicuité Mode S en Europe, 2000, 7000) : jamais « en double »
+const SQ_SHARED=new Set(['1000','2000','7000','7600']);
+function tickSquawks(){const n=new Map();for(const a of SIM.acs)if(a.sq&&!SQ_SHARED.has(a.sq))n.set(a.sq,(n.get(a.sq)||0)+1);
+ for(const a of SIM.acs){a.dupe=!SQ_SHARED.has(a.sq)&&n.get(a.sq)>1;
   if(a.dupe&&a.state==='assumed'){a.dupeT=(a.dupeT||0)+1;if(a.dupeT===20)log('sys',a.cs+' : code transpondeur '+a.sq+' en double, attribuez-lui un nouveau code (SQ).');if(a.dupeT>200)penalty(a,'sq',-5,a.cs+' : code transpondeur en double non corrigé')}else a.dupeT=0}}
 function cmdGuard(a){
  if(!a.concerned||a.state==='pre'){log('sys',a.cs+' n\'est pas encore sous votre responsabilité');return}
@@ -1415,16 +1474,17 @@ function tick1s(){
  processAlerts(now);tickCaps(now);tickCoords(now);tickTests(now);tickAiTests(now);tickSquawks();maybeEmergency(now);tickEmergencies(now);tickHijacks(now);
  if(SIM.testInt&&now>=SIM.nextTest){SIM.nextTest=now+SIM.testInt*rnd(.8,1.2);if(VOL.cfg.test){if(SIM.acs.filter(a=>a.test&&!a.ai).length<3)spawnTest()}else if(SIM.acs.filter(a=>a.ai&&!a.train).length<2)spawnAiTest()}
  if(SIM.trainInt&&now>=SIM.nextTrain){SIM.nextTrain=now+SIM.trainInt*rnd(.7,1.3);if(SIM.acs.filter(a=>a.train).length<3)spawnAiTest(true)}SIM.mil=SIM.mil.filter(f=>!f.gone);
- if(SIM.convInt&&now>=SIM.nextConv)SIM.nextConv=now+(spawnConverging()?SIM.convInt*rnd(.7,1.3):30);
+ if(SIM.real&&now>=SIM.rtNext)rtRefresh();
+ if(!SIM.real&&SIM.convInt&&now>=SIM.nextConv)SIM.nextConv=now+(spawnConverging()?SIM.convInt*rnd(.7,1.3):30);
  // retraits
  SIM.acs=SIM.acs.filter(a=>{const far=Math.hypot(a.x,a.y)>330;const gone=arrived(a)||far;if(gone){if(a.test&&!a.ai&&a.testDone&&a.state==='transferred'&&arrived(a)){SIM.score+=30;log('good',a.cs+' posé à '+apName(a.base)+', mission d\'essais réussie (+30)')}if(a.state==='assumed'){penalty(a,'tf',-10,a.cs+' : quitte la couverture sans transfert')}if(a.hij&&a.hij.real&&a.hij.forced&&arrived(a)&&!a.hij.done){a.hij.done=true;a.emerg.done=true;SIM.score+=30;log('good','Détournement de '+a.cs+' terminé : posé sous escorte à Mont-de-Marsan (+30)')}if(a===sel)selectAc(null);if(a===sepA||a===sepB){sepA=sepB=null}}return!gone});
  // séparation
  checkSeparation();
  // génération
  const nConc=SIM.acs.filter(a=>a.concerned&&(a.state==='pre'||a.state==='offered')).length;
- if(!VOL.cfg.test&&Math.random()<SIM.lambda/3600&&nConc<14)trySpawn('c');
+ if(!SIM.real&&!VOL.cfg.test&&Math.random()<SIM.lambda/3600&&nConc<14)trySpawn('c');
  const nBg=SIM.acs.filter(a=>!a.concerned).length;const bgTarget=VOL.cfg.test?Math.round(14+SIM.lambda*.6):Math.round(6+SIM.lambda*.35);
- if(nBg<bgTarget&&Math.random()<.04)trySpawn('b');
+ if(!SIM.real&&nBg<bgTarget&&Math.random()<.04)trySpawn('b');
 }
 function timeToExit(a){const b={...a};for(let t=10;t<=1800;t+=10){stepAc(b,10);if(!inVol(b.x,b.y,b.alt)||b.routeEnd)return t}return 99999}
 function isMine(a){return a.state==='assumed'||(a.concerned&&a.inv&&(a.state==='offered'||a.state==='missed'))}
@@ -1435,7 +1495,7 @@ function checkSeparation(){
   if((a.test&&zoneAt(a.x,a.y,a.alt)&&!isMine(b))||(b.test&&zoneAt(b.x,b.y,b.alt)&&!isMine(a)))continue;
   const mine=isMine(a)||isMine(b);const key=a.id<b.id?a.id+'-'+b.id:b.id+'-'+a.id;
   const d=Math.hypot(dx,dy);
-  if(d<5&&dz<950){st.add(key);if(mine&&!SIM.sepPairs.has(key)){SIM.sepPairs.set(key,now);SIM.sepLoss++;a.flags.lossInv=b.flags.lossInv=1;penalty(null,'',-50,'PERTE DE SÉPARATION '+a.cs+' / '+b.cs+' · '+d.toFixed(1)+' NM, '+Math.round(dz)+' ft');showToast('Perte de séparation '+a.cs+' / '+b.cs)}continue}
+  if(d<5&&dz<950){st.add(key);if(mine&&!SIM.sepPairs.has(key)&&((a.real&&now-a.bornT<90)||(b.real&&now-b.bornT<90))){SIM.sepPairs.set(key,now);continue}if(mine&&!SIM.sepPairs.has(key)){SIM.sepPairs.set(key,now);SIM.sepLoss++;a.flags.lossInv=b.flags.lossInv=1;penalty(null,'',-50,'PERTE DE SÉPARATION '+a.cs+' / '+b.cs+' · '+d.toFixed(1)+' NM, '+Math.round(dz)+' ft');showToast('Perte de séparation '+a.cs+' / '+b.cs)}continue}
   if(SIM.sepPairs.has(key)&&(d>5.5||dz>=1000))SIM.sepPairs.delete(key);
   if(!mine&&!(a.concerned||b.concerned))continue;
   // STCA : extrapolation 120 s
@@ -1532,8 +1592,8 @@ function draw(){
  if(!SIM.running||SIM.speed===0){ctx.fillStyle='rgba(255,255,255,.85)';ctx.font='600 13px '+fUI;ctx.fillText(SIM.running?'PAUSE':'',12,20)}
 }
 const fUI="'Barlow Semi Condensed',Arial,sans-serif",fMono="'JetBrains Mono',ui-monospace,monospace";
-const DCAT={loc:['▽','Arrivée région LFBB'],fr:['○','France'],ib:['◇','Espagne · Portugal · Canaries'],uk:['□','Royaume-Uni · Irlande'],eu:['⬡','Europe du Nord et de l\'Est · Italie · Suisse'],lh:['☆','Long-courrier'],mil:['✕','Militaire (U-2, ravitailleur, AWACS)']};
-const catOf=a=>a.mil?'mil':destCat(a.arr);
+const DCAT={loc:['▽','Arrivée région LFBB'],fr:['○','France'],ib:['◇','Espagne · Portugal · Canaries'],uk:['□','Royaume-Uni · Irlande'],eu:['⬡','Europe du Nord et de l\'Est · Italie · Suisse'],lh:['☆','Long-courrier'],unk:['+','Destination inconnue (trafic réel)'],mil:['✕','Militaire (U-2, ravitailleur, AWACS)']};
+const catOf=a=>a.mil?'mil':a.real&&!a.arrAp&&a.arr==='????'?'unk':destCat(a.arr);
 const LFBB_APTS=new Set(['LFBD','LFBO','LFBZ','LFBP','LFBT','LFBE','LFBL','LFBA','LFBI','LFBG','LFBU','LFBV','LFBX','LFCR','LFBM','LFBC','LFBY','LFCK']);
 function destCat(ic){if(!ic)return'eu';if(LFBB_APTS.has(ic))return'loc';if(ic.startsWith('LF'))return'fr';if(/^(LE|LP|GC|GM)/.test(ic))return'ib';if(/^(EG|EI)/.test(ic))return'uk';if(/^(S|K|C|M|T|F|O|V|R|Z|Y|U|W|N|H|D|A|B|P)/.test(ic))return'lh';return'eu'}
 function drawShape(cat,X,Y,r){ctx.beginPath();
@@ -1542,6 +1602,7 @@ function drawShape(cat,X,Y,r){ctx.beginPath();
  else if(cat==='ib'){const q=r*1.25;ctx.moveTo(X,Y-q);ctx.lineTo(X+q,Y);ctx.lineTo(X,Y+q);ctx.lineTo(X-q,Y);ctx.closePath()}
  else if(cat==='uk'){const q=r*.85;ctx.rect(X-q,Y-q,2*q,2*q)}
  else if(cat==='eu'){for(let k=0;k<6;k++){const an=k*Math.PI/3+Math.PI/6;const px=X+r*1.05*Math.cos(an),py=Y+r*1.05*Math.sin(an);k?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath()}
+ else if(cat==='unk'){const q=r*1.1;ctx.moveTo(X-q,Y);ctx.lineTo(X+q,Y);ctx.moveTo(X,Y-q);ctx.lineTo(X,Y+q)}
  else if(cat==='mil'){const q=r*1.05;ctx.moveTo(X-q,Y-q);ctx.lineTo(X+q,Y+q);ctx.moveTo(X+q,Y-q);ctx.lineTo(X-q,Y+q)}
  else{for(let k=0;k<10;k++){const an=-Math.PI/2+k*Math.PI/5;const rr=k%2?r*.55:r*1.35;const px=X+rr*Math.cos(an),py=Y+rr*Math.sin(an);k?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath()}
  ctx.stroke()}
@@ -2160,9 +2221,9 @@ document.getElementById('btnZones').onclick=e=>{zonesEl.hidden=!zonesEl.hidden;e
 document.getElementById('btnCloseHelp').onclick=()=>document.getElementById('helpModal').hidden=true;
 document.getElementById('helpModal').addEventListener('click',e=>{if(e.target.id==='helpModal')e.target.hidden=true});
 
-function saveSettings(){try{localStorage.setItem('opencrna.v1',JSON.stringify({nordo:selNordo.value,conv:selConv.value,coord:selCoord.value,test:selTest.value,train:selTrain.value,cap:selCap.value,emerg:selEmerg.value,cfg:selCfg.value,den:selDen.value,wind:chkWind.checked,voice:chkVoice.checked,lay:LAY,theme:THEME}))}catch(e){}}
-function loadSettings(){try{const s=JSON.parse(localStorage.getItem('opencrna.v1')||'null');if(!s)return;if(s.cfg)selCfg.value=s.cfg;if(s.nordo!=null)selNordo.value=s.nordo;if(s.conv!=null)selConv.value=s.conv;if(s.coord!=null)selCoord.value=s.coord;if(s.test!=null)selTest.value=s.test;if(s.train!=null)selTrain.value=s.train;if(s.cap!=null)selCap.value=s.cap;if(s.emerg!=null)selEmerg.value=s.emerg;if(s.den)selDen.value=s.den;chkWind.checked=s.wind!==false;chkVoice.checked=!!s.voice;if(s.lay)Object.assign(LAY,s.lay);if(s.theme)applyTheme(s.theme)}catch(e){}}
-const selNordo=document.getElementById('selNordo'),selConv=document.getElementById('selConv'),selCoord=document.getElementById('selCoord'),selTest=document.getElementById('selTest'),selTrain=document.getElementById('selTrain'),selCap=document.getElementById('selCap'),selEmerg=document.getElementById('selEmerg'),selCfg=document.getElementById('selConfig'),selDen=document.getElementById('selDensity'),chkWind=document.getElementById('chkWind'),chkVoice=document.getElementById('chkVoice');
+function saveSettings(){try{localStorage.setItem('opencrna.v1',JSON.stringify({nordo:selNordo.value,conv:selConv.value,coord:selCoord.value,test:selTest.value,train:selTrain.value,cap:selCap.value,traffic:selTraffic.value,emerg:selEmerg.value,cfg:selCfg.value,den:selDen.value,wind:chkWind.checked,voice:chkVoice.checked,lay:LAY,theme:THEME}))}catch(e){}}
+function loadSettings(){try{const s=JSON.parse(localStorage.getItem('opencrna.v1')||'null');if(!s)return;if(s.cfg)selCfg.value=s.cfg;if(s.nordo!=null)selNordo.value=s.nordo;if(s.conv!=null)selConv.value=s.conv;if(s.coord!=null)selCoord.value=s.coord;if(s.test!=null)selTest.value=s.test;if(s.train!=null)selTrain.value=s.train;if(s.cap!=null)selCap.value=s.cap;if(s.traffic)selTraffic.value=s.traffic;if(s.emerg!=null)selEmerg.value=s.emerg;if(s.den)selDen.value=s.den;chkWind.checked=s.wind!==false;chkVoice.checked=!!s.voice;if(s.lay)Object.assign(LAY,s.lay);if(s.theme)applyTheme(s.theme)}catch(e){}}
+const selNordo=document.getElementById('selNordo'),selConv=document.getElementById('selConv'),selCoord=document.getElementById('selCoord'),selTest=document.getElementById('selTest'),selTrain=document.getElementById('selTrain'),selCap=document.getElementById('selCap'),selTraffic=document.getElementById('selTraffic'),selEmerg=document.getElementById('selEmerg'),selCfg=document.getElementById('selConfig'),selDen=document.getElementById('selDensity'),chkWind=document.getElementById('chkWind'),chkVoice=document.getElementById('chkVoice');
 selCfg.innerHTML=CONFIGS.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');selCfg.value='US';
 function cfgInfo(){const c=CONFIGS.find(q=>q.id===selCfg.value);if(c.test){document.getElementById('cfgInfo').textContent='Poste Essais en vol · toute la région LFBB, FL100 à FL600, fréquence '+c.freq+'. Vous ne contrôlez que les Rafale d\'essais de Mérignac : activez une zone d\'essais, acheminez-les entre les trafics civils (gérés par les secteurs, mais la séparation compte), faites leur programme puis ramenez-les à Bordeaux Approche. Les réglages de pertes radio, convergences et demandes des centres ne s\'appliquent pas.';return}
  document.getElementById('cfgInfo').textContent='Volume : '+(c.sec[0]==='*'?'toute la région LFBB':'secteur'+(c.sec.length>1?'s ':' ')+c.sec.join(', '))+' · FL'+c.floor+' à '+(c.ceil>=660?'FL660':'FL'+c.ceil)+'. '+(c.floor>=300?'Secteur supérieur : survols en croisière, montées des départs Toulouse/Bordeaux et descentes des arrivées.':'Secteur inférieur : beaucoup de montées et descentes, transferts aux approches de Bordeaux, Toulouse, Biarritz, Pau.')}
@@ -2171,20 +2232,20 @@ loadSettings();if(!document.body.dataset.theme)applyTheme('aurora');for(const k 
 
 function startGame(){
  const cfg=CONFIGS.find(q=>q.id===selCfg.value);setupVolume(cfg);saveSettings();const T=!!cfg.test;
- Object.assign(SIM,{t:0,acs:[],score:0,done:0,sepLoss:0,pen:[],sepPairs:new Map(),stca:new Set(),acc:0,last1s:0,lastRadar:-99,queue:[],lambda:+selDen.value,voice:chkVoice.checked,running:true,mil:[],alerts:[],nordoRate:T?0:+selNordo.value,convInt:T?0:+selConv.value,coords:[],coordRate:T?0:+selCoord.value,emRate:T?0:+selEmerg.value,caps:[],capInt:+selCap.value,nextCap:+selCap.value?rnd(20,300):1e9,trainInt:+selTrain.value,nextTrain:+selTrain.value?rnd(30,180):1e9,testInt:+selTest.value*(T?1:2),nextTest:+selTest.value?(T?rnd(20,45):rnd(60,240)):1e9});for(const z of TZONES){z.st='off';z.tAct=0;z.ai=false;z.owner=''}SIM.nextConv=SIM.convInt?rnd(60,150):1e9;
- SIM.startUTC=(Math.floor(rnd(7,19))*3600+Math.floor(rnd(0,59))*60);
+ Object.assign(SIM,{t:0,acs:[],score:0,done:0,sepLoss:0,pen:[],sepPairs:new Map(),stca:new Set(),acc:0,last1s:0,lastRadar:-99,queue:[],lambda:+selDen.value,voice:chkVoice.checked,running:true,mil:[],alerts:[],nordoRate:T?0:+selNordo.value,convInt:T?0:+selConv.value,coords:[],coordRate:T?0:+selCoord.value,emRate:T?0:+selEmerg.value,real:selTraffic.value==='real'&&rtAvailable(),rtNext:1e9,caps:[],capInt:+selCap.value,nextCap:+selCap.value?rnd(20,300):1e9,trainInt:+selTrain.value,nextTrain:+selTrain.value?rnd(30,180):1e9,testInt:+selTest.value*(T?1:2),nextTest:+selTest.value?(T?rnd(20,45):rnd(60,240)):1e9});for(const z of TZONES){z.st='off';z.tAct=0;z.ai=false;z.owner=''}SIM.nextConv=SIM.convInt?rnd(60,150):1e9;
+ SIM.startUTC=SIM.real?(()=>{const d=new Date();return d.getUTCHours()*3600+d.getUTCMinutes()*60+d.getUTCSeconds()})():(Math.floor(rnd(7,19))*3600+Math.floor(rnd(0,59))*60);
  WX.on=chkWind.checked;WX.dir=Math.round(rnd(250,300));WX.jet=Math.round(rnd(45,115));
  const w=windAt(35000);document.getElementById('hdWind').innerHTML='<span class="k">Vent FL350</span>'+(WX.on?pad3(w.dir)+'°/'+Math.round(w.spd)+' kt':'calme');
  document.getElementById('hdSector').textContent='LFBB_'+(cfg.test?'ESS':cfg.id.replace(/\W/g,''))+'_CTR · '+VOL.freq+' · FL'+cfg.floor+'–'+(cfg.ceil>=660?'660':cfg.ceil);document.getElementById('hdSector').title=cfg.name;
  logEl.innerHTML='';selectAc(null);if(actEl){actEl.innerHTML='';renderAct.k=''}
  resize();fitSector();
- // trafic initial : relève en cours
- const n=Math.round(4+SIM.lambda/5);
- if(!T)for(let i=0;i<n;i++)trySpawn('c',rnd(-720,300));
- for(let i=0;i<Math.round((T?12:6)+SIM.lambda*(T?.55:.3));i++)trySpawn('b','start');
+ // trafic initial : relève en cours (réel en direct, ou généré)
+ if(SIM.real){log('sys','Trafic réel : chargement de l\'état du ciel au-dessus de LFBB (OpenSky Network)…');rtChip();
+  rtRefresh().then(n=>{if(n===false){SIM.real=false;rtChip();log('sys','Trafic réel indisponible : trafic simulé à la place.');simInitial(T)}else{for(const a of SIM.acs)if(a.state==='offered')a.offeredAt=SIM.t;log('sys','Trafic réel : '+n+' avions chargés, mise à jour toutes les 90 s. Relève : '+SIM.acs.filter(a=>a.state==='assumed').length+' vols déjà sous contrôle, '+SIM.acs.filter(a=>a.state==='offered').length+' en appel.')}radarSweep()})}
+ if(!SIM.real){if(selTraffic.value==='real')log('sys','Le trafic réel n\'est disponible que dans l\'app Mac (OpenSky Network) : trafic simulé.');simInitial(T)}
  radarSweep();radarSweep();
   const nb=SIM.acs.filter(a=>a.state==='assumed').length;
- log('sys','Prise de position '+cfg.name+' · fréquence '+VOL.freq+'. Relève : '+nb+' vol'+(nb>1?'s':'')+' déjà sous contrôle, '+SIM.acs.filter(a=>a.state==='offered').length+' en appel.');
+ log('sys','Prise de position '+cfg.name+' · fréquence '+VOL.freq+(SIM.real?'.':'. Relève : '+nb+' vol'+(nb>1?'s':'')+' déjà sous contrôle, '+SIM.acs.filter(a=>a.state==='offered').length+' en appel.'));
  for(const a of SIM.acs)if(a.state==='offered')a.offeredAt=SIM.t;
  setSpeed(+document.getElementById('selSpeed').value);
  document.getElementById('startModal').hidden=true;cmdEl.focus();
