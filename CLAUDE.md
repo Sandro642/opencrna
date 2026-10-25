@@ -81,11 +81,11 @@ Dans la page, l'état est global : `SIM`, `VOL`, `sel`, fonctions `stepAc`, `tic
 - **Séparation** : `checkSeparation` (perte < 5 NM et < 950 ft, STCA par extrapolation à 120 s) ; ne compte que si un des vols est « à moi » (`isMine`).
 - **Écran radar** : canvas, `draw()`, `drawTraffic()`, `labelLines()` (champs cliquables `cs`, `cfl`, `nav`, `spd`), `drawShape()` (forme selon la destination, `destCat`), plancher/plafond au centre du volume, `drawMil()`.
 - **Outils** : mesure (clic droit + glisser), **Trajectoires** (`pairAnalysis`, `avoidance`, carte `#confCard`) : croisement, CPA, verdict DANGER/ATTENTION/SÛR, résolutions en un clic.
-- **UI** : strips (Entrants ambre / Sous contrôle vert / Transférés bleu / Défense aérienne), fiche vol, menus contextuels, ligne de commande (`runCmd`), réglages en `localStorage` (`opencrna.v1`).
+- **UI** : fenêtres flottantes façon Aurora (voir Conventions) ; strips (Coordinations ATC / Défense aérienne / Entrants ambre / Sous contrôle vert / Transférés bleu), traffic manager = fiche vol (`renderPanel`, ligne Tag WP/ALT/SPD → `runTokens`), COMBOX (journal + `runCmd`), fenêtre ATC (`renderAtc`), étiquettes : `a.hl` (Highlight), `a.showRoute`, `a.vecOn` ; touches Tab (route) et F8 (plan de vol) ; réglages en `localStorage` (`opencrna.v1`, dont `theme`).
 
 ## Conventions et choix déjà validés par l'utilisateur
 
-- Thème **noir et gris** ; seules couleurs : ambre = entrants, vert = sous contrôle, bleu = transférés, rouge = alertes (STCA, perte de séparation, COMLOSS).
+- Interface **façon Aurora (IVAO)** demandée par l'utilisateur : barre de titre, MENU BAR / PREF BAR (`#navbar`, actif en gras), PVD plein écran, fenêtres flottantes déplaçables/redimensionnables (`.win` : STRIPS, TRAFFIC MANAGER, COMBOX, ATC ; `WINDEF`, positions dans `localStorage` `opencrna.win`), menus contextuels au clic droit (`acMenu` selon l'état, `pvdMenu`, `showMenu` générique avec sous-menus « ‹ retour », `showFpl`) ; clic droit glissé = mesure. Thème **Aurora** (bleu nuit, `COL_AURORA`) par défaut, thème **Noir** (noir et gris d'origine, `COL_NOIR`) au choix dans PVD (`applyTheme`, sauvegardé). Couleurs d'état inchangées : ambre = entrants, vert = sous contrôle, bleu = transférés, rouge = alertes (STCA, perte de séparation, COMLOSS).
 - Forme du symbole radar = destination : ▽ arrivée région LFBB, ○ France, ◇ Espagne/Portugal/Canaries, □ Royaume-Uni/Irlande, ⬡ reste de l'Europe, ☆ long-courrier, ✕ militaire (U-2, ravitailleurs, AWACS), ▲ plein = chasseurs PO. Point plein = vol sous mon contrôle.
 - Transfert et reprise de transfert **toujours avec confirmation**. Alerte défense aérienne aussi.
 - Plancher et plafond affichés au centre de la zone contrôlée.

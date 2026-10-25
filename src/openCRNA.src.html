@@ -5,6 +5,17 @@
 <style>
 /* Layout: console plein écran — barre d'état / [strips | scope radar | fiche vol] / radio + ligne de commande */
 :root{
+  /* thème Aurora (par défaut) : PVD bleu nuit, fenêtres ardoise */
+  --pvd:#13202c; --pvd2:#182836; --win:#1b2a37; --winT:#273b4c; --line:#2f4659; --line2:#3f5a70;
+  --bg:#0e1822; --panel:#1b2a37; --panel2:#223445; --text:#d6e2ec; --mute:#8aa1b4; --dim:#5f7689;
+  --accent:#b9cfe0; --amber:#e0a94a; --call:#ffcf5c; --ok:#5fd38a; --warn:#e4e4e4; --crit:#ff5b52; --xfer:#5aa9e6;
+  --f-ui:'Barlow Semi Condensed','Arial Narrow',Arial,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+/* thème Noir (ancien thème noir et gris) */
+body[data-theme="noir"]{--pvd:#000;--pvd2:#080808;--win:#080808;--winT:#141414;--line:#1f1f1f;--line2:#2f2f2f;--bg:#000;--panel:#080808;--panel2:#101010;--text:#dcdcdc;--mute:#8c8c8c;--dim:#636363;--accent:#c8c8c8;--amber:#d9a441}
+:root.unused{
   --bg:#000000; --panel:#080808; --panel2:#101010; --line:#1f1f1f; --line2:#2f2f2f;
   --text:#dcdcdc; --mute:#8c8c8c; --dim:#636363;
   --accent:#c8c8c8; --amber:#d9a441; --call:#ffcf5c; --ok:#5fd38a; --warn:#e4e4e4; --crit:#ff5b52; --xfer:#5aa9e6;
@@ -24,7 +35,7 @@ button.primary{background:#2e2e2e;border-color:#8a8a8a;color:#fff;font-weight:60
 button.big{font-size:15px;padding:8px 12px;width:100%}
 input,select{font-family:var(--f-mono);font-size:13px;background:#050505;color:var(--text);border:1px solid var(--line2);border-radius:3px;padding:4px 6px}
 select{font-family:var(--f-ui)}
-#app{display:grid;grid-template-rows:auto 1fr auto;height:100%;padding-block:6px;gap:6px}
+#app{display:grid;grid-template-rows:auto auto 1fr;height:100%;padding-block:4px;gap:4px}
 header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
 .brand{font-weight:700;letter-spacing:.06em;font-size:17px;color:#fff}
 .brand b{color:var(--accent);font-weight:700}
@@ -36,9 +47,33 @@ header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
 .seg button{border-radius:0;margin-left:-1px}
 .seg button:first-child{border-radius:3px 0 0 3px;margin-left:0}
 .seg button:last-child{border-radius:0 3px 3px 0}
-#main{display:grid;grid-template-columns:240px minmax(0,1fr) 290px;gap:6px;min-height:0}
+#main{position:relative;min-height:0;overflow:hidden;border:1px solid var(--line);border-radius:3px}
+#titlebar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.tbpos{font-family:var(--f-mono);font-size:13px;font-weight:600;color:#fff;background:var(--winT);border:1px solid var(--line2);padding:3px 8px;border-radius:3px;white-space:nowrap}
+#navbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:var(--win);border:1px solid var(--line);border-radius:3px;padding:3px 5px}
+#navbar .bar{display:flex;gap:3px;align-items:center;flex-wrap:wrap}
+#navbar .bar+.bar{border-left:1px solid var(--line2);padding-left:6px}
+#navbar .bl{font-size:10.5px;letter-spacing:.12em;color:var(--dim);margin-right:3px}
+#navbar .bsep{font-size:10px;letter-spacing:.1em;color:var(--dim);margin:0 2px 0 6px}
+#navbar button,#navbar select{font-family:var(--f-mono);font-size:11.5px;padding:2px 7px;background:transparent;border-color:transparent;color:var(--mute)}
+#navbar button:hover{border-color:var(--line2);color:var(--text)}
+#navbar button.on{color:#fff;font-weight:700;background:var(--winT);border-color:var(--line2)}
+#navbar select{border-color:var(--line2);background:var(--pvd)}
+.win{position:absolute;z-index:8;display:flex;flex-direction:column;background:var(--win);border:1px solid var(--line2);border-radius:3px;box-shadow:0 6px 22px rgba(0,0,0,.45);resize:both;overflow:hidden;min-width:200px;min-height:90px;max-width:calc(100% - 8px);max-height:calc(100% - 8px)}
+.win .wt{display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--winT);padding:2px 4px 2px 8px;cursor:move;user-select:none;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;color:var(--accent);border-bottom:1px solid var(--line2);touch-action:none}
+.win .wx{padding:0 6px;font-size:11px;background:transparent;border-color:transparent;color:var(--mute)}
+.win>aside,.win>#atcList{flex:1;border:0;border-radius:0}
+#wCom{display:flex}
+#wCom #log{flex:1;height:auto;border:0;border-radius:0;min-height:40px}
+#wCom #cmdBox{border:0;border-top:1px solid var(--line);border-radius:0;padding:5px 6px}
+#atcList{overflow:auto;padding:4px 0;font-family:var(--f-mono);font-size:12px}
+#atcList .ar{display:grid;grid-template-columns:auto 1fr auto;gap:8px;padding:2px 10px}
+#atcList .ar.nx{background:var(--panel2);color:#fff}
+#atcList .ar .c{color:var(--accent)} #atcList .ar .f{color:var(--mute)}
+.tagEdit{display:grid;grid-template-columns:auto 1fr auto 1fr auto 1fr auto;gap:4px;align-items:center;font-family:var(--f-mono);font-size:11px;color:var(--mute)}
+.tagEdit input{width:100%;min-width:0;padding:3px 4px}
 aside{background:var(--panel);border:1px solid var(--line);border-radius:4px;min-height:0;overflow:auto;min-width:0}
-#scopeWrap{position:relative;min-height:0;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#000;touch-action:none}
+#scopeWrap{position:absolute;inset:0;overflow:hidden;background:var(--pvd);touch-action:none}
 canvas#scope{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
 .secHead{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);padding:8px 10px 4px;display:flex;justify-content:space-between;position:sticky;top:0;background:var(--panel);z-index:1}
 .strip{display:grid;grid-template-columns:1fr auto;gap:1px 8px;margin:3px 6px;padding:5px 7px 5px 9px;background:var(--panel2);border-left:4px solid var(--dim);border-radius:2px;cursor:pointer;font-family:var(--f-mono);font-size:11.5px}
@@ -87,7 +122,7 @@ canvas#scope{position:absolute;inset:0;width:100%;height:100%;display:block;curs
 .route .past{color:var(--dim)}
 .route .next{color:var(--accent);font-weight:600}
 .hint{color:var(--mute);font-size:12.5px;line-height:1.45}
-footer{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);gap:6px;min-height:0}
+
 #log{height:118px;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:5px 8px;font-family:var(--f-mono);font-size:12px;line-height:1.5}
 #log .t{color:var(--dim);margin-right:6px}
 #log .atc{color:#e2e2e2}
@@ -99,12 +134,18 @@ footer{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);gap:6px;
 button:disabled{opacity:.4;cursor:default;pointer-events:none}
 #log .good{color:var(--ok)}
 #cmdBox{display:flex;flex-direction:column;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px}
-#cmd{width:100%;font-size:15px;padding:8px;text-transform:uppercase}
+#cmd{width:100%;font-size:14px;padding:6px;text-transform:uppercase}
 #cmdBox .hint{font-size:12px}
-#menu{position:fixed;z-index:50;background:#080808;border:1px solid var(--accent);border-radius:3px;box-shadow:0 6px 24px rgba(0,0,0,.5);max-height:320px;overflow:auto;min-width:120px;font-family:var(--f-mono);font-size:12.5px}
-#menu .mt{font-family:var(--f-ui);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);padding:5px 8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#080808}
+#menu{position:fixed;z-index:50;background:var(--win);border:1px solid var(--line2);border-radius:3px;box-shadow:0 6px 24px rgba(0,0,0,.5);max-height:min(560px,80vh);overflow:auto;min-width:120px;font-family:var(--f-mono);font-size:12.5px}
+#menu .mt{font-family:var(--f-ui);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);padding:5px 8px;border-bottom:1px solid var(--line2);position:sticky;top:0;background:var(--winT)}
 #menu .mi{padding:4px 10px;cursor:pointer;display:flex;justify-content:space-between;gap:12px}
-#menu .mi:hover,#menu .mi.cur{background:#262626}
+#menu .mi:hover,#menu .mi.cur{background:var(--panel2)}
+#menu .mi.dis{color:var(--dim);cursor:default}
+#menu .mi.sub::after{content:'▸';color:var(--dim)}
+#menu .mi.on{font-weight:700;color:#fff}
+#menu .mi.warn{color:#ffb3ad}
+#menu .msep{border-top:1px solid var(--line);margin:3px 0}
+#menu pre.fpl{margin:0;padding:8px 10px;font-family:var(--f-mono);font-size:12px;line-height:1.5;white-space:pre-wrap;max-width:420px;color:var(--text)}
 #menu .mi .tag{color:var(--mute)}
 #menu .mi.rfl{color:var(--ok)}
 #menu .mi.xfl{color:var(--call)}
@@ -126,7 +167,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
 .legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px 14px;font-size:13px}
 .legend i{display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:2px;vertical-align:-1px}
 .tw{overflow-x:auto}
-#zonesPanel{position:absolute;top:8px;left:8px;width:300px;max-height:calc(100% - 60px);overflow:auto;background:rgba(0,0,0,.92);border:1px solid var(--line2);border-radius:4px;padding:8px 10px;z-index:5;font-size:13px}
+#zonesPanel{position:absolute;top:8px;left:calc(50% - 150px);width:300px;max-height:calc(100% - 60px);overflow:auto;background:rgba(0,0,0,.92);border:1px solid var(--line2);border-radius:4px;padding:8px 10px;z-index:5;font-size:13px}
 #zonesPanel .zt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-bottom:6px;display:flex;justify-content:space-between}
 #zonesPanel .zr{border-top:1px solid var(--line);padding:5px 0;display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px}
 #zonesPanel .zr .zh{flex:1 1 100%}
@@ -140,19 +181,15 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
 .tline.ok{color:var(--ok)}
 #layers{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.92);border:1px solid var(--line2);border-radius:4px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;font-size:13px;z-index:5}
 #layers label{display:flex;gap:6px;align-items:center}
-#scopeTools{position:absolute;left:8px;bottom:8px;display:flex;gap:4px;z-index:4;flex-wrap:wrap}
+#scopeTools{display:none;position:absolute;left:8px;bottom:8px;display:flex;gap:4px;z-index:4;flex-wrap:wrap}
 #scopeTools button{background:rgba(8,8,8,.92)}
 #toast{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#3a1414;border:1px solid var(--crit);color:#ffd6d2;padding:6px 12px;border-radius:3px;font-weight:600;z-index:6;pointer-events:none}
 .mobileOnly{display:none}
-@media (max-width:1100px){
-  #main{grid-template-columns:200px minmax(0,1fr) 250px}
-}
+
 @media (max-width:860px){
-  #main{grid-template-columns:minmax(0,1fr)}
-  aside{position:fixed;top:56px;bottom:200px;z-index:30;width:min(300px,88vw);box-shadow:0 8px 30px rgba(0,0,0,.6)}
-  #strips{left:max(16px,env(safe-area-inset-left,0px))}
-  #panel{right:max(16px,env(safe-area-inset-right,0px))}
-  aside.closed{display:none!important}
+  .win{left:4px!important;right:4px!important;width:auto!important}
+  #wStrips,#wTraffic,#wAtc{top:4px!important;height:58%!important}
+  #wCom{top:auto!important;bottom:4px!important;height:150px!important}
   #cmdBox .hint{display:none}
   .chip .k{display:none}
   .mobileOnly{display:inline-block}
@@ -160,7 +197,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
   #log{height:80px}
   .hideNarrow{display:none}
 }
-#confCard{position:absolute;top:8px;left:8px;width:min(330px,calc(100% - 16px));background:rgba(5,5,5,.96);border:1px solid var(--line2);border-radius:4px;padding:10px 12px;z-index:6;font-size:13px;display:flex;flex-direction:column;gap:7px;max-height:calc(100% - 64px);overflow:auto}
+#confCard{position:absolute;top:44px;left:calc(50% - 165px);width:min(330px,calc(100% - 16px));background:rgba(5,5,5,.96);border:1px solid var(--line2);border-radius:4px;padding:10px 12px;z-index:6;font-size:13px;display:flex;flex-direction:column;gap:7px;max-height:calc(100% - 64px);overflow:auto}
 #confCard h3{margin:0;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:600;display:flex;justify-content:space-between;align-items:center}
 #confCard .verdict{font-weight:700;letter-spacing:.05em;padding:5px 8px;border-radius:3px;border:1px solid;font-size:14px}
 .verdict.danger{color:#ffd0cc;border-color:var(--crit);background:#2a0907}
@@ -181,9 +218,9 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
 </style>
 
 <div id="app">
-  <header>
+  <header id="titlebar">
     <span class="brand">open<b>CRNA</b></span>
-    <span class="chip" id="hdSector"><span class="k">Position</span>—</span>
+    <span class="tbpos" id="hdSector">—</span>
     <span class="chip"><span class="k">UTC</span><span id="hdClock">--:--:--</span></span>
     <div class="seg" id="speedSeg">
       <button data-s="0" title="Pause (barre d'espace)">❚❚</button>
@@ -197,45 +234,52 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
     <span class="chip hideNarrow"><span class="k">Traités</span><span id="hdDone">0</span></span>
     <span class="chip" id="hdSepChip"><span class="k">Pertes sép.</span><span id="hdSep">0</span></span>
     <span class="chip"><span class="k">Score</span><span id="hdScore">0</span></span>
-    <button class="mobileOnly" id="btnStrips">Strips</button>
-    <button class="mobileOnly" id="btnPanel">Vol</button>
-    <button id="btnZones">Zones d'essais</button>
     <button id="btnHelp">Aide</button>
     <button id="btnEnd">Relève</button>
   </header>
+  <nav id="navbar">
+    <div class="bar" id="menuBar"><span class="bl">MENU</span>
+      <button data-w="com" title="Radio et ligne de commande">COMBOX</button>
+      <button data-w="strips" title="Strips : entrants, sous contrôle, transférés">STRIPS</button>
+      <button data-w="traffic" title="Traffic manager : fiche du vol sélectionné">TRAFFIC</button>
+      <button data-w="atc" title="Unités ATC adjacentes et fréquences">ATC</button>
+      <button id="btnZones" title="Zones militaires">ZONES</button>
+      <button id="btnPvd" title="Réglages de l'écran (thème, fenêtres)">PVD</button>
+      <button class="mobileOnly" id="btnStrips" hidden>Strips</button><button class="mobileOnly" id="btnPanel" hidden>Vol</button>
+    </div>
+    <div class="bar" id="prefBar"><span class="bl">PREF</span>
+      <button id="zIn" title="Zoom avant">+</button><button id="zOut" title="Zoom arrière">−</button><button id="zFit" title="Recentrer sur le secteur">SECT</button>
+      <span class="bsep">TRAFFIC</span>
+      <select id="vecSel" title="Vecteurs vitesse"><option value="0">VCT 0'</option><option value="1">VCT 1'</option><option value="2">VCT 2'</option><option value="3" selected>VCT 3'</option><option value="4">VCT 4'</option><option value="6">VCT 6'</option><option value="8">VCT 8'</option></select>
+      <button data-l="hist" title="Traînées radar">HIST</button><button data-l="bg" title="Trafic non concerné">N.CONC</button><button data-l="vfilt" title="Filtre vertical">VFILT</button>
+      <span class="bsep">GEO</span><button data-l="secs" title="Secteurs LFBB">SECT.LFBB</button><button data-l="legend" title="Légende des symboles">LÉG</button>
+      <span class="bsep">NAV</span><button data-l="vors" title="VOR">VOR</button><button data-l="fixes" title="Points">FIX</button><button data-l="routes" title="Routes">AWY</button><button data-l="apts" title="Terrains">APT</button>
+      <span class="bsep">OUTILS</span><button id="btnMeasure" title="QDM : relèvement et distance (ou clic droit + glisser)">QDM</button><button id="btnConf" title="Trajectoires de deux avions, croisement et CPA">TRAJ</button>
+      <button id="btnLayers" hidden>Couches</button>
+    </div>
+  </nav>
 
   <div id="main">
-    <aside id="strips" class="closed"></aside>
     <div id="scopeWrap">
       <canvas id="scope"></canvas>
       <div id="layers" hidden></div>
       <div id="zonesPanel" hidden></div>
-      <div id="scopeTools">
-        <button id="zIn" title="Zoom avant">+</button>
-        <button id="zOut" title="Zoom arrière">−</button>
-        <button id="zFit" title="Recentrer sur le secteur">Secteur</button>
-        <button id="btnLayers">Couches</button>
-        <button id="btnMeasure" title="Outil mesure (ou clic droit + glisser)">Mesure</button>
-        <button id="btnConf" title="Calculer les trajectoires de deux avions et leur point de croisement">Trajectoires</button>
-        <select id="vecSel" title="Vecteurs vitesse">
-          <option value="0">Vecteur 0'</option><option value="1">1'</option><option value="2">2'</option><option value="3" selected>3'</option><option value="4">4'</option><option value="6">6'</option><option value="8">8'</option>
-        </select>
-      </div>
       <div id="toast" hidden></div>
       <div id="confCard" hidden></div>
       <div id="pickHint" hidden></div>
       <div id="legend"></div>
     </div>
-    <aside id="panel" class="closed"></aside>
+    <section class="win" id="wStrips" data-w="strips"><div class="wt"><span>STRIPS</span><button class="wx" title="Fermer">✕</button></div><aside id="strips"></aside></section>
+    <section class="win" id="wTraffic" data-w="traffic"><div class="wt"><span>TRAFFIC MANAGER</span><button class="wx" title="Fermer">✕</button></div><aside id="panel"></aside></section>
+    <section class="win" id="wAtc" data-w="atc" hidden><div class="wt"><span>ATC</span><button class="wx" title="Fermer">✕</button></div><div id="atcList"></div></section>
+    <section class="win" id="wCom" data-w="com"><div class="wt"><span>COMBOX</span><button class="wx" title="Fermer">✕</button></div>
+      <div id="log" aria-live="polite"></div>
+      <div id="cmdBox">
+        <input id="cmd" autocomplete="off" spellcheck="false" placeholder="AFR6142 370   ·   H270   ·   DCT LMG   ·   A / T">
+        <div class="hint" id="cmdHint">Cliquez sur une étiquette ou un strip pour sélectionner un vol. Clic droit sur un avion : menu. Entrée pour envoyer, Échap pour désélectionner.</div>
+      </div>
+    </section>
   </div>
-
-  <footer>
-    <div id="log" aria-live="polite"></div>
-    <div id="cmdBox">
-      <input id="cmd" autocomplete="off" spellcheck="false" placeholder="AFR6142 370   ·   H270   ·   DCT LMG   ·   A / T">
-      <div class="hint" id="cmdHint">Cliquez sur une étiquette ou un strip pour sélectionner un vol. Entrée pour envoyer, Échap pour désélectionner.</div>
-    </div>
-  </footer>
 </div>
 
 <div id="menu" hidden></div>
@@ -301,6 +345,9 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
 <div class="modal" id="helpModal" hidden>
   <div class="card">
     <div class="row" style="justify-content:space-between;align-items:center"><h1 style="font-size:24px">Commandes et règles</h1><button id="btnCloseHelp">Fermer</button></div>
+    <h2>Interface (façon Aurora)</h2>
+    <p>En haut, la barre de titre (indicatif de position, fréquence, UTC, vitesse de simulation, compteurs). Dessous, la <b>MENU BAR</b> ouvre les fenêtres flottantes — COMBOX (radio et ligne de commande), STRIPS, TRAFFIC (traffic manager du vol sélectionné, avec la ligne <b>WP / ALT / SPD</b> à valider par ✓ ou Entrée), ATC (unités adjacentes et fréquences, › = unité suivante du vol sélectionné), ZONES et PVD (thème Aurora ou Noir, positions des fenêtres) — et la <b>PREF BAR</b> règle l'affichage (vecteurs, traînées, trafic non concerné, secteurs, légende, VOR, points, routes, terrains ; en gras = actif). Les fenêtres se déplacent par leur barre de titre et se redimensionnent par le coin.</p>
+    <p><b>Clic droit sur un avion</b> : menu selon son état — Assume, Force ACT (radio check), Transfer, niveau / cap / vitesse / direct, coordination XFL, SQK (REQ SSR, confirmer le code), 121.5, défense aérienne, MAYDAY reçu, Highlight d'un champ de l'étiquette, Route (touche Tab), FL.PLAN (touche F8), Vector, trajectoires avec le vol sélectionné. <b>Clic droit sur le fond</b> : QDM, centrer ici, recentrer sur le secteur, trajectoires, barres et fenêtres. Clic droit maintenu et glissé : mesure de relèvement et distance.</p>
     <h2>Le métier</h2>
     <p>Chaque vol qui traverse votre volume est <b>pré-annoncé</b> (strip ambre) puis <b>transféré</b> par le secteur amont : le pilote vous appelle et son indicatif clignote. Cliquez sur l'indicatif pour l'<b>assumer</b>. Vous seul pouvez alors lui donner des clairances. Avant qu'il quitte votre volume, amenez-le au <b>XFL</b> (niveau de sortie coordonné) puis cliquez à nouveau sur l'indicatif pour le <b>transférer</b> au secteur suivant affiché dans l'étiquette.</p>
     <p>Normes : 5 NM en horizontal ou 1 000 ft en vertical (RVSM FL290–FL410). Règle semi-circulaire : route vraie 000–179° niveaux impairs (FL310, 330…), 180–359° niveaux pairs (FL300, 320…).</p>
@@ -1364,6 +1411,9 @@ function radarSweep(){for(const f of SIM.mil){if(f.plot){f.hist.unshift({x:f.plo
 const cv=document.getElementById('scope'),ctx=cv.getContext('2d');
 let W=0,H=0,dpr=1;const VIEW={cx:0,cy:0,s:2};
 const LAY={legend:true,routes:true,fixes:true,vors:true,apts:true,secs:true,bg:true,vfilt:true,hist:true,vec:3};
+const COL_NOIR={outside:'#000000',lfbb:'#080808',mine:'#121212',fir:'#383838',firTxt:'#4e4e4e',sec:'#383838',secTxt:'#515151',mineLine:'#959595',awy:'#292929',awyApt:'#212121',fix:'#666666',vor:'#888888',apt:'#6b6b6b',ptTxt:'#727272',bg:'#6d6d6d',sel:'#c8c8c8',route:'#a8a8a8',halo:'#000000'};
+// Thème Aurora : fond bleu nuit, secteur plus clair, géographie bleu-gris
+const COL_AURORA={outside:'#0d1720',lfbb:'#13202c',mine:'#1a2c3b',fir:'#34506a',firTxt:'#4d6a82',sec:'#34506a',secTxt:'#58748b',mineLine:'#8fb1cc',awy:'#26394a',awyApt:'#21323f',fix:'#6f8aa0',vor:'#97b2c7',apt:'#7890a4',ptTxt:'#7d97ab',bg:'#8297a8',sel:'#d6e6f3',route:'#a9c3d8',halo:'#0d1720'};
 const COL={outside:'#000000',lfbb:'#080808',mine:'#121212',fir:'#383838',firTxt:'#4e4e4e',sec:'#383838',secTxt:'#515151',mineLine:'#959595',awy:'#292929',awyApt:'#212121',fix:'#666666',vor:'#888888',apt:'#6b6b6b',ptTxt:'#727272',
  bg:'#6d6d6d',pre:'#d9a441',call:'#ffcf5c',mine1:'#6fdc96',xfer:'#5aa9e6',miss:'#9a7f7f',crit:'#ff5b52',sel:'#c8c8c8',route:'#a8a8a8',halo:'#000000'};
 function resize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;W=r.width;H=r.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}
@@ -1408,8 +1458,8 @@ function draw(){
   else if(p.type==='vor'&&LAY.vors&&(ROUTEPTS.has(id)||VIEW.s>2.2)){ctx.strokeStyle=COL.vor;ctx.beginPath();for(let k=0;k<6;k++){const an=k*Math.PI/3;const px=X+4.5*Math.cos(an),py=Y+4.5*Math.sin(an);k?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath();ctx.stroke();ctx.fillStyle=COL.vor;ctx.fillRect(X-1,Y-1,2,2);ctx.fillStyle=COL.ptTxt;ctx.fillText(id,X+6,Y-5)}
   else if(p.type==='apt'&&LAY.apts&&(id.startsWith('LFB')||ROUTEPTS.has(id)||VIEW.s>3)){ctx.strokeStyle=COL.apt;ctx.beginPath();ctx.arc(X,Y,3.5,0,7);ctx.stroke();ctx.fillStyle=COL.apt;ctx.fillText(id,X+5,Y+11)}}
  // route du vol sélectionné
- if(sel){ctx.strokeStyle=COL.route;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(sx(sel.x),sy(sel.y));for(let i=sel.leg;i<sel.pts.length;i++)ctx.lineTo(sx(sel.pts[i].x),sy(sel.pts[i].y));ctx.stroke();ctx.setLineDash([]);
-  ctx.fillStyle=COL.route;ctx.font='600 11px '+fMono;for(let i=sel.leg;i<sel.pts.length;i++){const p=sel.pts[i];ctx.fillText(p.id,sx(p.x)+6,sy(p.y)+12)}}
+ for(const r of SIM.acs.filter(q=>q===sel||q.showRoute)){ctx.strokeStyle=COL.route;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(sx(r.x),sy(r.y));for(let i=r.leg;i<r.pts.length;i++)ctx.lineTo(sx(r.pts[i].x),sy(r.pts[i].y));ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=COL.route;ctx.font='600 11px '+fMono;for(let i=r.leg;i<r.pts.length;i++){const p=r.pts[i];ctx.fillText(p.id,sx(p.x)+6,sy(p.y)+12)}}
  drawTraffic();drawMil();
  drawTools();
  // échelle
@@ -1447,7 +1497,7 @@ function drawTraffic(){
   // traînée
   if(LAY.hist){ctx.fillStyle=col;for(let i=0;i<a.hist.length;i++){ctx.globalAlpha=.55-i*.08;const h=a.hist[i];ctx.fillRect(sx(h.x)-1.2,sy(h.y)-1.2,2.4,2.4)}ctx.globalAlpha=1}
   // vecteur vitesse
-  if(LAY.vec>0){const L=p.gs*LAY.vec/60;ctx.strokeStyle=col;ctx.globalAlpha=.8;ctx.beginPath();ctx.moveTo(X,Y);ctx.lineTo(sx(p.x+L*Math.sin(p.trk*D2R)),sy(p.y+L*Math.cos(p.trk*D2R)));ctx.stroke();ctx.globalAlpha=1}
+  const vm=LAY.vec>0?LAY.vec:(a.vecOn?3:0);if(vm>0){const L=p.gs*vm/60;ctx.strokeStyle=col;ctx.globalAlpha=.8;ctx.beginPath();ctx.moveTo(X,Y);ctx.lineTo(sx(p.x+L*Math.sin(p.trk*D2R)),sy(p.y+L*Math.cos(p.trk*D2R)));ctx.stroke();ctx.globalAlpha=1}
   // symbole
   ctx.strokeStyle=alert?COL.crit:col;ctx.fillStyle=alert?COL.crit:col;ctx.lineWidth=1.3;
   drawShape(catOf(a),X,Y,a.concerned?4.6:3.6);
@@ -1463,7 +1513,7 @@ function drawTraffic(){
   a._bw=bw;a._bh=bh;const box={a,x:LX,y:LY,w:bw,h:bh,fields:[]};
   for(let li=0;li<lines.length;li++){let cx=LX+4;const by=LY+2+lh*(li+1)-3;
    for(const f of lines[li]){const fw=f.t.length*cwm;
-    if(f.bgc){ctx.fillStyle=f.bgc;ctx.fillRect(cx-1,by-lh+3,fw+2,lh)}
+    const hb=f.bgc||(f.k&&a.hl===f.k?'rgba(185,207,224,.32)':null);if(hb){ctx.fillStyle=hb;ctx.fillRect(cx-1,by-lh+3,fw+2,lh)}
     ctx.fillStyle=f.c||(alert?'#ffd6d2':col);ctx.font=(f.b?'600 ':'')+'12px '+fMono;
     ctx.strokeStyle=COL.halo;ctx.lineWidth=3;ctx.strokeText(f.t,cx,by);ctx.lineWidth=1;ctx.fillText(f.t,cx,by);
     if(f.k)box.fields.push({k:f.k,x:cx-2,y:by-lh+2,w:fw+4,h:lh});cx+=fw}}
@@ -1572,8 +1622,8 @@ cv.addEventListener('contextmenu',e=>e.preventDefault());
 cv.addEventListener('pointerdown',e=>{
  cv.setPointerCapture(e.pointerId);const r=cv.getBoundingClientRect();const X=e.clientX-r.left,Y=e.clientY-r.top;ptrs.set(e.pointerId,{X,Y});closeMenu();
  if(ptrs.size===2){const[p1,p2]=[...ptrs.values()];pinch={d:Math.hypot(p1.X-p2.X,p1.Y-p2.Y),s:VIEW.s};drag=null;return}
- if(e.button===2||measureMode){const t=hitTarget(X,Y);if(e.button===2&&t&&sel&&t!==sel){sepA=sel;sepB=t;renderConfCard();return}if(e.button===2&&t&&(t===sepA||t===sepB)){sepA=sepB=null;return}
-  measure={x0:wx(X),y0:wy(Y),x1:wx(X),y1:wy(Y)};drag={type:'measure'};return}
+ if(e.button===2){measure=null;drag={type:'rclick',X0:X,Y0:Y,cx:e.clientX,cy:e.clientY,moved:false};return}
+ if(measureMode){measure={x0:wx(X),y0:wy(Y),x1:wx(X),y1:wy(Y)};drag={type:'measure'};return}
  if(pickMode&&e.button===0){const hl=hitLabel(X,Y);const t=hitTarget(X,Y)||(hl&&hl.a);if(t){if(pickMode===1){sepA=t;pickMode=2}else if(t!==sepA){sepB=t;pickMode=0;document.getElementById('btnConf').classList.remove('on')}renderConfCard()}return}
  const ft=hitFighter(X,Y,8),fal=ft&&alertOf(ft);if(fal){selectPO(fal);drag=null;return}
  const h=hitLabel(X,Y);
@@ -1585,11 +1635,13 @@ cv.addEventListener('pointermove',e=>{
  const r=cv.getBoundingClientRect();const X=e.clientX-r.left,Y=e.clientY-r.top;if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{X,Y});
  if(pinch&&ptrs.size===2){const[p1,p2]=[...ptrs.values()];const d=Math.hypot(p1.X-p2.X,p1.Y-p2.Y);zoomAt((p1.X+p2.X)/2,(p1.Y+p2.Y)/2,pinch.s*d/pinch.d/VIEW.s);return}
  if(!drag){const h=hitLabel(X,Y);cv.style.cursor=h&&h.f?'pointer':h?'move':hitTarget(X,Y)?'pointer':'crosshair';return}
+ if(drag.type==='rclick'){if(!drag.moved&&Math.hypot(X-drag.X0,Y-drag.Y0)>5){drag.moved=true;measure={x0:wx(drag.X0),y0:wy(drag.Y0),x1:wx(X),y1:wy(Y)}}if(drag.moved){measure.x1=wx(X);measure.y1=wy(Y)}return}
  if(drag.type==='measure'){measure.x1=wx(X);measure.y1=wy(Y);return}
  if(drag.type==='label'){if(Math.hypot(X-drag.X0,Y-drag.Y0)>4)drag.moved=true;if(drag.moved){drag.a.lx=drag.lx+X-drag.X0;drag.a.ly=drag.ly+Y-drag.Y0;drag.a.userLbl=true}return}
  if(drag.type==='pan'){if(Math.hypot(X-drag.X0,Y-drag.Y0)>3)drag.moved=true;VIEW.cx=drag.cx-(X-drag.X0)/VIEW.s;VIEW.cy=drag.cy+(Y-drag.Y0)/VIEW.s}
 });
 function endPtr(e){ptrs.delete(e.pointerId);if(ptrs.size<2)pinch=null;if(!drag)return;const d=drag;drag=null;
+ if(d.type==='rclick'){if(d.moved){setTimeout(()=>{if(!drag)measure=null},2500);return}const ft=hitFighter(d.X0,d.Y0,8),fal=ft&&alertOf(ft);if(fal){selectPO(fal);return}const h=hitLabel(d.X0,d.Y0),t=(h&&h.a)||hitTarget(d.X0,d.Y0);if(t)acMenu(t,d.cx,d.cy);else pvdMenu(d.X0,d.Y0,d.cx,d.cy);return}
  if(d.type==='measure'){setTimeout(()=>{if(!drag)measure=null},2500);return}
  if(d.type==='label'&&!d.moved){selectAc(d.a);labelClick(d.a,d.f,d.cx,d.cy)}
  if(d.type==='pan'&&!d.moved){selectAc(null)}}
@@ -1608,6 +1660,84 @@ function labelClick(a,f,cx,cy){
  if(f==='cfl')levelMenu(a,cx,cy);else if(f==='nav')navMenu(a,cx,cy);else if(f==='spd')speedMenu(a,cx,cy);
 }
 
+/* ===================== Interface façon Aurora : fenêtres flottantes, barres, thème ===================== */
+let THEME='aurora';
+function applyTheme(t){THEME=t==='noir'?'noir':'aurora';document.body.dataset.theme=THEME;Object.assign(COL,THEME==='noir'?COL_NOIR:COL_AURORA)}
+const WINDEF={strips:{l:4,t:4,w:250,h:'60%'},traffic:{r:4,t:4,w:320,h:'calc(100% - 8px)'},com:{l:4,b:4,w:'calc(100% - 340px)',h:170},atc:{l:262,t:4,w:240,h:260}};
+let WINS={};try{WINS=JSON.parse(localStorage.getItem('opencrna.win')||'{}')}catch(e){}
+function saveWins(){try{localStorage.setItem('opencrna.win',JSON.stringify(WINS))}catch(e){}}
+function winEl(k){return document.querySelector('.win[data-w="'+k+'"]')}
+function placeWin(k){const el=winEl(k),g=WINS[k],d=WINDEF[k],px=v=>typeof v==='number'?v+'px':v;el.style.cssText='';
+ if(g&&g.x!=null){el.style.left=g.x+'px';el.style.top=g.y+'px';el.style.width=g.w+'px';el.style.height=g.h+'px'}
+ else{for(const[a,b]of[['l','left'],['r','right'],['t','top'],['b','bottom'],['w','width'],['h','height']])if(d[a]!=null)el.style[b]=px(d[a])}
+ el.hidden=g&&g.hide!=null?g.hide:k==='atc';syncMenuBar()}
+function toggleWin(k,show){const el=winEl(k);el.hidden=show!=null?!show:!el.hidden;WINS[k]=Object.assign(WINS[k]||{},{hide:el.hidden});saveWins();syncMenuBar();if(!el.hidden){el.style.zIndex=++toggleWin.z;if(k==='atc')renderAtc()}}
+toggleWin.z=10;
+function syncMenuBar(){document.querySelectorAll('#menuBar [data-w]').forEach(b=>{const el=winEl(b.dataset.w);b.classList.toggle('on',!!el&&!el.hidden)})}
+document.querySelectorAll('.win').forEach(el=>{const k=el.dataset.w,t=el.querySelector('.wt');
+ el.addEventListener('pointerdown',()=>{el.style.zIndex=++toggleWin.z});
+ t.querySelector('.wx').onclick=e=>{e.stopPropagation();toggleWin(k,false)};
+ t.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;e.preventDefault();const m=document.getElementById('main').getBoundingClientRect(),r=el.getBoundingClientRect(),dx=e.clientX-r.left,dy=e.clientY-r.top;t.setPointerCapture(e.pointerId);
+  const mv=ev=>{el.style.right='';el.style.bottom='';el.style.left=clamp(ev.clientX-m.left-dx,0,m.width-60)+'px';el.style.top=clamp(ev.clientY-m.top-dy,0,m.height-24)+'px'};
+  const up=()=>{t.removeEventListener('pointermove',mv);t.removeEventListener('pointerup',up);const r2=el.getBoundingClientRect();WINS[k]=Object.assign(WINS[k]||{},{x:r2.left-m.left,y:r2.top-m.top,w:r2.width,h:r2.height});saveWins()};
+  t.addEventListener('pointermove',mv);t.addEventListener('pointerup',up)});
+ new ResizeObserver(()=>{if(el.hidden||!WINS[k]||WINS[k].x==null)return;const r=el.getBoundingClientRect();if(r.width&&r.height){WINS[k].w=r.width;WINS[k].h=r.height;saveWins()}}).observe(el)});
+document.querySelectorAll('#menuBar [data-w]').forEach(b=>b.onclick=()=>toggleWin(b.dataset.w));
+document.querySelectorAll('#prefBar [data-l]').forEach(b=>b.onclick=()=>{LAY[b.dataset.l]=!LAY[b.dataset.l];saveSettings();syncLayers()});
+function syncPrefBar(){document.querySelectorAll('#prefBar [data-l]').forEach(b=>b.classList.toggle('on',!!LAY[b.dataset.l]))}
+// Fenêtre ATC : unités adjacentes et fréquences (fléchées pour le vol sélectionné)
+function renderAtc(){const el=document.getElementById('atcList');if(!el||winEl('atc').hidden)return;
+ const u=[{code:VOL.cfg.test?'ESS':VOL.cfg.id,sh:myName(1)+' (vous)',freq:VOL.freq}].concat(Object.values(UNITS),Object.keys(APPS).map(appUnit));
+ const h=u.map(x=>{const nx=sel&&sel.next&&sel.next.freq===x.freq&&sel.next.sh===x.sh,pv=sel&&sel.prev&&sel.prev.freq===x.freq&&sel.prev.sh===x.sh;return '<div class="ar'+(nx?' nx':'')+'"><span class="c">'+(nx?'›':pv?'‹':' ')+' '+x.code+'</span><span>'+x.sh+'</span><span class="f">'+x.freq+'</span></div>'}).join('');
+ if(h!==renderAtc.k){renderAtc.k=h;el.innerHTML=h}}
+// Menu PVD (réglages d'écran)
+document.getElementById('btnPvd').onclick=e=>{const r=e.currentTarget.getBoundingClientRect();showMenu('PVD',[
+ {t:'Thème Aurora (bleu nuit)',on:THEME==='aurora',fn:()=>{applyTheme('aurora');saveSettings()}},{t:'Thème Noir (noir et gris)',on:THEME==='noir',fn:()=>{applyTheme('noir');saveSettings()}},{sep:1},
+ {t:'Pref Bar',on:!document.getElementById('prefBar').hidden,fn:()=>{const b=document.getElementById('prefBar');b.hidden=!b.hidden}},
+ {t:'Fenêtres : positions par défaut',fn:()=>{WINS={};saveWins();for(const k in WINDEF)placeWin(k)}}],r.left,r.bottom+4)};
+/* Menu contextuel générique (sous-menus en place, « ‹ retour ») */
+function showMenu(title,items,cx,cy,back){
+ let h='<div class="mt">'+title+'</div>';if(back)h+='<div class="mi" data-i="back">‹ retour</div>';
+ items.forEach((it,i)=>{if(it.sep){h+='<div class="msep"></div>';return}h+='<div class="mi'+(it.dis?' dis':'')+(it.sub?' sub':'')+(it.on?' on':'')+(it.warn?' warn':'')+'" data-i="'+i+'"><span>'+it.t+'</span>'+(it.k?'<span class="tag">'+it.k+'</span>':'')+'</div>'});
+ menu.innerHTML=h;placeMenu(cx,cy);
+ menu.querySelectorAll('[data-i]').forEach(el=>el.onclick=ev=>{ev.stopPropagation();const k=el.dataset.i;if(k==='back'){back();return}const it=items[+k];if(it.dis)return;
+  if(it.sub){const sub=typeof it.sub==='function'?it.sub():it.sub;showMenu(title+' · '+it.t,sub,cx,cy,()=>showMenu(title,items,cx,cy,back));return}
+  closeMenu();it.fn&&it.fn(cx,cy)});
+}
+function showFpl(a,cx,cy){const tas=Math.round((a.pf.cr||.78)*sos((a.rfl||300)*100));
+ const route=(a.tok||[]).filter(t=>!/^L[A-Z]{3}$/.test(t)||t===a.dep||t===a.arr).join(' ');
+ menu.innerHTML='<div class="mt">FL.PLAN · '+a.cs+'</div><pre class="fpl">(FPL-'+a.cs+'-I'+(a.mil?'M':'S')+'\n-'+a.type+'/'+a.wake+'\n-'+a.dep+'\n-N0'+tas+'F'+pad3(a.rfl)+' '+route+'\n-'+a.arr+'\n-SSR/'+(a.sq||'—')+(a.say?' RTF/'+a.say.toUpperCase():'')+')</pre>';placeMenu(cx,cy)}
+// Clic droit sur un avion : menu façon Aurora selon l'état (non assumé / assumé / transféré)
+function acMenu(a,cx,cy){
+ const it=[],fr=a.concerned;
+ if(a.state==='offered'||a.state==='missed')it.push({t:'Assume',k:'A',fn:()=>cmdAssume(a)});
+ if(a.state==='pre')it.push({t:'Assume (pré-annoncé, appel vers '+utc(a.offerT)+')',dis:1});
+ if(fr&&(a.state==='offered'||a.state==='missed'||a.state==='assumed'))it.push({t:'Force ACT (radio check)',k:'RC',fn:()=>cmdRadioCheck(a)});
+ if(a.state==='assumed'){
+  it.push({t:'Transfer',sub:()=>[{t:'→ '+a.next.sh+' '+a.next.freq,k:xflOK(a)?'XFL ✓':'XFL ✗',fn:(x,y)=>askTransfer(a,x,y)}]});
+  it.push({sep:1},{t:'Niveau (ALT A)',k:'FL'+pad3(a.cfl),fn:(x,y)=>levelMenu(a,x,y)},{t:'Cap / direct (WP)',fn:(x,y)=>navMenu(a,x,y)},{t:'Vitesse (SPD A)',fn:(x,y)=>speedMenu(a,x,y)},
+   {t:'Direct',sub:()=>a.pts.slice(a.leg).map(p=>({t:p.id,fn:()=>cmdDirect(a,p.id)}))},
+   {t:'Coordination XFL',k:'X'+a.xfl,sub:()=>[-40,-20,-10,10,20,40].map(d=>a.xfl+d).filter(f=>f>=50&&f<=Math.min(a.pf.ceil,490)).map(f=>({t:'XFL '+pad3(f),fn:()=>cmdAskXfl(a,f)}))},
+   {t:'SQK',k:a.sq,sub:()=>[{t:'REQ SSR (nouveau code)',fn:()=>cmdSquawk(a,null)},{t:'Confirmez transpondeur',fn:()=>cmdConfirmSq(a)}]},
+   {t:'Appel 121.5',fn:()=>cmdGuard(a)});
+  if(a.emerg&&!a.emerg.done&&a.emerg.kind!=='hij'&&!a.emerg.ack)it.push({t:'MAYDAY reçu · priorité',warn:1,fn:()=>cmdEmergAck(a)});
+ }
+ if(a.state==='transferred'&&canRetake(a))it.push({t:'Reprendre (annuler le transfert)',fn:(x,y)=>askRetake(a,x,y)});
+ if(fr&&a.state!=='pre'&&a.state!=='transferred'){it.push(a.alerted?{t:'Lever l\'alerte',fn:()=>askEndAlert(SIM.alerts.find(x=>x.a===a&&x.stage<9))}:{t:'Alerter la défense aérienne',warn:1,fn:()=>askAlert(a)})}
+ it.push({sep:1},{t:'Highlight',sub:()=>[['cs','Indicatif'],['cfl','ALT A (niveau autorisé)'],['nav','WP (cap / point)'],['spd','SPD (vitesse)'],[null,'Aucun']].map(([k,n])=>({t:n,on:a.hl===k,fn:()=>{a.hl=k}}))},
+  {t:'Route',k:'TAB',on:!!a.showRoute,fn:()=>{a.showRoute=!a.showRoute}},{t:'FL.PLAN',k:'F8',fn:(x,y)=>showFpl(a,x,y)},{t:'Vector',on:!!a.vecOn,fn:()=>{a.vecOn=!a.vecOn}});
+ if(sel&&sel!==a)it.push({t:'Trajectoires avec '+sel.cs,fn:()=>{sepA=sel;sepB=a;renderConfCard()}});
+ it.push({t:'Centrer ici',fn:()=>{VIEW.cx=a.plot.x;VIEW.cy=a.plot.y}});
+ selectAc(a);showMenu(a.cs+' · '+a.type+' · '+(STATE_TXT[a.state]||''),it,cx,cy);
+}
+// Clic droit sur le fond du PVD
+function pvdMenu(X,Y,cx,cy){const x=wx(X),y=wy(Y);
+ showMenu('PVD',[{t:'QDM (mesure)',on:measureMode,fn:()=>{measureMode=!measureMode;document.getElementById('btnMeasure').classList.toggle('on',measureMode)}},
+  {t:'Set Centerpoint (centrer ici)',fn:()=>{VIEW.cx=x;VIEW.cy=y}},{t:'Reset Centerpoint (secteur)',fn:()=>fitSector()},
+  {t:'Trajectoires…',fn:()=>document.getElementById('btnConf').click()},{sep:1},
+  {t:'Menu Bar',on:!document.getElementById('menuBar').hidden,fn:()=>{const b=document.getElementById('menuBar');b.hidden=!b.hidden}},
+  {t:'Pref Bar',on:!document.getElementById('prefBar').hidden,fn:()=>{const b=document.getElementById('prefBar');b.hidden=!b.hidden}},
+  {t:'Fenêtres',sub:()=>[['com','COMBOX'],['strips','STRIPS'],['traffic','TRAFFIC MANAGER'],['atc','ATC']].map(([k,n])=>({t:n,on:!winEl(k).hidden,fn:()=>toggleWin(k)}))}],cx,cy)}
 /* ===================== Menus ===================== */
 const menu=document.getElementById('menu');
 function closeMenu(){menu.hidden=true;menu.innerHTML=''}
@@ -1695,6 +1825,7 @@ function renderPanel(force){
   if(a.concerned)h+='<dt>'+(a.state==='pre'||a.state==='offered'?'Entrée dans':'Sortie dans')+'</dt><dd data-v="eta"></dd>';
   h+='</dl>';
   if(ctl){
+   h+='<div class="ctl"><h4>Tag</h4><div class="tagEdit"><span>WP</span><input id="tWp" placeholder="'+(a.mode==='hdg'?'H'+pad3(a.hdgSel):(a.pts[a.leg]?a.pts[a.leg].id:''))+'"><span>ALT</span><input id="tAlt" inputmode="numeric" placeholder="'+pad3(a.cfl)+'"><span>SPD</span><input id="tSpd" placeholder="'+(a.spdMode==='mach'?'M'+Math.round(a.spdVal*100):a.spdMode==='ias'?a.spdVal:'auto')+'"><button id="tGo" title="Envoyer (Entrée)">✓</button></div></div>';
    h+='<div class="ctl"><h4>Niveau <span data-v="cfl"></span></h4><div class="row"><input id="pFl" inputmode="numeric" maxlength="3" placeholder="370"><button id="pFlGo">Autoriser</button><button id="pFlX">XFL '+a.xfl+'</button>'+(a.rfl!==a.xfl?'<button id="pFlR">RFL '+a.rfl+'</button>':'')+'</div></div>';
    if(a.test)h+='<div class="ctl"><h4>Manœuvre (en zone active)</h4><div class="row"><select id="pG">'+[2,3,4,5,6,7,8,9].map(g=>'<option'+(g===5?' selected':'')+'>'+g+'</option>').join('')+'</select><span class="hint">G</span><input id="pGs" inputmode="numeric" maxlength="3" value="30" style="width:48px"><span class="hint">s</span><button id="pGL">Gauche</button><button id="pGR">Droite</button></div></div>';
    if(a.state==='assumed'&&a.next)h+='<div class="ctl"><h4>Coordination sortie → '+a.next.sh+'</h4>'+(SIM.coords.some(c=>c.a===a&&c.kind==='xfl')?'<p class="hint">Demande en cours…</p>':'<div class="row"><input id="pXc" inputmode="numeric" maxlength="3" placeholder="'+a.xfl+'"><button id="pXcGo">Demander XFL</button></div>')+'</div>';
@@ -1720,6 +1851,9 @@ function renderPanel(force){
   }
   if($('#pHjC'))$('#pHjC').onclick=()=>cmdConfirmSq(a);if($('#pHjA'))$('#pHjA').onclick=()=>askAlert(a);
   if($('#pEmAck'))$('#pEmAck').onclick=()=>cmdEmergAck(a);if($('#pEmDct'))$('#pEmDct').onclick=()=>cmdDirect(a,a.emerg.ap);
+  if($('#tGo')){const goT=()=>{const wp=$('#tWp').value.trim().toUpperCase(),al=$('#tAlt').value.trim(),sp=$('#tSpd').value.trim().toUpperCase(),t=[];
+   if(wp)t.push(...(/^H?\d{1,3}$/.test(wp)?['H'+wp.replace('H','')]:['DCT',wp]));if(al)t.push(al);if(sp)t.push(/^\d{3}$/.test(sp)?'S'+sp:/^\d{2}$/.test(sp)?'M'+sp:sp);if(t.length)runTokens(a,t);['#tWp','#tAlt','#tSpd'].forEach(q=>$(q).value='')};
+   $('#tGo').onclick=goT;['#tWp','#tAlt','#tSpd'].forEach(q=>$(q).onkeydown=e=>{if(e.key==='Enter')goT()})}
   if($('#pGL')){const goG=d=>cmdMan(a,+$('#pG').value,+$('#pGs').value||30,d);$('#pGL').onclick=()=>goG('L');$('#pGR').onclick=()=>goG('R')}
   if($('#pXcGo')){const goX=()=>{const v=+$('#pXc').value;if(v)cmdAskXfl(a,v<50?v*10:v)};$('#pXcGo').onclick=goX;$('#pXc').onkeydown=e=>{if(e.key==='Enter')goX()}}
   if($('#pSqGo')){const goQ=()=>{const v=$('#pSq').value.trim();cmdSquawk(a,v||null)};$('#pSqGo').onclick=goQ;$('#pSq').onkeydown=e=>{if(e.key==='Enter')goQ()};$('#pSqN').onclick=()=>cmdSquawk(a,null)}
@@ -1772,7 +1906,7 @@ function updateUI(){
  document.getElementById('hdDone').textContent=SIM.done;
  document.getElementById('hdSep').textContent=SIM.sepLoss;document.getElementById('hdSepChip').classList.toggle('crit',SIM.sepLoss>0);
  document.getElementById('hdScore').textContent=SIM.score;
- renderStrips();renderPanel(false);renderConfCard();renderZones();
+ renderStrips();renderPanel(false);renderConfCard();renderZones();renderAtc();
 }
 
 /* ===================== Ligne de commande ===================== */
@@ -1821,7 +1955,7 @@ cmdEl.addEventListener('keydown',e=>{
  else if(e.key==='Escape'){cmdEl.value='';selectAc(null);closeMenu()}
 });
 document.addEventListener('keydown',e=>{const tag=document.activeElement&&document.activeElement.tagName;if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA')return;
- if(e.key===' '){e.preventDefault();setSpeed(SIM.speed===0?(SIM.prevSpeed||1):0)}else if(e.key==='Escape'){selectAc(null);closeMenu()}
+ if(e.key==='Tab'&&sel){e.preventDefault();sel.showRoute=!sel.showRoute;return}if(e.key==='F8'&&sel){e.preventDefault();const r=cv.getBoundingClientRect();showFpl(sel,r.left+r.width/2-150,r.top+80);return}if(e.key===' '){e.preventDefault();setSpeed(SIM.speed===0?(SIM.prevSpeed||1):0)}else if(e.key==='Escape'){selectAc(null);closeMenu()}
  else if(/^[a-zA-Z0-9]$/.test(e.key)&&SIM.running&&document.getElementById('startModal').hidden){cmdEl.focus()}});
 
 /* ===================== Barre d'état & réglages ===================== */
@@ -1833,7 +1967,7 @@ const layersEl=document.getElementById('layers');
 const LAYNAMES=[['legend','Légende des symboles'],['routes','Routes'],['fixes','Points'],['vors','VOR'],['apts','Terrains'],['secs','Secteurs LFBB'],['bg','Trafic non concerné'],['vfilt','Filtre vertical'],['hist','Traînées radar']];
 layersEl.innerHTML=LAYNAMES.map(([k,n])=>'<label><input type="checkbox" data-l="'+k+'"> '+n+'</label>').join('');
 function renderLegend(){const el=document.getElementById('legend');el.hidden=!LAY.legend;el.innerHTML='<span class="lt">Destination</span>'+Object.values(DCAT).map(([g,n])=>'<b>'+g+'</b><span>'+n.split(' · ')[0].replace('Europe du Nord et de l\'Est','Europe')+'</span>').join('')+'<b>▲</b><span>Chasse (PO)</span>'}
-function syncLayers(){renderLegend();layersEl.querySelectorAll('[data-l]').forEach(c=>c.checked=!!LAY[c.dataset.l]);document.getElementById('vecSel').value=String(LAY.vec)}
+function syncLayers(){renderLegend();syncPrefBar();layersEl.querySelectorAll('[data-l]').forEach(c=>c.checked=!!LAY[c.dataset.l]);document.getElementById('vecSel').value=String(LAY.vec)}
 layersEl.addEventListener('change',e=>{const k=e.target.dataset.l;if(k){LAY[k]=e.target.checked;saveSettings();renderLegend()}});
 document.getElementById('btnLayers').onclick=e=>{layersEl.hidden=!layersEl.hidden;e.currentTarget.classList.toggle('on',!layersEl.hidden)};
 function openHelp(){document.getElementById('helpModal').hidden=false}
@@ -1842,14 +1976,14 @@ document.getElementById('btnZones').onclick=e=>{zonesEl.hidden=!zonesEl.hidden;e
 document.getElementById('btnCloseHelp').onclick=()=>document.getElementById('helpModal').hidden=true;
 document.getElementById('helpModal').addEventListener('click',e=>{if(e.target.id==='helpModal')e.target.hidden=true});
 
-function saveSettings(){try{localStorage.setItem('opencrna.v1',JSON.stringify({nordo:selNordo.value,conv:selConv.value,coord:selCoord.value,test:selTest.value,train:selTrain.value,emerg:selEmerg.value,cfg:selCfg.value,den:selDen.value,wind:chkWind.checked,voice:chkVoice.checked,lay:LAY}))}catch(e){}}
-function loadSettings(){try{const s=JSON.parse(localStorage.getItem('opencrna.v1')||'null');if(!s)return;if(s.cfg)selCfg.value=s.cfg;if(s.nordo!=null)selNordo.value=s.nordo;if(s.conv!=null)selConv.value=s.conv;if(s.coord!=null)selCoord.value=s.coord;if(s.test!=null)selTest.value=s.test;if(s.train!=null)selTrain.value=s.train;if(s.emerg!=null)selEmerg.value=s.emerg;if(s.den)selDen.value=s.den;chkWind.checked=s.wind!==false;chkVoice.checked=!!s.voice;if(s.lay)Object.assign(LAY,s.lay)}catch(e){}}
+function saveSettings(){try{localStorage.setItem('opencrna.v1',JSON.stringify({nordo:selNordo.value,conv:selConv.value,coord:selCoord.value,test:selTest.value,train:selTrain.value,emerg:selEmerg.value,cfg:selCfg.value,den:selDen.value,wind:chkWind.checked,voice:chkVoice.checked,lay:LAY,theme:THEME}))}catch(e){}}
+function loadSettings(){try{const s=JSON.parse(localStorage.getItem('opencrna.v1')||'null');if(!s)return;if(s.cfg)selCfg.value=s.cfg;if(s.nordo!=null)selNordo.value=s.nordo;if(s.conv!=null)selConv.value=s.conv;if(s.coord!=null)selCoord.value=s.coord;if(s.test!=null)selTest.value=s.test;if(s.train!=null)selTrain.value=s.train;if(s.emerg!=null)selEmerg.value=s.emerg;if(s.den)selDen.value=s.den;chkWind.checked=s.wind!==false;chkVoice.checked=!!s.voice;if(s.lay)Object.assign(LAY,s.lay);if(s.theme)applyTheme(s.theme)}catch(e){}}
 const selNordo=document.getElementById('selNordo'),selConv=document.getElementById('selConv'),selCoord=document.getElementById('selCoord'),selTest=document.getElementById('selTest'),selTrain=document.getElementById('selTrain'),selEmerg=document.getElementById('selEmerg'),selCfg=document.getElementById('selConfig'),selDen=document.getElementById('selDensity'),chkWind=document.getElementById('chkWind'),chkVoice=document.getElementById('chkVoice');
 selCfg.innerHTML=CONFIGS.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');selCfg.value='US';
 function cfgInfo(){const c=CONFIGS.find(q=>q.id===selCfg.value);if(c.test){document.getElementById('cfgInfo').textContent='Poste Essais en vol · toute la région LFBB, FL100 à FL600, fréquence '+c.freq+'. Vous ne contrôlez que les Rafale d\'essais de Mérignac : activez une zone d\'essais, acheminez-les entre les trafics civils (gérés par les secteurs, mais la séparation compte), faites leur programme puis ramenez-les à Bordeaux Approche. Les réglages de pertes radio, convergences et demandes des centres ne s\'appliquent pas.';return}
  document.getElementById('cfgInfo').textContent='Volume : '+(c.sec[0]==='*'?'toute la région LFBB':'secteur'+(c.sec.length>1?'s ':' ')+c.sec.join(', '))+' · FL'+c.floor+' à '+(c.ceil>=660?'FL660':'FL'+c.ceil)+'. '+(c.floor>=300?'Secteur supérieur : survols en croisière, montées des départs Toulouse/Bordeaux et descentes des arrivées.':'Secteur inférieur : beaucoup de montées et descentes, transferts aux approches de Bordeaux, Toulouse, Biarritz, Pau.')}
 selCfg.onchange=cfgInfo;
-loadSettings();syncLayers();cfgInfo();
+loadSettings();if(!document.body.dataset.theme)applyTheme('aurora');for(const k in WINDEF)placeWin(k);syncLayers();cfgInfo();
 
 function startGame(){
  const cfg=CONFIGS.find(q=>q.id===selCfg.value);setupVolume(cfg);saveSettings();const T=!!cfg.test;
@@ -1857,7 +1991,7 @@ function startGame(){
  SIM.startUTC=(Math.floor(rnd(7,19))*3600+Math.floor(rnd(0,59))*60);
  WX.on=chkWind.checked;WX.dir=Math.round(rnd(250,300));WX.jet=Math.round(rnd(45,115));
  const w=windAt(35000);document.getElementById('hdWind').innerHTML='<span class="k">Vent FL350</span>'+(WX.on?pad3(w.dir)+'°/'+Math.round(w.spd)+' kt':'calme');
- document.getElementById('hdSector').innerHTML='<span class="k">LFBB</span>'+cfg.name.split(' · ')[0]+' · FL'+cfg.floor+'–'+(cfg.ceil>=660?'660':cfg.ceil);
+ document.getElementById('hdSector').textContent='LFBB_'+(cfg.test?'ESS':cfg.id.replace(/\W/g,''))+'_CTR · '+VOL.freq+' · FL'+cfg.floor+'–'+(cfg.ceil>=660?'660':cfg.ceil);document.getElementById('hdSector').title=cfg.name;
  logEl.innerHTML='';selectAc(null);
  resize();fitSector();
  // trafic initial : relève en cours
