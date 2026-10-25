@@ -394,7 +394,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
     <h2>Entraînement militaire</h2>
     <p>Réglage « Entraînement militaire » : des Rafale de Mont-de-Marsan (indicatifs GASCO, VIPER, LYNX…) partent s'entraîner dans les vraies TRA 34 (A, B, C, D, E, N) autour de Mont-de-Marsan, la R 34 A2, et les TRA 43 (Massif central) et TRA 10 B (Poitou) — limites de l'eAIP ENR 5.2. Le CDC de Mont-de-Marsan annonce l'activation 3 minutes à l'avance ; la zone est fermée à la circulation générale jusqu'au retour des avions. Sur tous les postes, déviez votre trafic ; sur le poste Essais en vol, ces zones ne sont pas disponibles pour vos essais tant qu'elles sont tenues.</p>
     <h2>Essais en vol vus d'un poste en route</h2>
-    <p>Quand vous tenez un secteur en route, les essais continuent, gérés par le contrôleur « Bordeaux Essais » (réglage « Essais en vol »). Il vous annonce l'activation d'une zone avec 3 minutes de préavis et les vols concernés ; la zone apparaît alors sur votre radar et dans la page Zones (en lecture seule). Ses Rafale sont du trafic non concerné, à séparer comme les autres. Tant que la zone est active, un de vos vols qui y entre coûte −20 : déviez-les. La zone est rendue dès que le Rafale l'a quittée.</p>
+    <p>Quand vous tenez un secteur en route, les essais continuent, gérés par le contrôleur « Bordeaux Essais » (réglage « Essais en vol »). Il vous annonce l'activation d'une zone avec 3 minutes de préavis et les vols concernés ; la zone apparaît alors sur votre radar et dans la page Zones (en lecture seule). Ses Rafale sont du trafic non concerné, à séparer comme les autres. Tant que la zone est active, un de vos vols qui y entre coûte −20 : déviez-les. Tolérance d'empiètement : un vol peut mordre sur une zone jusqu'à 2 NM (et 500 ft) ou pendant 45 s sans pénalité, et dépasser la limite latérale de votre secteur jusqu'à 2 NM sans être considéré comme sorti. La zone est rendue dès que le Rafale l'a quittée.</p>
     <h2>Transpondeur</h2>
     <p>Chaque vol a un code transpondeur (fiche vol). Commande <code>SQ 4521</code> ou bouton <b>Transpondez</b> ; <code>SQ</code> seul ou <b>Nouveau code</b> attribue un code libre. Il arrive que deux vols aient le même code : l'étiquette affiche <b>DUPE</b>, attribuez un nouveau code au vol sous votre contrôle (sinon −5 au bout de quelques minutes). Un équipage en panne radio affiche souvent <b>7600</b>.</p>
     <h2>Urgences (7700)</h2>
@@ -1040,6 +1040,10 @@ function zonePole(Q){let best={x:0,y:0,m:-1};const xs=Q.p.map(q=>q[0]),ys=Q.p.ma
 const TZONES=(GEO.milz||[]).map(m=>{const Q=mkPoly(m.pts),c=zonePole(Q);PTS[m.id]={id:m.id,name:m.name,type:'zone',x:c.x,y:c.y};
  return{id:m.id,n:m.name,kind:m.kind||'rd',Q,x:c.x,y:c.y,mg:c.m,floor:m.bot,ceil:m.top,lim:m.botr.replace(/ ?ft AMSL/,' ft')+'–'+m.topr,approx:m.approx,st:'off',tAct:0}});
 const TZ=Object.fromEntries(TZONES.map(z=>[z.id,z]));
+// Tolérance d'empiètement : 2 NM latéralement (et 500 ft verticalement) avant de compter une sortie de secteur ou une intrusion
+const TOL_NM=2;
+function nearVol(a){if(a.alt<VOL.floor*100-500||a.alt>=VOL.ceil*100+500)return false;return VOL.polys.some(Q=>edgeDist(Q.p,a.x,a.y)<=TOL_NM)}
+function zoneDepth(z,a){return edgeDist(z.Q.p,a.x,a.y)>TOL_NM&&a.alt>=z.floor*100+500&&a.alt<=z.ceil*100-500}
 const inZone=(z,x,y,alt)=>alt>=z.floor*100&&alt<=z.ceil*100&&inPoly(x,y,z.Q);
 const zoneAt=(x,y,alt)=>TZONES.find(z=>z.st==='on'&&inZone(z,x,y,alt));
 const fmtM=m=>m.toFixed(2).replace('.',',');
@@ -1129,7 +1133,7 @@ function tickTests(now){
  for(const z of TZONES){
   if(z.st==='pend'&&now>=z.tAct){z.st='on';const inside=SIM.acs.filter(a=>!a.test&&isMine(a)&&inZone(z,a.x,a.y,a.alt));for(const a of inside)a.flags['p_zi'+z.id]=1;if(inside.length)log('sys','Déjà dans la '+z.n+' : '+inside.map(a=>a.cs).join(', ')+', à faire sortir.');log('coord','☎ CMCC : '+z.n+' active '+z.lim+', fermée à la circulation générale jusqu\'à sa désactivation.')}
   // intrusion : seulement un vol sous contrôle qui était hors de la zone active et y entre
-  if(z.st==='on')for(const a of SIM.acs){if(a.test||a.state!=='assumed')continue;if(!inZone(z,a.x,a.y,a.alt))a.flags['zo'+z.id]=1;else if(a.flags['zo'+z.id])penalty(a,'zi'+z.id,-20,'Intrusion de '+a.cs+' dans la zone active '+z.id)}}
+  if(z.st==='on')for(const a of SIM.acs){if(a.test||a.state!=='assumed')continue;if(!inZone(z,a.x,a.y,a.alt)){a.flags['zo'+z.id]=1;a.flags['zt'+z.id]=0}else if(a.flags['zo'+z.id]){const t=a.flags['zt'+z.id]=(a.flags['zt'+z.id]||0)+1;if(zoneDepth(z,a)||t>45)penalty(a,'zi'+z.id,-20,'Intrusion de '+a.cs+' dans la zone active '+z.id)}}}
  for(const a of SIM.acs){if(!a.test)continue;
   if(a.ai)continue;
   if(a.state==='pre'){a.entryT=now+Math.max(0,VOL.floor*100-a.alt)/Math.max(a.vs,2000)*60;if(a.alt>=VOL.floor*100-1500){a.state='offered';a.offeredAt=now;pilotCall(a)}}
@@ -1398,7 +1402,7 @@ function tick1s(){
     if(a.wasIn&&!a.inv&&(a.invT||0)>20){a.state='missed'}}
    if(a.state==='assumed'){
     a.tte=a.inv?timeToExit(a):null;
-    if(a.wasIn&&!a.inv){a.outT=(a.outT||0)+1;if(a.outT>=4){penalty(a,'tf',-10,a.cs+' : sorti du secteur sans transfert');if(!a.silent)pilot(a,a.fr?myName(1)+', '+a.say+', on vous quitte ?':myName(0)+', '+a.say+', are we still with you?');cmdTransfer(a,true)}}else a.outT=0;
+    if(a.wasIn&&!a.inv&&!nearVol(a)){a.outT=(a.outT||0)+1;if(a.outT>=4){penalty(a,'tf',-10,a.cs+' : sorti du secteur sans transfert');if(!a.silent)pilot(a,a.fr?myName(1)+', '+a.say+', on vous quitte ?':myName(0)+', '+a.say+', are we still with you?');cmdTransfer(a,true)}}else a.outT=0;
     // demandes pilote
     if(a.state==='assumed'&&!a.silent&&Math.abs(a.alt-a.cfl*100)<100){const pl=plannedCfl(a);const since=now-(a.flags.reqT||0);
      if(pl>a.cfl&&a.cfl<a.rfl&&since>100){a.flags.reqT=now;a.req={kind:'climb',fl:a.rfl,t:now};pilot(a,a.fr?myName(1)+', '+a.say+', on aimerait monter niveau '+a.rfl:myName(0)+', '+a.say+', request climb FL'+a.rfl)}
