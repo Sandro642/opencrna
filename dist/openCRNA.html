@@ -390,7 +390,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
     <h2>Demandes</h2>
     <p>Une demande d'un <b>contrôleur</b> (secteur voisin qui veut vous passer un vol à un autre niveau ou en cap, PO) s'affiche en carte <b>REQ</b> en haut à gauche de l'écran radar, avec le délai et les boutons Accepter / Refuser, et l'étiquette du vol porte <b>REQ</b> clignotant. Vos propres demandes (XFL) apparaissent en carte <b>ACT</b> tant que le voisin n'a pas répondu. Une demande d'un <b>pilote</b> (montée, descente) fait clignoter un <b>?</b> dans l'étiquette. Dans tous les cas : clic sur REQ / ?, clic droit sur le vol, ou <code>OK</code> / <code>NO</code>. Le traffic manager n'affiche que les informations du vol (plan de vol en 4 colonnes et route) : les ordres se donnent au clic droit ou à la ligne de commande.</p>
     <h2>PO sur alerte sur votre fréquence</h2>
-    <p>Sur un poste en route, la défense aérienne peut faire décoller un Rafale de Mont-de-Marsan (étiquette <b>PO</b>) vers une cible — un avion en panne radio (7600), souvent hors de LFBB. Marsan Approche vous le transfère en montée : vous le contrôlez <b>sur toute la LFBB</b>. Faites-le monter (jusqu'au FL500), autorisez le supersonique (<code>M1.6</code>, jusqu'à Mach 1,8), guidez-le et donnez-lui les <b>infos cible</b> (à moins de 30 NM, il annonce « JUDY » et termine l'interception lui-même) (<code>CIBLE</code> ou clic droit : relèvement, distance, niveau, route et vitesse de la cible ; il en redemande régulièrement, « ? »). Cible hors LFBB : transférez-le au CRNA voisin indiqué quand il arrive à la limite de LFBB (+20 si la cible a été renseignée, −10 si trop tôt ou sans infos). Cible dans LFBB : l'interception se fait chez vous (+20), puis il rentre et vous le transférez à Marsan Approche.</p>
+    <p>Sur un poste en route, la défense aérienne peut faire décoller un Rafale de Mont-de-Marsan (étiquette <b>PO</b>) vers une cible — un avion en panne radio (7600), souvent hors de LFBB. Marsan Approche vous le transfère en montée : vous le contrôlez <b>sur toute la LFBB</b>. Faites-le monter jusqu'au FL650 et autorisez Mach 2,5 (<code>M2.5</code> ; performances fictives pour le jeu, un vrai Rafale plafonne vers Mach 1,8 et FL500), guidez-le et donnez-lui les <b>infos cible</b> (à moins de 30 NM, il annonce « JUDY » et termine l'interception lui-même) (<code>CIBLE</code> ou clic droit : relèvement, distance, niveau, route et vitesse de la cible ; il en redemande régulièrement, « ? »). Cible hors LFBB : transférez-le au CRNA voisin indiqué quand il arrive à la limite de LFBB (+20 si la cible a été renseignée, −10 si trop tôt ou sans infos). Cible dans LFBB : l'interception se fait chez vous (+20). Après l'interception, une cible en 7600, ou en 7500 qui obtempère, est <b>escortée jusqu'à Mont-de-Marsan</b> (+15 si la PO est sur votre fréquence). Une cible en 7500 qui ne répond à aucune sommation : la défense aérienne annonce que la Haute autorité ordonne l'engagement — <b>dégagez tout trafic à 10 NM</b> de la cible (−20 par vol encore à moins de 10 NM au moment du tir) ; la piste, marquée ABATTU, chute jusqu'au sol puis est perdue. La PO rentre ensuite à Mont-de-Marsan.</p>
     <h2>Trafic réel en direct</h2>
     <p>Réglage « Trafic : Réel en direct » (app Mac, Internet) : au lieu de trafic inventé, l'app charge les <b>vrais avions</b> qui volent au même moment au-dessus de LFBB, via l'API publique d'OpenSky Network (positions ADS-B) : vrais indicatifs, niveaux, vitesses, routes et codes transpondeur ; l'heure UTC est l'heure réelle. Toutes les 90 s, les nouveaux avions apparaissent, ceux qui ne sont pas à vous sont recalés sur leur position réelle et ceux qui ont disparu du flux sont retirés ; les vols que vous contrôlez suivent vos clairances. L'API gratuite ne donne ni le type ni la destination : le type est déduit de la compagnie, l'arrivée d'une descente vers un terrain de la région, et la route est faite des balises le long de la trajectoire réelle (sinon destination « ???? », symbole +). Quota anonyme d'OpenSky : environ 400 crédits par jour (2 par mise à jour), affiché en haut ; une fois épuisé, le trafic continue en simulation. Non disponible dans la version web (l'API n'autorise pas les appels depuis une page).</p>
     <h2>Le métier</h2>
@@ -709,7 +709,7 @@ function stepAc(a,dt){
  if(a.mode==='nav'){const w=a.pts[a.leg];if(w){const dd=dist(a.x,a.y,w.x,w.y);let ant=1;const nx=a.pts[a.leg+1];
    if(nx){const turn=Math.abs(angDiff(brg(w.x,w.y,nx.x,nx.y),a.trk));const R=a.gs/(rate*62.83);ant=clamp(R*Math.tan(Math.min(turn,120)/2*D2R),.8,9)}
    if(a.orb&&a.orbLaps>0&&a.leg===a.orb[1])ant=Math.min(ant,3);
-   if(dd<ant){if(a.orb&&a.orbLaps>0&&a.leg===a.orb[1]){a.orbLaps--;a.leg=a.orb[0]}else if(a.test&&!a.testDone&&TZ[w.id]){}else if(a.leg<a.pts.length-1)a.leg++;else if(!a.test)a.routeEnd=true}}}
+   if(dd<ant){if(a.orb&&a.orbLaps>0&&a.leg===a.orb[1]){a.orbLaps--;a.leg=a.orb[0]}else if(a.test&&!a.testDone&&TZ[w.id]){}else if(a.leg<a.pts.length-1)a.leg++;else if(!a.test&&!a.po)a.routeEnd=true}}}
 }
 function arrived(a){if(a.routeEnd)return true;if(a.arrAp){const p=a.pts[a.pts.length-1];return dist(a.x,a.y,p.x,p.y)<12&&a.alt<7000}return false}
 
@@ -989,16 +989,17 @@ function spawnScramble(){if(VOL.cfg.test||SIM.acs.some(a=>a.po&&!a.poGone))retur
  const code=pick(['RYR','EZY','VLG','BAW','DLH','IBE','TAP']),pfT=PERF.A320,c0=PTS.LFBD,hd=norm(brg(q.x,q.y,c0.x,c0.y)+rnd(-60,60)),cs=genCs(code);
  const T={id:++SIM.seq,cs,al:code,say:AL[code].say+' '+cs.slice(3),fr:false,type:'A320',pf:pfT,wake:'M',dep:'????',arr:'????',depAp:null,arrAp:null,rfl:q.alt/100,tok:[],pts:[{id:'',x:q.x,y:q.y},{id:'',x:q.x+500*Math.sin(hd*D2R),y:q.y+500*Math.cos(hd*D2R)}],
   x:q.x,y:q.y,leg:1,hdg:hd,mode:'nav',hdgSel:0,turnDir:null,spdMode:'auto',spdVal:0,alt:q.alt,vs:0,tas:.78*sos(q.alt),gs:440,trk:hd,pfac:1,tod:false,routeEnd:false,mil:false,orb:null,orbLaps:0,
-  state:'bg',concerned:false,cfl:q.alt/100,hist:[],plot:null,lx:16,ly:-34,flags:{},sq:'7600',silent:true,target:true};
+  state:'bg',concerned:false,cfl:q.alt/100,hist:[],plot:null,lx:16,ly:-34,flags:{},sq:Math.random()<.4?'7500':'7600',silent:true,target:true};
  SIM.acs.push(T);T.plot={x:T.x,y:T.y,alt:T.alt,gs:T.gs,trk:T.trk,vs:0};
- const ap=PTS.LFBM,pf=PERF.RFAL,efl=Math.ceil((VOL.floor+5)/10)*10;let pc;do{pc=pick(PO_CS)+(10+Math.floor(Math.random()*89))}while(SIM.acs.some(x=>x.cs===pc));
+ // performances FICTIVES pour le jeu (un vrai Rafale : ≈ Mach 1,8 et FL500)
+ const ap=PTS.LFBM,pf=Object.assign({},PERF.RFAL,{n:'Dassault Rafale (PO, performances fictives)',mmo:2.6,ceil:700}),efl=Math.ceil((VOL.floor+5)/10)*10;let pc;do{pc=pick(PO_CS)+(10+Math.floor(Math.random()*89))}while(SIM.acs.some(x=>x.cs===pc));
  const nx=out?unitAt(T.x,T.y,T.alt,T):MARSAN;
  const a={id:++SIM.seq,cs:pc,al:'MIL',say:pc.replace(/\d+$/,m=>' '+m),fr:true,type:'RFAL',pf,wake:'M',dep:'LFBM',arr:'LFBM',depAp:'LFBM',arrAp:null,rfl:efl,tok:['LFBM'],pts:[ap,{id:'CIBLE',x:T.x,y:T.y}],
   x:ap.x,y:ap.y,leg:1,hdg:0,mode:'hdg',hdgSel:norm(Math.round((brg(ap.x,ap.y,T.x,T.y)+rnd(-30,30))/5)*5)||360,turnDir:null,spdMode:'auto',spdVal:0,alt:2500,vs:0,tas:casToTas(320,2500),gs:0,trk:0,pfac:1,tod:false,routeEnd:false,
   mil:true,po:true,poT:T,poOut:out,sq:genSq(),orb:null,orbLaps:0,coordDone:true,state:'pre',concerned:true,cfl:efl,hist:[],plot:null,lx:16,ly:-34,flags:{},prev:MARSAN,next:nx,efl,eflKind:'climb',xfl:efl,xflKind:'level',entryPt:'LFBM',exitPt:'',entryKind:'below',
   preT:SIM.t,offerT:1e9,entryT:SIM.t+120,exitT:SIM.t+3600};
  a.hdg=a.hdgSel;SIM.acs.push(a);a.plot={x:a.x,y:a.y,alt:a.alt,gs:a.gs,trk:a.trk,vs:a.vs};
- log('mil','◂ CDC Mont-de-Marsan : décollage sur alerte de '+pc+' (Rafale) pour une cible en perte de contact radio ('+T.cs+'), au '+pad3(brg(ap.x,ap.y,T.x,T.y))+'° de Mont-de-Marsan pour '+Math.round(dist(ap.x,ap.y,T.x,T.y))+' NM, FL'+pad3(T.alt/100)+', '+(out?'hors LFBB (zone '+nx.sh+')':'dans LFBB')+'. Marsan Approche vous le passe en montée.');
+ log('mil','◂ CDC Mont-de-Marsan : décollage sur alerte de '+pc+' (Rafale) pour une cible '+(T.sq==='7500'?'en 7500, détournement':'en perte de contact radio')+' ('+T.cs+'), au '+pad3(brg(ap.x,ap.y,T.x,T.y))+'° de Mont-de-Marsan pour '+Math.round(dist(ap.x,ap.y,T.x,T.y))+' NM, FL'+pad3(T.alt/100)+', '+(out?'hors LFBB (zone '+nx.sh+')':'dans LFBB')+'. Marsan Approche vous le passe en montée.');
  showToast('PO sur alerte : '+pc+' vous sera transféré');
 }
 function cmdTargetInfo(a){if(!a.po){log('sys',a.cs+' n\'est pas une PO sur alerte');return}if(!needFreq(a))return;const T=a.poT;
@@ -1011,19 +1012,33 @@ function tickScramble(now){
  if(SIM.scrInt&&now>=SIM.nextScr){SIM.nextScr=now+SIM.scrInt*rnd(.7,1.3);spawnScramble()}
  for(const a of SIM.acs){if(!a.po)continue;const T=a.poT,alive=SIM.acs.includes(T);
   if(a.state==='pre'){a.entryT=now+Math.max(0,VOL.floor*100-a.alt)/Math.max(a.vs,3000)*60;if(a.alt>=VOL.floor*100-1500){a.state='offered';a.offeredAt=now;pilotCall(a)}continue}
-  if(a.state==='assumed'&&!a.poAsked){a.poAsked=1;a.req={kind:'climb',fl:450,t:now};pilot(a,myName(1)+', '+a.say+', demandons montée niveau 450, autorisation supersonique et infos sur la cible')}
+  if(a.state==='assumed'&&!a.poAsked){a.poAsked=1;a.req={kind:'climb',fl:650,t:now};pilot(a,myName(1)+', '+a.say+', demandons montée niveau 650, Mach 2,5 et infos sur la cible')}
   if(a.state==='assumed'&&!a.poDone&&!a.judy&&alive&&now-(a.poInfoT||a.assumedAt||now)>200&&now-(a.poAskT||0)>120){a.poAskT=now;a.req={kind:'info',t:now};pilot(a,myName(1)+', '+a.say+', demandons '+(a.poInfoT?'une mise à jour sur la cible':'les infos sur la cible'))}
   // cible sortie de LFBB pendant la poursuite : l'unité suivante devient le CRNA voisin
   if(!a.poDone&&alive&&!a.poOut&&!inPoly(T.x,T.y,LFBB)){a.poOut=true;a.next=unitAt(T.x,T.y,T.alt,T);log('sys','La cible de '+a.cs+' a quitté LFBB : transfert prévu à '+a.next.sh+'.')}
   // JUDY : la patrouille a la cible au radar de bord et termine l'interception elle-même (toujours sur ma fréquence)
   if(a.state==='assumed'&&!a.poDone&&alive&&a.poInfoT&&!a.judy&&dist(a.x,a.y,T.x,T.y)<30){a.judy=true;a.req=null;pilot(a,myName(1)+', '+a.say+', contact radar sur la cible, JUDY, on prend l\'interception à notre compte')}
   if(a.state==='assumed'&&a.judy&&!a.poDone&&alive){const d=dist(a.x,a.y,T.x,T.y);a.mode='nav';a.pts=[{id:'CIBLE',x:T.x,y:T.y}];a.leg=0;a.cfl=Math.round(T.alt/1000)*10;a.spdMode='mach';a.spdVal=d>12?1.2:.85}
-  if(!a.poDone&&alive&&dist(a.x,a.y,T.x,T.y)<4&&Math.abs(a.alt-T.alt)<2500){a.poDone=true;
-   if(a.state==='assumed'){SIM.score+=20;log('good','Interception réussie : '+a.cs+' au contact de '+T.cs+' (+20)');pilot(a,myName(1)+', '+a.say+', contact visuel avec la cible, l\'équipage nous a vus, on rentre sur Mont-de-Marsan');
-    T.silent=false;T.sq=genSq();a.spdMode='auto';a.arrAp='LFBM';a.arr='LFBM';a.mode='nav';a.pts=[{id:'',x:a.x,y:a.y},PTS.LFBM];a.leg=1;a.next=MARSAN;a.rfl=Math.min(a.cfl,200);a.req=null}
-   else log('mil','◂ '+a.cs+' ('+a.next.sh+') : cible interceptée, mission terminée.')}
-  if(a.state==='transferred'&&!a.poDone&&alive){a.mode='nav';a.pts=[{id:'CIBLE',x:T.x,y:T.y}];a.leg=0;const d=dist(a.x,a.y,T.x,T.y);a.spdMode='mach';a.spdVal=d>40?1.5:.9;a.rfl=a.cfl=Math.round(T.alt/1000)*10}
+  const via=a.state==='assumed'?'':' ('+a.next.sh+')';
+  if(!a.poDone&&alive&&dist(a.x,a.y,T.x,T.y)<4&&Math.abs(a.alt-T.alt)<2500){a.poDone=true;a.poStage='intercept';a.poT1=now;a.req=null;a.poComply=T.sq!=='7500'||Math.random()<.5;
+   if(a.state==='assumed'){SIM.score+=20;log('good','Interception réussie : '+a.cs+' au contact de '+T.cs+' (+20)')}
+   log('mil','◂ '+a.cs+via+' : contact visuel avec '+T.cs+', on se présente côté gauche, signaux de sommation.')}
+  if(a.poStage==='intercept'&&now>=a.poT1+30&&alive){
+   if(a.poComply){a.poStage='escort';T.mode='nav';T.pts=[{id:'',x:T.x,y:T.y},PTS.LFBM];T.leg=1;T.arrAp=T.arr='LFBM';T.tod=false;log('mil','◂ '+a.cs+via+' : l\'équipage de '+T.cs+' obtempère, on l\'escorte jusqu\'à Mont-de-Marsan.')}
+   else{a.poStage='order';a.poT2=now+rnd(50,75);log('mil','◂ Défense aérienne : '+T.cs+' (7500) ne répond à aucune sommation. La Haute autorité ordonne l\'engagement. Dégagez tout trafic à 10 NM de '+T.cs+'.');showToast('Engagement ordonné sur '+T.cs+' : dégagez le trafic à 10 NM')}}
+  if(a.poStage==='order'&&now>=a.poT2&&alive){a.poStage='shot';T.downed=true;T.emRod=16000;T.cfl=0;T.mode='hdg';T.hdgSel=norm(T.hdg+rnd(-50,50));T.spdMode='ias';T.spdVal=220;
+   log('mil','◂ '+a.cs+via+' : tir effectué sur '+T.cs+', la cible est touchée.');showToast(T.cs+' abattu');
+   for(const m of SIM.acs)if(m!==T&&isMine(m)&&!m.po&&dist(m.x,m.y,T.x,T.y)<10&&Math.abs(m.alt-T.alt)<4000)penalty(m,'shot',-20,m.cs+' encore à moins de 10 NM de '+T.cs+' au moment du tir')}
+  // escorte : la PO reste à côté de la cible jusqu'à son atterrissage à Mont-de-Marsan
+  if(a.poStage==='escort'&&alive){const an=T.trk*D2R;a.mode='nav';a.pts=[{id:'',x:T.x-1.1*Math.sin(an)-.7*Math.cos(an),y:T.y-1.1*Math.cos(an)+.7*Math.sin(an)}];a.leg=0;a.cfl=Math.max(40,Math.round(T.alt/1000)*10);a.spdMode='mach';a.spdVal=+(T.tas/sos(T.alt)+(dist(a.x,a.y,T.x,T.y)>2?.06:0)).toFixed(2)}
+  if((a.poStage==='escort'||a.poStage==='shot')&&!alive){
+   if(a.poStage==='escort'){log('mil','◂ '+a.cs+via+' : '+T.cs+' posé à Mont-de-Marsan, mission terminée.');if(a.state==='assumed'){SIM.score+=15;log('good','Escorte de '+T.cs+' jusqu\'à Mont-de-Marsan (+15)')}}
+   a.poStage='rtb';a.spdMode='auto';a.arrAp='LFBM';a.arr='LFBM';a.mode='nav';a.pts=[{id:'',x:a.x,y:a.y},PTS.LFBM];a.leg=1;a.next=MARSAN;a.rfl=a.cfl=Math.min(Math.round(a.alt/1000)*10,200);a.tod=false;
+   pilot(a,(a.state==='assumed'?myName(1)+', ':'')+a.say+', mission terminée, retour Mont-de-Marsan')}
+  if(a.state==='transferred'&&!a.poDone&&alive){a.mode='nav';a.pts=[{id:'CIBLE',x:T.x,y:T.y}];a.leg=0;const d=dist(a.x,a.y,T.x,T.y);a.spdMode='mach';a.spdVal=d>40?2.5:.9;a.rfl=a.cfl=d>40?650:Math.round(T.alt/1000)*10}
  }
+ // cible abattue : chute jusqu'au sol puis piste perdue
+ for(const T of SIM.acs.filter(q=>q.downed&&q.alt<800)){SIM.acs.splice(SIM.acs.indexOf(T),1);if(T===sel)selectAc(null);log('mil','◂ Défense aérienne : piste '+T.cs+' perdue, l\'appareil s\'est écrasé.')}
 }
 function forceLanding(al){const a=al.a,h=a.hij,p=PTS.LFBM;h.forced=true;h.dev=false;a.mode='nav';a.pts=[p];a.tok=['LFBM'];a.leg=0;a.arrAp='LFBM';a.arr='LFBM';a.tod=false;
  a.next=VOL.floor<=150?MARSAN:unitAt(p.x,p.y,VOL.floor*100-1500,a);a.xfl=floor10(VOL.floor);a.xflKind='desc';
@@ -1484,6 +1499,7 @@ function penalty(a,key,pts,msg){if(a&&a.hij&&a.hij.real&&!a.hij.done&&(key==='tf
 
 /* ===================== Boucle principale ===================== */
 function autoControl(a){
+ if(a.downed)return;
  let tgt=plannedCfl(a);
  if(a.concerned&&(a.state==='pre'||a.state==='offered')){if(a.coordFl)tgt=a.coordFl;else if(tgt*100>a.alt)tgt=Math.min(tgt,a.efl);else tgt=Math.max(tgt,a.efl)}
  if(a.state==='transferred'){
@@ -1726,6 +1742,7 @@ function labelLines(a){
  {const r=reqOf(a);if(r&&r.c)tg.push({t:' REQ',c:COL.call,b:1,k:'req',bgc:blink?'rgba(255,207,92,.32)':null});else if(r)tg.push({t:blink?' ?':'  ',c:COL.call,b:1,k:'req'})}
  if(a.test&&!a.ai&&a.tests&&a.tests.length){const d=a.tests.filter(t=>t.done).length;tg.push({t:a.testDone?' ESS ✓':' ESS '+d+'/'+a.tests.length,c:a.testDone?COL.mine1:COL.sel,b:1})}
  if(a.po)tg.push({t:' PO',c:COL.crit,b:1});
+ if(a.downed)tg.unshift({t:' ABATTU',c:COL.crit,b:1});
  if(a.train)return[[{t:a.sq||'----',k:'cs',b:1}],[{t:afl+tr}]];
  if(!a.concerned||(a.state==='pre'&&SIM.t<a.preT)){return[[cs,...tg],[{t:afl+tr+' '+gs}]]}
  if(a.state==='transferred')return[[cs,...tg],[{t:afl+tr+' '+gs+' ›'+a.next.code}]];
@@ -1949,7 +1966,7 @@ function acMenu(a,cx,cy){
  if(a.test&&!a.ai&&a.tests&&a.tests.length){const z=zoneAt(a.x,a.y,a.alt);it.push({t:'Programme d\'essais',k:a.tests.filter(t=>t.done).length+'/'+a.tests.length,sub:()=>[{t:z?'Dans '+z.id+' (active)':'Hors zone active · demande '+a.wantZ,dis:1}].concat(a.tests.map(t=>({t:(t.done?'✓ ':Math.round(t.prog/t.need*100)+' % ')+t.txt,dis:1})))})}
  it.push({sep:1},{t:'Highlight',sub:()=>[['cs','Indicatif'],['cfl','ALT A (niveau autorisé)'],['nav','WP (cap / point)'],['spd','SPD (vitesse)'],[null,'Aucun']].map(([k,n])=>({t:n,on:a.hl===k,fn:()=>{a.hl=k}}))},
   {t:'Route',k:'TAB',on:!!a.showRoute,fn:()=>{a.showRoute=!a.showRoute}},{t:'FL.PLAN',k:'F8',fn:(x,y)=>showFpl(a,x,y)},{t:'Vector',on:!!a.vecOn,fn:()=>{a.vecOn=!a.vecOn}});
- if(a.po&&a.state==='assumed')it.splice(1,0,{t:'Infos cible',k:'CIBLE',warn:1,fn:()=>cmdTargetInfo(a)},{t:'Supersonique Mach 1,6',k:'M1.6',fn:()=>cmdSpeed(a,'mach',160)},{t:'Montée FL450',fn:()=>cmdLevel(a,450)});
+ if(a.po&&a.state==='assumed')it.splice(1,0,{t:'Infos cible',k:'CIBLE',warn:1,fn:()=>cmdTargetInfo(a)},{t:'Mach 2,5',k:'M2.5',fn:()=>cmdSpeed(a,'mach',250)},{t:'Montée FL650',fn:()=>cmdLevel(a,650)});
  if(sel&&sel!==a)it.push({t:'Trajectoires avec '+sel.cs,fn:()=>{sepA=sel;sepB=a;renderConfCard()}});
  it.push({t:'Centrer ici',fn:()=>{VIEW.cx=a.plot.x;VIEW.cy=a.plot.y}});
  selectAc(a);showMenu(a.cs+' · '+a.type+' · '+(STATE_TXT[a.state]||''),it,cx,cy);
