@@ -74,6 +74,8 @@ header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
 .tm .tmc{display:flex;flex-direction:column;padding:4px 8px;border-right:1px solid var(--line);gap:1px;min-width:0}
 .tm .tmc b{color:#fff;font-weight:600}.tm .tmc .m{color:var(--mute)}
 .tm .tmr{border-right:0}.tm .tmr span{word-break:break-word}
+.tmSt{font-size:12px;line-height:1.5;color:var(--text);padding:2px 2px 0}
+.tmSt b{font-family:var(--f-mono);margin-right:4px}.tmSt .cr{color:var(--crit)}
 .tmTag{display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-family:var(--f-mono);font-size:11px;color:var(--mute)}
 .tmTag input{width:62px;padding:3px 4px}.tmTag .sp{flex:1}
 .tmTag button{padding:2px 7px;font-family:var(--f-mono);font-size:11px}
@@ -182,6 +184,15 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
 .legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px 14px;font-size:13px}
 .legend i{display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:2px;vertical-align:-1px}
 .tw{overflow-x:auto}
+#actBar{position:absolute;top:8px;left:8px;width:min(340px,calc(100% - 16px));display:flex;flex-direction:column;gap:5px;z-index:7;pointer-events:none}
+#actBar .act{pointer-events:auto;background:var(--win);border:1px solid var(--line2);border-left:4px solid var(--call);border-radius:3px;padding:5px 8px;font-size:12.5px;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+#actBar .act.mine{border-left-color:var(--xfer);opacity:.85}
+#actBar .ah{display:flex;gap:6px;align-items:baseline;font-family:var(--f-mono);font-size:11.5px}
+#actBar .ah .k{background:var(--call);color:#111;font-weight:700;padding:0 4px;border-radius:2px}
+#actBar .act.mine .ah .k{background:var(--xfer)}
+#actBar .ah .cs{color:#fff;font-weight:600;cursor:pointer}#actBar .ah .t{margin-left:auto;color:var(--mute)}
+#actBar .tx{margin:3px 0;line-height:1.35}
+#actBar .bt{display:flex;gap:6px}#actBar .bt button{font-size:12px;padding:2px 10px}
 #zonesPanel{position:absolute;top:8px;left:calc(50% - 150px);width:300px;max-height:calc(100% - 60px);overflow:auto;background:rgba(0,0,0,.92);border:1px solid var(--line2);border-radius:4px;padding:8px 10px;z-index:5;font-size:13px}
 #zonesPanel .zt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-bottom:6px;display:flex;justify-content:space-between}
 #zonesPanel .zr{border-top:1px solid var(--line);padding:5px 0;display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px}
@@ -283,6 +294,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
       <div id="toast" hidden></div>
       <div id="confCard" hidden></div>
       <div id="pickHint" hidden></div>
+      <div id="actBar"></div>
       <div id="legend"></div>
     </div>
     <aside id="strips" hidden></aside>
@@ -369,7 +381,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
     <p>En haut, la barre de titre (indicatif de position, fréquence, UTC, vitesse de simulation, compteurs). Dessous, la <b>MENU BAR</b> ouvre les fenêtres flottantes — COMBOX (radio et ligne de commande), STRIPS, TRAFFIC (traffic manager du vol sélectionné, avec la ligne <b>WP / ALT / SPD</b> à valider par ✓ ou Entrée), ATC (unités adjacentes et fréquences, › = unité suivante du vol sélectionné), ZONES et PVD (thème Aurora ou Noir, positions des fenêtres) — et la <b>PREF BAR</b> règle l'affichage (vecteurs, traînées, trafic non concerné, secteurs, légende, VOR, points, routes, terrains ; en gras = actif). Les fenêtres se déplacent par leur barre de titre et se redimensionnent par le coin.</p>
     <p><b>Clic droit sur un avion</b> : menu selon son état — Assume, Force ACT (radio check), Transfer, niveau / cap / vitesse / direct, coordination XFL, SQK (REQ SSR, confirmer le code), 121.5, défense aérienne, MAYDAY reçu, Highlight d'un champ de l'étiquette, Route (touche Tab), FL.PLAN (touche F8), Vector, trajectoires avec le vol sélectionné. <b>Clic droit sur le fond</b> : QDM, centrer ici, recentrer sur le secteur, trajectoires, barres et fenêtres. Clic droit maintenu et glissé : mesure de relèvement et distance.</p>
     <h2>Demandes</h2>
-    <p>Quand un pilote demande quelque chose (montée, descente) ou qu'un secteur voisin ou la PO vous demande une coordination, un <b>?</b> clignote dans l'étiquette du vol : cliquez dessus (ou clic droit sur le vol) pour accepter ou refuser, ou tapez <code>OK</code> / <code>NO</code>.</p>
+    <p>Une demande d'un <b>contrôleur</b> (secteur voisin qui veut vous passer un vol à un autre niveau ou en cap, PO) s'affiche en carte <b>REQ</b> en haut à gauche de l'écran radar, avec le délai et les boutons Accepter / Refuser, et l'étiquette du vol porte <b>REQ</b> clignotant. Vos propres demandes (XFL) apparaissent en carte <b>ACT</b> tant que le voisin n'a pas répondu. Une demande d'un <b>pilote</b> (montée, descente) fait clignoter un <b>?</b> dans l'étiquette. Dans tous les cas : clic sur REQ / ?, clic droit sur le vol, ou <code>OK</code> / <code>NO</code>. Le traffic manager n'affiche que les informations du vol (plan de vol en 4 colonnes, état, route) : les ordres se donnent au clic droit ou à la ligne de commande.</p>
     <h2>Le métier</h2>
     <p>Chaque vol qui traverse votre volume est <b>pré-annoncé</b> (strip ambre) puis <b>transféré</b> par le secteur amont : le pilote vous appelle et son indicatif clignote. Cliquez sur l'indicatif pour l'<b>assumer</b>. Vous seul pouvez alors lui donner des clairances. Avant qu'il quitte votre volume, amenez-le au <b>XFL</b> (niveau de sortie coordonné) puis cliquez à nouveau sur l'indicatif pour le <b>transférer</b> au secteur suivant affiché dans l'étiquette.</p>
     <p>Normes : 5 NM en horizontal ou 1 000 ft en vertical (RVSM FL290–FL410). Règle semi-circulaire : route vraie 000–179° niveaux impairs (FL310, 330…), 180–359° niveaux pairs (FL300, 320…).</p>
@@ -1572,6 +1584,12 @@ function pad3(n){return String(Math.max(0,Math.round(n))).padStart(3,'0')}
 // Demande en attente pour un vol : coordination (voisin, PO) ou demande du pilote (montée, descente)
 function reqOf(a){const c=SIM.coords.find(c=>c.a===a&&!c.mine);if(c)return{c};if(a.req&&a.state==='assumed'&&SIM.t-a.req.t<300)return{p:a.req};return null}
 function refuseReq(a){const r=a.req;a.req=null;a.flags.reqT=SIM.t;atc(a.fr?a.say+', maintenez niveau '+a.cfl+', '+(r&&r.kind==='desc'?'descente plus tard':'pas de montée pour le moment'):a.say+', maintain FL'+a.cfl+', '+(r&&r.kind==='desc'?'expect descent later':'unable higher at the moment'))}
+// Cartes REQ / ACT en haut à gauche du PVD : demandes des contrôleurs (voisins, PO) à traiter, et mes propres demandes en attente
+const actEl=document.getElementById('actBar');
+function renderAct(){if(!actEl)return;const h=SIM.coords.map(c=>{const mine=!!c.mine;return '<div class="act'+(mine?' mine':'')+'"><div class="ah"><span class="k">'+(mine?'ACT':'REQ')+'</span><span>'+(mine?'→ ':'')+c.from.replace(/^→ /,'')+'</span><span class="cs" data-sel="'+c.a.id+'">'+c.a.cs+'</span><span class="t">'+fmtT(Math.max(0,c.deadline-SIM.t))+'</span></div><div class="tx">'+c.text+'</div>'+(mine?'':'<div class="bt"><button class="primary" data-co="'+c.id+'" data-ok="1">'+(c.ok||'Accepter')+'</button>'+(c.no?'<button data-co="'+c.id+'" data-ok="0">'+c.no+'</button>':'')+'</div>')+'</div>'}).join('');
+ if(h!==renderAct.k){renderAct.k=h;actEl.innerHTML=h}}
+if(actEl)actEl.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-co]');if(b){e.preventDefault();answerCoord(+b.dataset.co,b.dataset.ok==='1');renderAct();return}
+ const s=e.target.closest('[data-sel]');if(s){const a=SIM.acs.find(q=>q.id===+s.dataset.sel);if(a){selectAc(a);if(a.plot){VIEW.cx=a.plot.x;VIEW.cy=a.plot.y}}}});
 function reqMenu(a,cx,cy){const r=reqOf(a);if(!r){log('sys','Aucune demande en attente pour '+a.cs);return}
  if(r.c){const c=r.c;showMenu('Demande · '+c.from,[{t:c.text,dis:1},{t:(c.ok||'Accepter')+' ('+fmtT(Math.max(0,c.deadline-SIM.t))+')',fn:()=>answerCoord(c.id,true)}].concat(c.no?[{t:c.no,fn:()=>answerCoord(c.id,false)}]:[]),cx,cy);return}
  const p=r.p;showMenu('Demande · '+a.cs,[{t:p.kind==='climb'?'Demande de montée FL'+p.fl:'Prêt pour la descente',dis:1},{t:(p.kind==='climb'?'Autoriser FL':'Descendre FL')+p.fl,fn:()=>cmdLevel(a,p.fl)},{t:'Refuser (maintenez)',fn:()=>refuseReq(a)}],cx,cy)}
@@ -1583,7 +1601,7 @@ function labelLines(a){
  const cs={t:(isRafale(a)?(a.sq||'----'):a.cs)+(a.wake==='H'?' H':''),k:'cs',b:1};
  const tg=a.sq==='7500'?[{t:' 7500',c:COL.crit,b:1}]:a.sq==='7700'?[{t:' 7700',c:COL.crit,b:1}]:a.alerted&&a.silent?[{t:' COMLOSS',c:COL.crit,b:1}]:a.sq==='7600'?[{t:' 7600',c:COL.crit,b:1}]:a.noResp&&a.silent?[{t:' RDO?',c:COL.crit,b:1}]:[];
  if(a.dupe&&a.concerned)tg.push({t:' DUPE',c:COL.call,b:1});
- if(reqOf(a))tg.push({t:blink?' ?':'  ',c:COL.call,b:1,k:'req'});
+ {const r=reqOf(a);if(r&&r.c)tg.push({t:' REQ',c:COL.call,b:1,k:'req',bgc:blink?'rgba(255,207,92,.32)':null});else if(r)tg.push({t:blink?' ?':'  ',c:COL.call,b:1,k:'req'})}
  if(a.train)return[[{t:a.sq||'----',k:'cs',b:1}],[{t:afl+tr}]];
  if(!a.concerned||(a.state==='pre'&&SIM.t<a.preT)){return[[cs,...tg],[{t:afl+tr+' '+gs}]]}
  if(a.state==='transferred')return[[cs,...tg],[{t:afl+tr+' '+gs+' ›'+a.next.code}]];
@@ -1722,7 +1740,7 @@ function labelClick(a,f,cx,cy){
 /* ===================== Interface façon Aurora : fenêtres flottantes, barres, thème ===================== */
 let THEME='aurora';
 function applyTheme(t){THEME=t==='noir'?'noir':'aurora';document.body.dataset.theme=THEME;Object.assign(COL,THEME==='noir'?COL_NOIR:COL_AURORA)}
-const WINDEF={traffic:{r:4,b:4,w:600,h:'min(420px,calc(100% - 8px))'},com:{l:4,b:4,w:'calc(100% - 616px)',h:184},atc:{r:4,t:4,w:240,h:260}};
+const WINDEF={traffic:{r:4,b:4,w:600,h:240},com:{l:4,b:4,w:'calc(100% - 616px)',h:184},atc:{r:4,t:4,w:240,h:260}};
 let WINS={};try{WINS=JSON.parse(localStorage.getItem('opencrna.win')||'{}')}catch(e){}
 function saveWins(){try{localStorage.setItem('opencrna.win',JSON.stringify(WINS))}catch(e){}}
 function winEl(k){return document.querySelector('.win[data-w="'+k+'"]')}
@@ -1770,14 +1788,27 @@ function fplRmk(a){if(a.test||a.mil)return 'STS/STATE RMK/'+(a.train?'ENTRAINEME
 function tmBlock(a){if(!a.eobt){const m=Math.floor(((SIM.startUTC+SIM.t)/60-rnd(30,150)+1440)%1440);a.eobt=String(Math.floor(m/60)).padStart(2,'0')+String(m%60).padStart(2,'0')}
  const tel=(AL[a.al]&&AL[a.al].say||a.say.replace(/ \S+$/,'')).toUpperCase();
  return '<div class="tm"><div class="tmc"><b>'+a.arr+'</b><span>I</span><span data-v="tmSq">'+(a.sq||'—')+'</span></div><div class="tmc"><b>F'+pad3(a.rfl)+'</b><span>'+a.type+' '+a.wake+'</span><span>'+fplTas(a)+'</span><span class="m">'+(ALTN[a.arr]||'—')+'</span></div><div class="tmc"><b>'+a.cs+'</b><span>'+tel+'</span><span>'+a.dep+'</span><span class="m">'+a.eobt+'</span></div><div class="tmc tmr"><span>'+(a.tok||[]).join(' ')+'</span><span class="m">'+fplRmk(a)+'</span></div></div>'+
- '<div class="tmTag"><span>WP</span><input id="tWp" placeholder="'+(a.mode==='hdg'?'H'+pad3(a.hdgSel):(a.pts[a.leg]?a.pts[a.leg].id:''))+'"><span>ALT</span><input id="tAlt" inputmode="numeric" placeholder="'+pad3(a.cfl)+'"><span>SPD</span><input id="tSpd" placeholder="'+(a.spdMode==='mach'?'M'+Math.round(a.spdVal*100):a.spdMode==='ias'?a.spdVal:'—')+'"><button id="tGo" title="Envoyer (Entrée)">✓</button><button id="tDel" title="Effacer">DEL</button><span class="sp"></span><span>SQK</span><input id="pSq" inputmode="numeric" maxlength="4" placeholder="'+(a.sq||'')+'" style="width:52px"><button id="pSqN">REQ SSR</button><button id="tPm" title="Message au pilote : ligne de commande">PM</button></div>'}
+''}
+// État du vol en une ou deux lignes (urgence, 7500, essais, orbite, alerte), mis à jour en continu
+function tmStatus(a){const L=[];
+ if(a.hij&&!a.hij.done)L.push('<b class="cr">7500</b> intervention illicite '+(a.hij.confirmed?'confirmée':'non confirmée')+(a.hij.forced?' · escorté vers Mont-de-Marsan':''));
+ else if(a.emerg&&!a.emerg.done)L.push('<b class="cr">MAYDAY</b> '+EMTXT[a.emerg.kind][0]+' · déroutement '+a.emerg.ap+(a.emerg.ack?'':' · non accusé'));
+ if(a.alerted)L.push('<b class="cr">COMLOSS</b> défense aérienne alertée');else if(a.sq==='7600')L.push('<b class="cr">7600</b> panne radio');
+ if(a.test&&!a.ai&&a.tests&&a.tests.length){const z=zoneAt(a.x,a.y,a.alt);L.push('Essais '+a.tests.filter(t=>t.done).length+'/'+a.tests.length+' · '+(z?'dans '+z.id:'zone demandée '+a.wantZ)+' · '+a.tests.map(t=>(t.done?'✓ ':Math.round(t.prog/t.need*100)+'% ')+t.txt).join(' · '))}
+ if(a.orb)L.push('Orbite '+a.pts[a.orb[0]].id+' ⇄ '+a.pts[a.orb[1]].id+' · '+a.orbLaps+' tour(s)');
+ if(a.ai)L.push('Contrôlé par '+a.owner);
+ return L.join('<br>')}
+function pruneTM(a){const head=panelEl.querySelector('.fpHead'),sub=head&&head.nextElementSibling,tm=panelEl.querySelector('.tm'),rt=panelEl.querySelector('[data-v="route"]'),rc=rt&&rt.closest('.ctl');
+ [...panelEl.children].forEach(el=>{if(el!==head&&el!==sub&&el!==tm&&el!==rc)el.remove()});
+ if(rc){const h4=rc.querySelector('h4');if(h4)h4.textContent='Route'}
+ const st=document.createElement('div');st.className='tmSt';st.dataset.v='tmst';tm.after(st)}
 function showFpl(a,cx,cy){const tas=Math.round((a.pf.cr||.78)*sos((a.rfl||300)*100));
  const route=(a.tok||[]).filter(t=>!/^L[A-Z]{3}$/.test(t)||t===a.dep||t===a.arr).join(' ');
  menu.innerHTML='<div class="mt">FL.PLAN · '+a.cs+'</div><pre class="fpl">(FPL-'+a.cs+'-I'+(a.mil?'M':'S')+'\n-'+a.type+'/'+a.wake+'\n-'+a.dep+'\n-N0'+tas+'F'+pad3(a.rfl)+' '+route+'\n-'+a.arr+'\n-SSR/'+(a.sq||'—')+(a.say?' RTF/'+a.say.toUpperCase():'')+')</pre>';placeMenu(cx,cy)}
 // Clic droit sur un avion : menu façon Aurora selon l'état (non assumé / assumé / transféré)
 function acMenu(a,cx,cy){
  const it=[],fr=a.concerned;
- if(reqOf(a))it.push({t:'? Demande en attente…',warn:1,fn:(x,y)=>reqMenu(a,x,y)});
+ {const r=reqOf(a);if(r)it.push({t:r.c?'REQ · demande de '+r.c.from+'…':'? Demande du pilote…',warn:1,fn:(x,y)=>reqMenu(a,x,y)})}
  if(a.state==='offered'||a.state==='missed')it.push({t:'Assume',k:'A',fn:()=>cmdAssume(a)});
  if(a.state==='pre')it.push({t:'Assume (pré-annoncé, appel vers '+utc(a.offerT)+')',dis:1});
  if(fr&&(a.state==='offered'||a.state==='missed'||a.state==='assumed'))it.push({t:'Force ACT (radio check)',k:'RC',fn:()=>cmdRadioCheck(a)});
@@ -1905,6 +1936,7 @@ function renderPanel(force){
   if(a.concerned&&a.state!=='pre'&&a.state!=='transferred')h+='<div class="ctl"><h4>Contact radio <span data-v="rdo"></span></h4><div class="row"><button id="pRc">Radio check</button><button id="pGuard">Appel 121.5</button><button id="pAlert" class="alertBtn">Alerter la défense aérienne</button>'+(SIM.alerts.some(x=>x.a===a&&x.stage>=2&&x.stage<9&&x.lead)?'<button id="pPoInfo">Infos vol → PO</button>':'')+(SIM.alerts.some(x=>x.a===a&&x.stage<9)?'<button id="pPoSel">Voir la PO</button><button id="pEndAl">Lever l\'alerte</button>':'')+'</div></div>';
   if(a.test&&!a.ai)h+='<div class="ctl"><h4>Programme d\'essais</h4><div data-v="tests"></div></div>';
   h+='<div class="ctl"><h4>Plan de vol</h4><div class="route" data-v="route"></div></div>';
+  h+='<!--tm-->';
   if(sepA&&sepB&&(a===sepA||a===sepB))h+='<button id="pSepClr">Fermer l\'analyse de trajectoires</button>';
   else h+='<p class="hint">Bouton Trajectoires puis clic sur un autre vol (ou clic droit dessus) : croisement, CPA et dangerosité des caps avec '+a.cs+'.</p>';
   panelEl.innerHTML=h;
@@ -1930,8 +1962,10 @@ function renderPanel(force){
   if($('#pGuard')){$('#pRc').onclick=()=>cmdRadioCheck(a);$('#pGuard').onclick=()=>cmdGuard(a);$('#pAlert').onclick=()=>askAlert(a);if($('#pEndAl')){const al=SIM.alerts.find(x=>x.a===a&&x.stage<9);$('#pEndAl').onclick=()=>askEndAlert(al);$('#pPoSel').onclick=()=>selectPO(al)}
   if($('#pPoInfo'))$('#pPoInfo').onclick=()=>{const al=SIM.alerts.find(x=>x.a===a&&x.stage<9&&x.lead);if(al){const c=SIM.coords.find(c=>c.a===a&&c.kind==='poInfo');if(c)answerCoord(c.id,true);else poInfo(al)}}}
   if($('#pSepClr'))$('#pSepClr').onclick=()=>{sepA=sepB=null;renderPanel(true)};
+  pruneTM(a);
  }
  const v=k=>panelEl.querySelector('[data-v="'+k+'"]');
+ if(v('tmst')){const t=tmStatus(a);v('tmst').innerHTML=t;v('tmst').hidden=!t}
  const m=a.tas/sos(a.alt),c=machToCas(m,a.alt);
  if(v('alt'))v('alt').textContent='FL'+pad3(a.alt/100)+(Math.abs(a.cfl*100-a.alt)>100?' → FL'+a.cfl:'');
  if(v('vs'))v('vs').textContent=(a.vs>0?'+':'')+Math.round(a.vs/50)*50+' ft/min';
@@ -1977,7 +2011,7 @@ function updateUI(){
  document.getElementById('hdDone').textContent=SIM.done;
  document.getElementById('hdSep').textContent=SIM.sepLoss;document.getElementById('hdSepChip').classList.toggle('crit',SIM.sepLoss>0);
  document.getElementById('hdScore').textContent=SIM.score;
- renderStrips();renderPanel(false);renderConfCard();renderZones();renderAtc();
+ renderStrips();renderPanel(false);renderConfCard();renderZones();renderAtc();renderAct();
 }
 
 /* ===================== Ligne de commande ===================== */
@@ -2139,7 +2173,7 @@ function startGame(){
  WX.on=chkWind.checked;WX.dir=Math.round(rnd(250,300));WX.jet=Math.round(rnd(45,115));
  const w=windAt(35000);document.getElementById('hdWind').innerHTML='<span class="k">Vent FL350</span>'+(WX.on?pad3(w.dir)+'°/'+Math.round(w.spd)+' kt':'calme');
  document.getElementById('hdSector').textContent='LFBB_'+(cfg.test?'ESS':cfg.id.replace(/\W/g,''))+'_CTR · '+VOL.freq+' · FL'+cfg.floor+'–'+(cfg.ceil>=660?'660':cfg.ceil);document.getElementById('hdSector').title=cfg.name;
- logEl.innerHTML='';selectAc(null);
+ logEl.innerHTML='';selectAc(null);if(actEl){actEl.innerHTML='';renderAct.k=''}
  resize();fitSector();
  // trafic initial : relève en cours
  const n=Math.round(4+SIM.lambda/5);
