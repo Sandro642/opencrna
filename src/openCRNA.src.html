@@ -825,8 +825,8 @@ function mkReal(s){
  a.pts=a.arrAp?[{id:'',x:a.x,y:a.y},PTS[a.arrAp]]:rtRoute(a);a.tok=a.pts.slice(1).map(p=>p.id);
  return a}
 // Classe un vol réel comme les vols générés : non concerné, pré-annoncé, en appel ou déjà sous contrôle (relève)
-function rtPlace(a){let S=predict(a,5400);if(S.length<3)return;let an=analyze(a,S);
- if(an&&an.start){const tr=a.trk*D2R;for(const back of [40,90,160]){const b={t:-10,x:a.x-back*Math.sin(tr),y:a.y-back*Math.cos(tr),alt:a.alt,hdg:a.hdg,tas:a.tas,vs:0,leg:1,tod:a.tod};if(!inVol(b.x,b.y,b.alt)){an=analyze(a,[b].concat(S));break}}if(an&&an.start)an=null}
+function rtPlace(a){let S=predict(a,5400);if(S.length<3)return;let an=VOL.cfg.test?null:analyze(a,S); // poste Essais : le trafic civil réel n'est jamais à vous
+ if(an&&an.start&&!VOL.cfg.test){const tr=a.trk*D2R;for(const back of [40,90,160]){const b={t:-10,x:a.x-back*Math.sin(tr),y:a.y-back*Math.cos(tr),alt:a.alt,hdg:a.hdg,tas:a.tas,vs:0,leg:1,tod:a.tod};if(!inVol(b.x,b.y,b.alt)){an=analyze(a,[b].concat(S));break}}if(an&&an.start)an=null}
  a.pred=S.map(x=>({...x,t:x.t+SIM.t}));a.bornT=SIM.t;
  if(an){a.concerned=true;Object.assign(a,{entryT:an.entryT+SIM.t,exitT:an.exitT+SIM.t,entryKind:an.entryKind,exitKind:an.exitKind,efl:an.efl,eflKind:an.eflKind,xfl:an.xfl,xflKind:an.xflKind,prev:an.prev,next:an.next,entryPt:an.entryPt||'',exitPt:an.exitPt||''});
   a.offerT=a.entryT-(a.entryKind==='lat'?150:90);a.preT=a.entryT-660;a.state='pre';maybeNordo(a);
