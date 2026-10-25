@@ -278,6 +278,9 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
       <label>Essais en vol (Rafale de Mérignac)
         <select id="selTest"><option value="0">Aucun</option><option value="900">Calme · ≈1 vol / 15 min</option><option value="480" selected>Normal · ≈1 vol / 8 min</option><option value="300">Soutenu · ≈1 vol / 5 min</option></select>
       </label>
+      <label>Urgences en vol (7700)
+        <select id="selEmerg"><option value="0">Aucune</option><option value="1" selected>Occasionnelles · ≈1/h</option><option value="3">Fréquentes · ≈3/h</option></select>
+      </label>
       <label>Avions convergents
         <select id="selConv"><option value="0">Trafic naturel seulement</option><option value="420" selected>Quelques convergences · ≈1 / 7 min</option><option value="200">Fréquentes · ≈1 / 3 min</option></select>
       </label>
@@ -308,6 +311,8 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
     <p>Quand vous tenez un secteur en route, les essais continuent, gérés par le contrôleur « Bordeaux Essais » (réglage « Essais en vol »). Il vous annonce l'activation d'une zone avec 3 minutes de préavis et les vols concernés ; la zone apparaît alors sur votre radar et dans la page Zones (en lecture seule). Ses Rafale sont du trafic non concerné, à séparer comme les autres. Tant que la zone est active, un de vos vols qui y entre coûte −20 : déviez-les. La zone est rendue dès que le Rafale l'a quittée.</p>
     <h2>Transpondeur</h2>
     <p>Chaque vol a un code transpondeur (fiche vol). Commande <code>SQ 4521</code> ou bouton <b>Transpondez</b> ; <code>SQ</code> seul ou <b>Nouveau code</b> attribue un code libre. Il arrive que deux vols aient le même code : l'étiquette affiche <b>DUPE</b>, attribuez un nouveau code au vol sous votre contrôle (sinon −5 au bout de quelques minutes). Un équipage en panne radio affiche souvent <b>7600</b>.</p>
+    <h2>Urgences (7700)</h2>
+    <p>Un vol sous contrôle peut déclarer un MAYDAY et afficher <b>7700</b> (étiquette rouge, bandeau d'alerte) : <b>dépressurisation</b> (il descend seul en urgence vers le FL100, dégagez le trafic en dessous), <b>panne moteur</b> (pas au-dessus du FL250) ou <b>urgence médicale</b>. Il demande un déroutement vers le terrain le plus proche. Accusez réception dans la minute (fiche vol ou <code>URG</code>, +5 si rapide, −10 sinon), donnez un direct vers le terrain (<code>DCT LFBD</code>…), descendez-le, puis transférez-le à l'unité indiquée : +20 si l'urgence est bien gérée, −15 s'il est transféré sans déroutement.</p>
     <h2>Avions convergents</h2>
     <p>Selon le réglage, le simulateur injecte des vols dont la route croise celle d'un autre vol au même niveau, au même moment, dans votre secteur. Utilisez l'outil Trajectoires pour les repérer tôt.</p>
     <h2>Étiquette radar</h2>
@@ -337,6 +342,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
       <tr><td>A · T · REP</td><td>Assumer · Transférer (avec confirmation) · Reprendre un vol transféré tant qu'il est encore dans votre secteur</td></tr>
       <tr><td>XFL 350</td><td>Demander au secteur suivant de prendre le vol à un autre niveau de sortie</td></tr>
       <tr><td>MAN 5 30 D · M1.4</td><td>Vol d'essais : manœuvre à 5 G pendant 30 s, virage à droite (G = gauche) · Mach 1,4 (en zone active)</td></tr>
+      <tr><td>URG</td><td>Accuser réception d'un MAYDAY (priorité, déroutement approuvé)</td></tr>
       <tr><td>SQ 4521 · SQ</td><td>Transpondez 4521 · nouveau code attribué automatiquement</td></tr>
       <tr><td>FIN</td><td>Lever l'alerte défense aérienne (fausse alerte ou contact rétabli)</td></tr>
       <tr><td>RC · GUARD · ALERTE</td><td>Radio check sur la fréquence · Appel sur 121.5 · Alerter la défense aérienne (COMLOSS)</td></tr>
@@ -569,7 +575,7 @@ function stepAc(a,dt){
  const pf=a.pf;
  // Vertical
  const tgt=a.cfl*100,diff=tgt-a.alt;let vsT=0;
- if(Math.abs(diff)>1){let r=diff>0?rocAt(pf,a.alt)*a.pfac:rodAt(pf,a.alt);r=Math.min(r,Math.max(400,Math.abs(diff)*1.4));vsT=Math.sign(diff)*r}
+ if(Math.abs(diff)>1){let r=diff>0?rocAt(pf,a.alt)*a.pfac:(a.emRod||rodAt(pf,a.alt));r=Math.min(r,Math.max(400,Math.abs(diff)*1.4));vsT=Math.sign(diff)*r}
  const vacc=pf.vacc||280;a.vs+=clamp(vsT-a.vs,-vacc*dt,vacc*dt);
  let na=a.alt+a.vs*dt/60;
  if(diff>=0&&a.vs>0&&na>tgt){na=tgt;a.vs=0}else if(diff<=0&&a.vs<0&&na<tgt){na=tgt;a.vs=0}
@@ -765,9 +771,40 @@ function cmdRadioCheck(a){
 function cmdSquawk(a,code){
  if(!needFreq(a))return;code=code||genSq();
  if(!/^[0-7]{4}$/.test(code)){log('bad','Code transpondeur invalide : '+code+' (4 chiffres de 0 à 7)');return}
+ if(a.emerg&&!a.emerg.done&&a.sq==='7700'&&code!=='7700'){log('sys',a.cs+' reste au 7700 pendant son urgence');return}
  if(/^(7500|7600|7700)$/.test(code)){log('bad','Code '+code+' réservé aux urgences');return}
  atc(a.fr?a.say+', transpondez '+code:a.say+', squawk '+code);
  queue(a,rnd(2,4),()=>{a.sq=code;a.dupeT=0;pilot(a,(a.fr?'Transpondeur ':'Squawk ')+code+', '+a.say);if(sel===a)renderPanel(true)});
+}
+/* Urgences en vol (MAYDAY, transpondeur 7700) : dépressurisation, panne moteur, urgence médicale */
+const DIV_APS=['LFBD','LFBO','LFBZ','LFBP','LFBT','LFBE','LFBL','LFBA','LFBI','LFBG'];
+const EMTXT={dep:['dépressurisation','depressurisation'],eng:['panne moteur','engine failure'],med:['urgence médicale','medical emergency']};
+// Unité qui reprend un vol dérouté : l'approche du terrain si on est un secteur inférieur, sinon le secteur inférieur au-dessus du terrain
+function divUnit(ic,a){return VOL.floor<=150&&APPS[ic]?appUnit(ic):unitAt(PTS[ic].x,PTS[ic].y,VOL.floor*100-1500,a)}
+function apName(ic){return(APPS[ic]?APPS[ic][1].replace(' Approche',''):ic)}
+function maybeEmergency(now){
+ if(!SIM.emRate||SIM.acs.some(a=>a.emerg&&!a.emerg.done&&SIM.acs.includes(a))||Math.random()>=SIM.emRate/3600)return;
+ const c=SIM.acs.filter(a=>a.state==='assumed'&&!a.mil&&!a.silent&&a.inv&&a.alt>15000&&(a.tte??0)>300);if(!c.length)return;
+ const a=pick(c),kind=pick(['dep','eng','med']);
+ const ap=DIV_APS.filter(ic=>PTS[ic]).sort((x,y)=>dist(a.x,a.y,PTS[x].x,PTS[x].y)-dist(a.x,a.y,PTS[y].x,PTS[y].y))[0];
+ a.emerg={kind,ap,t:now,ack:false,dct:false,done:false};a.sqPrev=a.sq;a.sq='7700';
+ if(kind==='dep'){a.cfl=100;a.emRod=6000;a.spdMode='auto'}if(kind==='eng'&&a.cfl>250)a.cfl=250;
+ a.next=divUnit(ap,a);a.xfl=floor10(VOL.floor);a.xflKind='desc';
+ const fr=a.fr,n=fr?'MAYDAY MAYDAY MAYDAY, ':'MAYDAY MAYDAY MAYDAY, ';
+ pilot(a,n+myName(fr)+', '+a.say+', '+(fr?EMTXT[kind][0]:EMTXT[kind][1])+', '+(kind==='dep'?(fr?'on entame une descente d\'urgence vers le niveau 100':'commencing emergency descent to FL100'):kind==='eng'?(fr?'on ne peut pas tenir le niveau, on descend vers le niveau 250, demandons déroutement vers '+apName(ap):'unable to maintain level, drifting down to FL250, request diversion to '+apName(ap)):(fr?'passager inconscient, demandons déroutement immédiat vers '+apName(ap):'unconscious passenger, request immediate diversion to '+apName(ap)))+(fr?', transpondeur 7700':', squawking 7700'));
+ showToast('MAYDAY '+a.cs+' · '+EMTXT[kind][0]);if(sel===a)renderPanel(true);
+}
+function cmdEmergAck(a){
+ if(!a.emerg){log('sys',a.cs+' n\'a pas déclaré d\'urgence');return}if(!needFreq(a))return;
+ atc(a.fr?a.say+', '+myName(1)+', MAYDAY reçu, vous êtes prioritaire, déroutement vers '+apName(a.emerg.ap)+' approuvé':a.say+', '+myName(0)+', roger MAYDAY, you have priority, diversion to '+apName(a.emerg.ap)+' approved');
+ if(!a.emerg.ack){a.emerg.ack=true;const dt=SIM.t-a.emerg.t;if(dt<=60){SIM.score+=5;log('good','MAYDAY de '+a.cs+' pris en compte rapidement (+5)')}}
+ queue(a,rnd(2,4),()=>pilot(a,a.fr?'Merci, '+a.say:'Thank you, '+a.say));if(sel===a)renderPanel(true);
+}
+function tickEmergencies(now){
+ for(const a of SIM.acs){const e=a.emerg;if(!e||e.done)continue;
+  if(!e.ack&&now-e.t>60&&!e.late){e.late=1;penalty(a,'mayday',-10,'MAYDAY de '+a.cs+' non pris en compte dans la minute')}
+  if(e.kind==='dep'&&!e.reqT&&a.alt<=10500){e.reqT=now;pilot(a,a.fr?myName(1)+', '+a.say+', niveau 100, situation stabilisée, demandons déroutement vers '+apName(e.ap):myName(0)+', '+a.say+', level FL100, situation stable, request diversion to '+apName(e.ap))}
+  if(a.state==='assumed'&&!e.dct&&now-(e.remind||e.t)>120&&(e.kind!=='dep'||e.reqT)){e.remind=now;pilot(a,a.fr?myName(1)+', '+a.say+', on attend toujours le cap vers '+apName(e.ap):myName(0)+', '+a.say+', still requesting routing to '+apName(e.ap))}}
 }
 function tickSquawks(){const n=new Map();for(const a of SIM.acs)if(a.sq&&a.sq!=='7600')n.set(a.sq,(n.get(a.sq)||0)+1);
  for(const a of SIM.acs){a.dupe=a.sq!=='7600'&&n.get(a.sq)>1;
@@ -1072,6 +1109,7 @@ function cmdLevel(a,fl){
  atc(a.fr?a.say+', '+(Math.abs(fl*100-a.alt)<60?'maintenez':up?'montez':'descendez')+' niveau '+fl:a.say+', '+(Math.abs(fl*100-a.alt)<60?'maintain':up?'climb':'descend')+' FL'+fl);
  if(fl>a.pf.ceil){queue(a,rnd(2,3.5),()=>pilot(a,a.fr?'Négatif, notre plafond est niveau '+a.pf.ceil+', '+a.say:'Unable, maximum FL'+a.pf.ceil+', '+a.say));return}
  if(fl<60){log('bad','Niveau trop bas pour un vol en route');return}
+ if(a.emerg&&!a.emerg.done&&((a.emerg.kind==='dep'&&fl>100)||(a.emerg.kind==='eng'&&fl>250))){queue(a,rnd(2,3),()=>pilot(a,a.fr?'Négatif, '+(a.emerg.kind==='dep'?'dépressurisés, on reste au niveau 100 ou en dessous':'panne moteur, pas au-dessus du niveau 250')+', '+a.say:'Unable, '+(a.emerg.kind==='dep'?'depressurised, FL100 or below':'engine out, not above FL250')+', '+a.say));return}
  const mt=Math.abs(fl*100-a.alt)<60;queue(a,rnd(2,4),()=>{a.cfl=fl;a.flags.reqT=SIM.t;pilot(a,a.fr?(mt?'On maintient':up?'On monte':'On descend')+' niveau '+fl+', '+a.say:(mt?'Maintaining':up?'Climbing':'Descending')+' FL'+fl+', '+a.say);
   const nx=a.pts[a.leg];const lvlTrk=a.mode==='nav'&&nx?brg(a.x,a.y,nx.x,nx.y):a.mode==='hdg'?a.hdgSel:a.trk;if(fl>=200&&fl<=410&&!semiOK(fl,lvlTrk<180)&&fl!==a.xfl)log('sys','Note : FL'+fl+' ne respecte pas la règle semi-circulaire pour une route au '+String(Math.round(lvlTrk)).padStart(3,'0')+'°')});
 }
@@ -1085,7 +1123,8 @@ function cmdDirect(a,id){
  if(!needFreq(a))return;const p=PTS[id];if(!p){log('bad','Point inconnu : '+id);return}
  atc(a.fr?a.say+', direct '+id:a.say+', proceed direct '+id);
  queue(a,rnd(2,4),()=>{let idx=-1;for(let i=a.leg;i<a.pts.length;i++)if(a.pts[i].id===id){idx=i;break}
-  if(idx>=0)a.leg=idx;else{a.pts=a.pts.slice();a.pts.splice(a.leg,0,p);a.tok=a.pts.map(q=>q.id)}
+  if(a.emerg&&!a.emerg.done&&DIV_APS.includes(id)){a.pts=a.pts.slice(0,a.leg).concat([p]);a.tok=a.pts.map(q=>q.id);a.leg=a.pts.length-1;a.arrAp=id;a.arr=id;a.tod=false;a.emRod=0;a.next=divUnit(id,a);if(!a.emerg.dct&&id===a.emerg.ap){a.emerg.dct=true}if(!a.emerg.ack)cmdEmergAck(a)}
+  else if(idx>=0)a.leg=idx;else{a.pts=a.pts.slice();a.pts.splice(a.leg,0,p);a.tok=a.pts.map(q=>q.id)}
   a.mode='nav';a.turnDir=null;pilot(a,'Direct '+id+', '+a.say)});
 }
 function cmdResume(a){
@@ -1118,6 +1157,7 @@ function cmdTransfer(a,auto){
  if(!auto){atc(a.fr?a.say+', contactez '+u.name.replace(' Contrôle','').replace(' Approche',' Approche')+' '+u.freq+', au revoir':a.say+', contact '+u.en+' '+u.freq+', goodbye');
   queue(a,rnd(1.5,3),()=>pilot(a,a.fr?u.freq+', au revoir, '+a.say:u.freq+', '+a.say+', goodbye'))}
  if(!ok&&!a.flags.p_xfl){penalty(a,'xfl',-10,a.cs+' : XFL non respecté (attendu '+xflTxt(a)+', autorisé FL'+a.cfl+')');a.flags.xflPenObj=SIM.pen[SIM.pen.length-1]}
+ if(a.emerg&&!a.emerg.done){a.emerg.done=true;if(a.arrAp&&DIV_APS.includes(a.arrAp)&&a.emerg.ack){SIM.score+=20;log('good','Urgence de '+a.cs+' bien gérée : dérouté vers '+apName(a.arrAp)+' (+20)')}else penalty(a,'emtf',-15,a.cs+' transféré sans déroutement organisé')}
  if(a.test&&!a.testDone)penalty(a,'tnd',-20,a.cs+' transféré avant la fin du programme d\'essais');
  if(ok&&!a.flags.lossInv&&!a.flags.pen){SIM.score+=10;SIM.done++;a.flags.tfrPts=10;a.flags.tfrDone=1;log('good',a.cs+' transféré à '+u.sh+' · coordination respectée (+10)')}
  else if(ok){SIM.done++;a.flags.tfrDone=1}
@@ -1199,7 +1239,7 @@ function tick1s(){
   }
   if(a.state!=='assumed')autoControl(a);
  }
- processAlerts(now);tickCoords(now);tickTests(now);tickAiTests(now);tickSquawks();
+ processAlerts(now);tickCoords(now);tickTests(now);tickAiTests(now);tickSquawks();maybeEmergency(now);tickEmergencies(now);
  if(SIM.testInt&&now>=SIM.nextTest){SIM.nextTest=now+SIM.testInt*rnd(.8,1.2);if(VOL.cfg.test){if(SIM.acs.filter(a=>a.test).length<3)spawnTest()}else if(SIM.acs.filter(a=>a.test).length<2)spawnAiTest()}SIM.mil=SIM.mil.filter(f=>!f.gone);
  if(SIM.convInt&&now>=SIM.nextConv)SIM.nextConv=now+(spawnConverging()?SIM.convInt*rnd(.7,1.3):30);
  // retraits
@@ -1373,7 +1413,7 @@ function labelLines(a){
  const p=a.plot,afl=pad3(p.alt/100),tr=p.vs>250?'↑':p.vs<-250?'↓':' ';
  const gs=String(Math.round(p.gs/10)).padStart(2,'0');
  const cs={t:a.cs+(a.wake==='H'?' H':''),k:'cs',b:1};
- const tg=a.alerted&&a.silent?[{t:' COMLOSS',c:COL.crit,b:1}]:a.sq==='7600'?[{t:' 7600',c:COL.crit,b:1}]:a.noResp&&a.silent?[{t:' RDO?',c:COL.crit,b:1}]:[];
+ const tg=a.sq==='7700'?[{t:' 7700',c:COL.crit,b:1}]:a.alerted&&a.silent?[{t:' COMLOSS',c:COL.crit,b:1}]:a.sq==='7600'?[{t:' 7600',c:COL.crit,b:1}]:a.noResp&&a.silent?[{t:' RDO?',c:COL.crit,b:1}]:[];
  if(a.dupe&&a.concerned)tg.push({t:' DUPE',c:COL.call,b:1});
  if(!a.concerned||(a.state==='pre'&&SIM.t<a.preT)){return[[cs,...tg],[{t:afl+tr+' '+gs}]]}
  if(a.state==='transferred')return[[cs,...tg],[{t:afl+tr+' '+gs+' ›'+a.next.code}]];
@@ -1574,7 +1614,7 @@ function renderPanel(force){
  if(!sel&&selPO){renderPO(force);return}
  const a=sel;
  if(!a){if(force||panelKey!=='none'){panelKey='none';panelEl.innerHTML='<div class="secHead" style="position:static;padding:0">Fiche vol</div><p class="hint">Aucun vol sélectionné. Cliquez sur une étiquette radar ou un strip.</p><p class="hint">Les vols qui vous appellent clignotent en jaune : cliquez sur leur indicatif pour les assumer.</p><p class="hint">Les étiquettes se déplacent par glisser-déposer. Clic droit sur un second vol : point de rapprochement minimal.</p>'}return}
- const key=a.id+(a.alerted?'A':'')+(canRetake(a)?'R':'')+a.state+a.mode+a.spdMode+a.leg+a.pts.length;
+ const key=a.id+(a.emerg?'E'+a.emerg.ack+a.emerg.dct+a.emerg.done:'')+(a.alerted?'A':'')+(canRetake(a)?'R':'')+a.state+a.mode+a.spdMode+a.leg+a.pts.length;
  if(force||key!==panelKey){panelKey=key;
   const ctl=a.state==='assumed';
   let h='<div class="fpHead"><span class="fpCs">'+a.cs+'</span><span class="state '+a.state+'">'+STATE_TXT[a.state]+'</span></div>';
@@ -1582,6 +1622,7 @@ function renderPanel(force){
   if(a.state==='offered'||a.state==='missed')h+='<button class="big primary" id="pAct">Assumer '+a.cs+'</button>';
   else if(a.state==='assumed')h+='<button class="big primary" id="pAct">Transférer → '+a.next.sh+' '+a.next.freq+'</button>';
   else if(canRetake(a))h+='<button class="big" id="pAct">Reprendre le vol (annuler le transfert)</button>';
+  if(a.emerg&&!a.emerg.done)h+='<div class="ctl"><h4 style="color:var(--crit)">MAYDAY · '+EMTXT[a.emerg.kind][0]+'</h4><p class="hint">Déroutement demandé : '+apName(a.emerg.ap)+' ('+a.emerg.ap+')'+(a.emerg.kind==='dep'?' · descente d\'urgence FL100':a.emerg.kind==='eng'?' · pas au-dessus du FL250':'')+'. Prise en compte, direct, descente, puis transfert à '+a.next.sh+'.</p><div class="row">'+(a.emerg.ack?'':'<button class="alertBtn" id="pEmAck">MAYDAY reçu · priorité</button>')+(a.emerg.dct?'':'<button id="pEmDct">Direct '+a.emerg.ap+'</button>')+'</div></div>';
   h+='<dl class="kv"><dt>Trajet</dt><dd>'+a.dep+' → '+a.arr+'</dd><dt>RFL</dt><dd>FL'+a.rfl+'</dd>';
   if(a.concerned)h+='<dt>Entrée</dt><dd>'+a.prev.sh+' · E'+a.efl+' · '+a.entryPt+'</dd><dt>Sortie</dt><dd>'+a.next.sh+' · '+a.exitPt+'</dd><dt>XFL</dt><dd data-v="xfl"></dd>';
   if(a.orb)h+='<dt>Orbite</dt><dd data-v="orb"></dd>';
@@ -1614,6 +1655,7 @@ function renderPanel(force){
    panelEl.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const cur=a.spdMode==='mach'?Math.round(a.spdVal*100):Math.round(a.tas/sos(a.alt)*100);cmdSpeed(a,'mach',cur+(+b.dataset.m))});
    const goS=()=>{const v=$('#pSp').value.trim().toUpperCase();if(v)runTokens(a,[v]);$('#pSp').value=''};$('#pSpGo').onclick=goS;$('#pSp').onkeydown=e=>{if(e.key==='Enter')goS()};$('#pSpA').onclick=()=>cmdSpeed(a,'auto');
   }
+  if($('#pEmAck'))$('#pEmAck').onclick=()=>cmdEmergAck(a);if($('#pEmDct'))$('#pEmDct').onclick=()=>cmdDirect(a,a.emerg.ap);
   if($('#pGL')){const goG=d=>cmdMan(a,+$('#pG').value,+$('#pGs').value||30,d);$('#pGL').onclick=()=>goG('L');$('#pGR').onclick=()=>goG('R')}
   if($('#pXcGo')){const goX=()=>{const v=+$('#pXc').value;if(v)cmdAskXfl(a,v<50?v*10:v)};$('#pXcGo').onclick=goX;$('#pXc').onkeydown=e=>{if(e.key==='Enter')goX()}}
   if($('#pSqGo')){const goQ=()=>{const v=$('#pSq').value.trim();cmdSquawk(a,v||null)};$('#pSqGo').onclick=goQ;$('#pSq').onkeydown=e=>{if(e.key==='Enter')goQ()};$('#pSqN').onclick=()=>cmdSquawk(a,null)}
@@ -1677,6 +1719,7 @@ function runTokens(a,toks){
   else if(/^(T|TFR|TRF|TRANSFER|X)$/.test(t))askTransfer(a);
   else if(/^(REP|REPRENDRE|UNDO|RT)$/.test(t))askRetake(a);
   else if(/^(RC|RADIO|RCHECK|RADIOCHECK)$/.test(t))cmdRadioCheck(a);
+  else if(/^(URG|MAYDAY|PRIO)$/.test(t))cmdEmergAck(a);
   else if((m=t.match(/^(?:SQ|SQK|SQUAWK)([0-7]{4})?$/))){let c=m[1];if(!c&&/^\d{4}$/.test(toks[i+1]||''))c=toks[++i];cmdSquawk(a,c)}
   else if((m=t.match(/^(?:XFL|CX)(\d{2,3})?$/))){const v=m[1]||toks[++i];if(v&&/^\d{2,3}$/.test(v))cmdAskXfl(a,+v<50?+v*10:+v);else log('bad','XFL : niveau manquant')}
   else if(/^(GUARD|121\.5|1215)$/.test(t))cmdGuard(a);
@@ -1733,9 +1776,9 @@ document.getElementById('btnZones').onclick=e=>{zonesEl.hidden=!zonesEl.hidden;e
 document.getElementById('btnCloseHelp').onclick=()=>document.getElementById('helpModal').hidden=true;
 document.getElementById('helpModal').addEventListener('click',e=>{if(e.target.id==='helpModal')e.target.hidden=true});
 
-function saveSettings(){try{localStorage.setItem('opencrna.v1',JSON.stringify({nordo:selNordo.value,conv:selConv.value,coord:selCoord.value,test:selTest.value,cfg:selCfg.value,den:selDen.value,wind:chkWind.checked,voice:chkVoice.checked,lay:LAY}))}catch(e){}}
-function loadSettings(){try{const s=JSON.parse(localStorage.getItem('opencrna.v1')||'null');if(!s)return;if(s.cfg)selCfg.value=s.cfg;if(s.nordo!=null)selNordo.value=s.nordo;if(s.conv!=null)selConv.value=s.conv;if(s.coord!=null)selCoord.value=s.coord;if(s.test!=null)selTest.value=s.test;if(s.den)selDen.value=s.den;chkWind.checked=s.wind!==false;chkVoice.checked=!!s.voice;if(s.lay)Object.assign(LAY,s.lay)}catch(e){}}
-const selNordo=document.getElementById('selNordo'),selConv=document.getElementById('selConv'),selCoord=document.getElementById('selCoord'),selTest=document.getElementById('selTest'),selCfg=document.getElementById('selConfig'),selDen=document.getElementById('selDensity'),chkWind=document.getElementById('chkWind'),chkVoice=document.getElementById('chkVoice');
+function saveSettings(){try{localStorage.setItem('opencrna.v1',JSON.stringify({nordo:selNordo.value,conv:selConv.value,coord:selCoord.value,test:selTest.value,emerg:selEmerg.value,cfg:selCfg.value,den:selDen.value,wind:chkWind.checked,voice:chkVoice.checked,lay:LAY}))}catch(e){}}
+function loadSettings(){try{const s=JSON.parse(localStorage.getItem('opencrna.v1')||'null');if(!s)return;if(s.cfg)selCfg.value=s.cfg;if(s.nordo!=null)selNordo.value=s.nordo;if(s.conv!=null)selConv.value=s.conv;if(s.coord!=null)selCoord.value=s.coord;if(s.test!=null)selTest.value=s.test;if(s.emerg!=null)selEmerg.value=s.emerg;if(s.den)selDen.value=s.den;chkWind.checked=s.wind!==false;chkVoice.checked=!!s.voice;if(s.lay)Object.assign(LAY,s.lay)}catch(e){}}
+const selNordo=document.getElementById('selNordo'),selConv=document.getElementById('selConv'),selCoord=document.getElementById('selCoord'),selTest=document.getElementById('selTest'),selEmerg=document.getElementById('selEmerg'),selCfg=document.getElementById('selConfig'),selDen=document.getElementById('selDensity'),chkWind=document.getElementById('chkWind'),chkVoice=document.getElementById('chkVoice');
 selCfg.innerHTML=CONFIGS.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');selCfg.value='US';
 function cfgInfo(){const c=CONFIGS.find(q=>q.id===selCfg.value);if(c.test){document.getElementById('cfgInfo').textContent='Poste Essais en vol · toute la région LFBB, FL100 à FL600, fréquence '+c.freq+'. Vous ne contrôlez que les Rafale d\'essais de Mérignac : activez une zone d\'essais, acheminez-les entre les trafics civils (gérés par les secteurs, mais la séparation compte), faites leur programme puis ramenez-les à Bordeaux Approche. Les réglages de pertes radio, convergences et demandes des centres ne s\'appliquent pas.';return}
  document.getElementById('cfgInfo').textContent='Volume : '+(c.sec[0]==='*'?'toute la région LFBB':'secteur'+(c.sec.length>1?'s ':' ')+c.sec.join(', '))+' · FL'+c.floor+' à '+(c.ceil>=660?'FL660':'FL'+c.ceil)+'. '+(c.floor>=300?'Secteur supérieur : survols en croisière, montées des départs Toulouse/Bordeaux et descentes des arrivées.':'Secteur inférieur : beaucoup de montées et descentes, transferts aux approches de Bordeaux, Toulouse, Biarritz, Pau.')}
@@ -1744,7 +1787,7 @@ loadSettings();syncLayers();cfgInfo();
 
 function startGame(){
  const cfg=CONFIGS.find(q=>q.id===selCfg.value);setupVolume(cfg);saveSettings();const T=!!cfg.test;
- Object.assign(SIM,{t:0,acs:[],score:0,done:0,sepLoss:0,pen:[],sepPairs:new Map(),stca:new Set(),acc:0,last1s:0,lastRadar:-99,queue:[],lambda:+selDen.value,voice:chkVoice.checked,running:true,mil:[],alerts:[],nordoRate:T?0:+selNordo.value,convInt:T?0:+selConv.value,coords:[],coordRate:T?0:+selCoord.value,testInt:+selTest.value*(T?1:2),nextTest:+selTest.value?(T?rnd(20,45):rnd(60,240)):1e9});for(const z of TZONES){z.st='off';z.tAct=0;z.ai=false}SIM.nextConv=SIM.convInt?rnd(60,150):1e9;
+ Object.assign(SIM,{t:0,acs:[],score:0,done:0,sepLoss:0,pen:[],sepPairs:new Map(),stca:new Set(),acc:0,last1s:0,lastRadar:-99,queue:[],lambda:+selDen.value,voice:chkVoice.checked,running:true,mil:[],alerts:[],nordoRate:T?0:+selNordo.value,convInt:T?0:+selConv.value,coords:[],coordRate:T?0:+selCoord.value,emRate:T?0:+selEmerg.value,testInt:+selTest.value*(T?1:2),nextTest:+selTest.value?(T?rnd(20,45):rnd(60,240)):1e9});for(const z of TZONES){z.st='off';z.tAct=0;z.ai=false}SIM.nextConv=SIM.convInt?rnd(60,150):1e9;
  SIM.startUTC=(Math.floor(rnd(7,19))*3600+Math.floor(rnd(0,59))*60);
  WX.on=chkWind.checked;WX.dir=Math.round(rnd(250,300));WX.jet=Math.round(rnd(45,115));
  const w=windAt(35000);document.getElementById('hdWind').innerHTML='<span class="k">Vent FL350</span>'+(WX.on?pad3(w.dir)+'°/'+Math.round(w.spd)+' kt':'calme');
