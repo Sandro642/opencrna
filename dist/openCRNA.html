@@ -381,7 +381,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
     <p>En haut, la barre de titre (indicatif de position, fréquence, UTC, vitesse de simulation, compteurs). Dessous, la <b>MENU BAR</b> ouvre les fenêtres flottantes — COMBOX (radio et ligne de commande), STRIPS, TRAFFIC (traffic manager du vol sélectionné, avec la ligne <b>WP / ALT / SPD</b> à valider par ✓ ou Entrée), ATC (unités adjacentes et fréquences, › = unité suivante du vol sélectionné), ZONES et PVD (thème Aurora ou Noir, positions des fenêtres) — et la <b>PREF BAR</b> règle l'affichage (vecteurs, traînées, trafic non concerné, secteurs, légende, VOR, points, routes, terrains ; en gras = actif). Les fenêtres se déplacent par leur barre de titre et se redimensionnent par le coin.</p>
     <p><b>Clic droit sur un avion</b> : menu selon son état — Assume, Force ACT (radio check), Transfer, niveau / cap / vitesse / direct, coordination XFL, SQK (REQ SSR, confirmer le code), 121.5, défense aérienne, MAYDAY reçu, Highlight d'un champ de l'étiquette, Route (touche Tab), FL.PLAN (touche F8), Vector, trajectoires avec le vol sélectionné. <b>Clic droit sur le fond</b> : QDM, centrer ici, recentrer sur le secteur, trajectoires, barres et fenêtres. Clic droit maintenu et glissé : mesure de relèvement et distance.</p>
     <h2>Demandes</h2>
-    <p>Une demande d'un <b>contrôleur</b> (secteur voisin qui veut vous passer un vol à un autre niveau ou en cap, PO) s'affiche en carte <b>REQ</b> en haut à gauche de l'écran radar, avec le délai et les boutons Accepter / Refuser, et l'étiquette du vol porte <b>REQ</b> clignotant. Vos propres demandes (XFL) apparaissent en carte <b>ACT</b> tant que le voisin n'a pas répondu. Une demande d'un <b>pilote</b> (montée, descente) fait clignoter un <b>?</b> dans l'étiquette. Dans tous les cas : clic sur REQ / ?, clic droit sur le vol, ou <code>OK</code> / <code>NO</code>. Le traffic manager n'affiche que les informations du vol (plan de vol en 4 colonnes, état, route) : les ordres se donnent au clic droit ou à la ligne de commande.</p>
+    <p>Une demande d'un <b>contrôleur</b> (secteur voisin qui veut vous passer un vol à un autre niveau ou en cap, PO) s'affiche en carte <b>REQ</b> en haut à gauche de l'écran radar, avec le délai et les boutons Accepter / Refuser, et l'étiquette du vol porte <b>REQ</b> clignotant. Vos propres demandes (XFL) apparaissent en carte <b>ACT</b> tant que le voisin n'a pas répondu. Une demande d'un <b>pilote</b> (montée, descente) fait clignoter un <b>?</b> dans l'étiquette. Dans tous les cas : clic sur REQ / ?, clic droit sur le vol, ou <code>OK</code> / <code>NO</code>. Le traffic manager n'affiche que les informations du vol (plan de vol en 4 colonnes et route) : les ordres se donnent au clic droit ou à la ligne de commande.</p>
     <h2>Le métier</h2>
     <p>Chaque vol qui traverse votre volume est <b>pré-annoncé</b> (strip ambre) puis <b>transféré</b> par le secteur amont : le pilote vous appelle et son indicatif clignote. Cliquez sur l'indicatif pour l'<b>assumer</b>. Vous seul pouvez alors lui donner des clairances. Avant qu'il quitte votre volume, amenez-le au <b>XFL</b> (niveau de sortie coordonné) puis cliquez à nouveau sur l'indicatif pour le <b>transférer</b> au secteur suivant affiché dans l'étiquette.</p>
     <p>Normes : 5 NM en horizontal ou 1 000 ft en vertical (RVSM FL290–FL410). Règle semi-circulaire : route vraie 000–179° niveaux impairs (FL310, 330…), 180–359° niveaux pairs (FL300, 320…).</p>
@@ -1800,8 +1800,7 @@ function tmStatus(a){const L=[];
  return L.join('<br>')}
 function pruneTM(a){const head=panelEl.querySelector('.fpHead'),sub=head&&head.nextElementSibling,tm=panelEl.querySelector('.tm'),rt=panelEl.querySelector('[data-v="route"]'),rc=rt&&rt.closest('.ctl');
  [...panelEl.children].forEach(el=>{if(el!==head&&el!==sub&&el!==tm&&el!==rc)el.remove()});
- if(rc){const h4=rc.querySelector('h4');if(h4)h4.textContent='Route'}
- const st=document.createElement('div');st.className='tmSt';st.dataset.v='tmst';tm.after(st)}
+ if(rc){const h4=rc.querySelector('h4');if(h4)h4.textContent='Route'}}
 function showFpl(a,cx,cy){const tas=Math.round((a.pf.cr||.78)*sos((a.rfl||300)*100));
  const route=(a.tok||[]).filter(t=>!/^L[A-Z]{3}$/.test(t)||t===a.dep||t===a.arr).join(' ');
  menu.innerHTML='<div class="mt">FL.PLAN · '+a.cs+'</div><pre class="fpl">(FPL-'+a.cs+'-I'+(a.mil?'M':'S')+'\n-'+a.type+'/'+a.wake+'\n-'+a.dep+'\n-N0'+tas+'F'+pad3(a.rfl)+' '+route+'\n-'+a.arr+'\n-SSR/'+(a.sq||'—')+(a.say?' RTF/'+a.say.toUpperCase():'')+')</pre>';placeMenu(cx,cy)}
@@ -1965,7 +1964,6 @@ function renderPanel(force){
   pruneTM(a);
  }
  const v=k=>panelEl.querySelector('[data-v="'+k+'"]');
- if(v('tmst')){const t=tmStatus(a);v('tmst').innerHTML=t;v('tmst').hidden=!t}
  const m=a.tas/sos(a.alt),c=machToCas(m,a.alt);
  if(v('alt'))v('alt').textContent='FL'+pad3(a.alt/100)+(Math.abs(a.cfl*100-a.alt)>100?' → FL'+a.cfl:'');
  if(v('vs'))v('vs').textContent=(a.vs>0?'+':'')+Math.round(a.vs/50)*50+' ft/min';
