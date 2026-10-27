@@ -339,6 +339,8 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
           <option value="30" selected>Normale · ≈30 vols/h</option>
           <option value="44">Dense · ≈44 vols/h</option>
           <option value="60">Pointe · ≈60 vols/h</option>
+          <option value="90">Saturée · ≈90 vols/h</option>
+          <option value="120">Extrême · ≈120 vols/h</option>
         </select>
       </label>
       <label>Trafic
@@ -1212,7 +1214,7 @@ function cfFail(k){const cf=SIM.cf,f=cf.fq[k];cf.fq[k]=null;cf.broken[f]=SIM.t+r
  for(const a of SIM.acs)if(!a.cIn&&a.cFq===f){a.cFq=null;cfAsk(a,a.cPrev.sh,a.cs+' : je lui avais donné '+f+', elle est en panne. Quelle fréquence ?')}
  for(const a of SIM.acs)if(a.cIn===k&&a.cOk){a.cOk=false;a.cLost=true}}
 // le pilote appelle sur la fréquence reçue : bon secteur, mauvais secteur ou personne
-function cfCheck(a){if(a.cOk||!a.cFq)return;const cf=SIM.cf,k=secAt(a.x,a.y,a.alt)||a.cIn,f=a.cFq;
+function cfCheck(a){if(a.cOk||!a.cFq)return;const cf=SIM.cf,f=a.cFq;let k=secAt(a.x,a.y,a.alt)||a.cIn;
  if(f===cf.fq[k]||f===cf.fq[a.cSec]){if(f!==cf.fq[k])k=a.cSec;a.cIn=k;a.cOk=true;SIM.done++;SIM.score+=5;log('good',a.cs+' contacte Bordeaux '+k+' sur '+f+' (+5)');return}
  a.cFq=null;a.cSec=k;const j=cfSecOf(f);
  if(j){penalty(null,'',-10,a.cs+' a appelé le secteur '+j+' au lieu du '+k);cfAsk(a,'Bordeaux '+j,a.cs+' m\'appelle sur '+f+' mais il est pour le secteur '+k+'. Quelle fréquence je lui donne ?')}
@@ -1631,7 +1633,7 @@ function tick1s(){
  checkSeparation();
  // génération
  const nConc=SIM.acs.filter(a=>a.concerned&&(a.state==='pre'||a.state==='offered')).length;
- if(!SIM.real&&!VOL.cfg.test&&!VOL.cfg.cordo&&Math.random()<SIM.lambda/3600&&nConc<14)trySpawn('c');
+ if(!SIM.real&&!VOL.cfg.test&&!VOL.cfg.cordo&&Math.random()<SIM.lambda/3600&&nConc<Math.max(14,Math.round(SIM.lambda/4)))trySpawn('c');
  const nBg=SIM.acs.filter(a=>!a.concerned).length;const bgTarget=VOL.cfg.cordo?Math.round(16+SIM.lambda*.7):VOL.cfg.test?Math.round(14+SIM.lambda*.6):Math.round(6+SIM.lambda*.35);
  if(!SIM.real&&nBg<bgTarget&&Math.random()<.04)trySpawn('b');
 }
