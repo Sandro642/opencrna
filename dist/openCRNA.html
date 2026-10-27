@@ -812,7 +812,11 @@ const rtAvailable=()=>!!(window.opencrna&&window.opencrna.opensky);
 async function rtFetch(){if(RT.busy)return null;RT.busy=true;
  try{const r=await window.opencrna.opensky(RT_BOX);RT.remaining=r&&r.remaining;
   if(!r||r.status!==200||!r.body){log('bad','Trafic réel : OpenSky a répondu '+(r?r.status||r.error:'—')+(r&&r.status===429?' (quota du jour épuisé, réessai plus tard)':''));return null}
-  return r.body.states||[]}
+  // panne côté OpenSky : réponse 200 mais aucun avion ou données figées depuis plus de 10 min (ex. 27/10/2026) → on ne vide pas le ciel
+  const st=r.body.states||[],age=Date.now()/1000-(r.body.time||0);
+  if(!st.length||age>600){if(!RT.stale)log('bad','Trafic réel : OpenSky ne diffuse aucune donnée à jour ('+(st.length?'données figées depuis '+Math.round(age/60)+' min':'aucun avion dans la zone')+'), panne de leur côté.'+(SIM.acs.some(a=>a.real)?' Nouvel essai toutes les 90 s.':''));RT.stale=true;return null}
+  if(RT.stale){RT.stale=false;log('sys','Trafic réel : OpenSky diffuse de nouveau.')}
+  return st}
  catch(e){log('bad','Trafic réel indisponible : '+e.message);return null}finally{RT.busy=false}}
 function rtRoute(a){const pts=[{id:'',x:a.x,y:a.y}],used=new Set(),tr=a.trk*D2R;
  for(let d=25;d<=325;d+=25){const px=a.x+d*Math.sin(tr),py=a.y+d*Math.cos(tr);let best=null,bd=14;
