@@ -70,7 +70,7 @@ header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
 #atcList .ar{display:grid;grid-template-columns:auto 1fr auto;gap:8px;padding:2px 10px}
 #atcList .ar.nx{background:var(--panel2);color:#fff}
 #atcList .ar .c{color:var(--accent)} #atcList .ar .f{color:var(--mute)}
-#atcList .ar.pn .f,#atcList .ar.pn .c{color:#ff6b5e} #atcList .ah2{padding:6px 10px 2px;color:var(--mute);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em}
+#atcList .ar.pn .f,#atcList .ar.pn .c{color:#ff6b5e} #atcList .ar[data-sec]{cursor:context-menu} #atcList .ar[data-sec]:hover{background:var(--panel2)} #atcList .ar.dbl .f{color:var(--call)} #atcList .ar i{color:var(--dim);font-style:normal} #atcList .ah2{padding:6px 10px 2px;color:var(--mute);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em}
 .tm{display:grid;grid-template-columns:auto auto auto minmax(0,1fr);gap:0;border:1px solid var(--line2);font-family:var(--f-mono);font-size:12px;background:var(--pvd)}
 .tm .tmc{display:flex;flex-direction:column;padding:4px 8px;border-right:1px solid var(--line);gap:1px;min-width:0}
 .tm .tmc b{color:#fff;font-weight:600}.tm .tmc .m{color:var(--mute)}
@@ -281,7 +281,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
       <span class="bsep">TRAFFIC</span>
       <select id="vecSel" title="Vecteurs vitesse"><option value="0">VCT 0'</option><option value="1">VCT 1'</option><option value="2">VCT 2'</option><option value="3" selected>VCT 3'</option><option value="4">VCT 4'</option><option value="6">VCT 6'</option><option value="8">VCT 8'</option></select>
       <button data-l="hist" title="Traînées radar">HIST</button><button data-l="bg" title="Trafic non concerné">N.CONC</button><button data-l="vfilt" title="Filtre vertical">VFILT</button>
-      <span class="bsep">GEO</span><button data-l="secs" title="Secteurs LFBB">SECT.LFBB</button><button data-l="legend" title="Légende des symboles">LÉG</button>
+      <span class="bsep">GEO</span><button data-l="secs" title="Secteurs du CRNA">SECT</button><button data-l="legend" title="Légende des symboles">LÉG</button>
       <span class="bsep">NAV</span><button data-l="vors" title="VOR">VOR</button><button data-l="fixes" title="Points">FIX</button><button data-l="routes" title="Routes">AWY</button><button data-l="apts" title="Terrains">APT</button>
       <span class="bsep">OUTILS</span><button id="btnMeasure" title="QDM : relèvement et distance (ou clic droit + glisser)">QDM</button><button id="btnConf" title="Trajectoires de deux avions, croisement et CPA">TRAJ</button>
       <button id="btnLayers" hidden>Couches</button>
@@ -323,11 +323,6 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
     <div class="form">
       <label>Profil (centre)
         <select id="selProfile">
-          <option value="LFBB" selected>LFBB · CRNA Sud-Ouest (Bordeaux)</option>
-          <option disabled>LFMM · Marseille (à venir)</option>
-          <option disabled>LFRR · Brest (à venir)</option>
-          <option disabled>LFFF · Paris (à venir)</option>
-          <option disabled>LFEE · Reims (à venir)</option>
         </select>
       </label>
       <label>Secteur / regroupement
@@ -405,8 +400,13 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
     <p>Les secteurs et centres voisins (Brest, Paris, Marseille, Madrid…) peuvent demander à vous passer un vol pré-annoncé à un autre niveau ou en cap. La demande apparaît dans la catégorie <b>Coordinations ATC</b> en haut des strips : <b>Accepter</b> ou <b>Refuser</b> dans la minute (sans réponse : pénalité, le vol arrive comme prévu). Un vol accepté en cap devra être remis en navigation (<code>RES</code> ou direct). Dans l'autre sens, pour un vol sous contrôle, demandez au secteur suivant un autre <b>niveau de sortie</b> (fiche vol → <b>Coordination sortie</b>, ou commande <code>XFL 350</code>) : il accepte ou refuse selon son trafic, le sens de vol et sa charge ; si c'est accepté, le nouveau XFL compte pour le transfert. Pendant une alerte COMLOSS, la PO demande les <b>infos de vol</b> de l'avion (bouton <b>Transmettre</b>, ou <b>Infos vol → PO</b> dans la fiche vol à tout moment), puis votre <b>autorisation</b> pour se présenter au cockpit et communiquer avec l'équipage : tant que vous n'avez pas autorisé, la patrouille reste en escorte.</p>
     <h2>Essais en vol</h2>
     <p>Position « Essais en vol » (dans la liste des positions) : un poste dédié, sur toute la région LFBB de FL100 à FL600. Vous ne contrôlez que les vols d'essais ; le trafic civil, géré par les secteurs, est affiché et vous devez en séparer vos Rafale (sauf à l'intérieur d'une zone active). Régulièrement, un avion d'essais décolle : Rafale ou Falcon 6X de Dassault Aviation depuis Mérignac (indicatif OACI DAB, « Dassault »), Airbus A350 ou A321neo depuis Toulouse-Blagnac (AIB, « Airbus Industrie »). Chaque type a son programme : seul le Rafale va en supersonique et tire jusqu'à 9 G ; un Airbus est limité à 2,5 G et à son plafond, un Falcon à 3 G. Il rentre à sa base (Mérignac ou Toulouse) à la fin. Souvent, un « Rafale ESA » (démonstrateur fictif) demande des essais à Mach 2,5 au FL500 et au FL550 dans une grande zone sans plafond. Un programme compte 3 à 5 essais ; l'étiquette affiche <b>ESS 2/4</b> (essais faits / total, ESS ✓ une fois terminé) et le menu clic droit « Programme d'essais » détaille chaque essai et sa progression. Jusqu'à 5 vols d'essais à la fois. Par exemple, un Rafale (indicatif Dassault DAB). Bordeaux Approche vous le transfère en montée ; il annonce la zone qu'il demande et son programme (3 essais, visibles dans sa fiche vol). Ouvrez <b>Zones d'essais</b> (en haut) et activez une zone : l'activation prend 2 minutes, la zone est alors fermée à la circulation générale entre ses limites verticales, et elle le reste jusqu'à ce que vous la désactiviez. Acheminez le Rafale entre les trafics civils jusqu'à une zone active (direct vers son identifiant, par exemple <code>DCT D31D</code>), puis donnez-lui ses essais : niveaux (jusqu'au FL500), vitesses (<code>M1.4</code> : supersonique uniquement en zone active, sinon bang supersonique −20 ; <code>S200</code> pour le vol lent) et <b>manœuvres sous facteur de charge</b> (fiche vol, ou <code>MAN 5 30 D</code> = 5 G pendant 30 s, virage à droite). Chaque essai réussi rapporte +10. Une fois le programme terminé, ramenez-le vers LFBD, descendez-le à son niveau de sortie et transférez-le à Bordeaux Approche (+30 à l'atterrissage), puis désactivez la zone. Les zones sont les <b>vraies zones militaires</b> de la région (eAIP France ENR 5.1, AIRAC du 1er octobre 2026) : D 31 D, D 32, D 33 et D 300 A au-dessus de l'Atlantique, R 31 Cazaux, R 34 A2 Mont-de-Marsan, R 49 Cognac, R 61 H, R 170 B, R 68 C, avec leurs limites verticales officielles. Une zone plafonnée au FL195 ne permet que les essais bas (vol lent, virages) ; les essais en altitude et le supersonique demandent une zone illimitée (UNL). Simplifications : les segments qui suivent la limite des eaux territoriales sont tracés en ligne droite, et les horaires réels d'activation (NOTAM, AUP) ne sont pas simulés : une zone reste active jusqu'à ce que vous la désactiviez.</p>
-    <h2>Cordo LFBB (coordination des fréquences)</h2>
-    <p>Position « Cordo LFBB » : vous ne contrôlez aucun avion, vous gérez les fréquences des dix secteurs de Bordeaux (H, L, N, P, R, T, X, Z en bas, UN et US en haut) et vous êtes en liaison avec tous les contrôleurs. Chaque vol qui va entrer dans LFBB (FL115 et plus) fait l'objet d'un appel de l'unité précédente — Brest, Paris, Madrid… ou une approche pour un départ — environ 2 à 3 minutes avant l'entrée : « AFR1234, entre dans LFBB secteur UN au FL350, quelle fréquence ? ». Donnez la fréquence du secteur d'entrée : bouton <b>Fréquence…</b> de la carte REQ, clic sur REQ dans l'étiquette, commande <code>AFR1234 132.555</code>, ou simplement <code>132.555</code> (répond au vol sélectionné, sinon à la demande la plus ancienne). Le contrôleur la transmet au pilote, qui appelle le secteur en entrant : +5 si c'est le bon secteur ; mauvais secteur ou fréquence sans personne : −10, et on vous redemande. Pas de réponse avant l'entrée : −10 et relance. Étiquette : <b>›UN 132.555</b> = secteur d'entrée et fréquence donnée (<b>?</b> pas encore), puis secteur et fréquence en cours une fois entré (vert : en contact ; <b>---</b> rouge : injoignable). Les fréquences des secteurs sont affichées sur le radar et dans la fenêtre <b>ATC</b>, avec les fréquences libres et celles en réparation. De temps en temps une fréquence de secteur tombe en panne (au plus deux à la fois) : le secteur vous demande une fréquence de secours, à choisir parmi les libres (fenêtre ATC) : bouton <b>Fréquence…</b> de la carte REQ « SECT P », commande <code>FQ P 131.080</code> (secteur P), ou <code>FQ 131.080</code> (secteur en panne qui attend depuis le plus longtemps) : +10 en moins d'une minute, +5 ensuite, −10 par minute sans fréquence. Une fréquence en panne ou déjà utilisée par un autre secteur est refusée (−5). Les vols déjà annoncés avec la fréquence en panne vous sont redemandés. Une fréquence réparée (10 à 20 min) redevient libre. Les fréquences de secours sont fictives.</p>
+    <h2>Les cinq CRNA</h2>
+    <p>Choisissez le <b>profil</b> en haut de la fenêtre de démarrage (la page se recharge) : <b>LFBB</b> Sud-Ouest (Bordeaux), <b>LFFF</b> Nord (Paris), <b>LFRR</b> Ouest (Brest, avec l'Atlantique), <b>LFMM</b> Sud-Est (Marseille, avec la Méditerranée et la Corse), <b>LFEE</b> Est (Reims), ou <b>France</b> pour la Cordo nationale. Chaque CRNA a ses secteurs inférieurs (FL115–345) et supérieurs (FL345–660), leurs regroupements, le regroupement total et sa Cordo. Le trafic suit un réseau de routes national : Paris ⇄ province, Benelux et Royaume-Uni ⇄ Espagne et Portugal, Allemagne et Suisse ⇄ Méditerranée, Atlantique Nord par Brest, Italie ⇄ Espagne et Afrique du Nord par Marseille, Corse… Les essais en vol, l'entraînement militaire, la PO sur alerte et la PO en vol restent propres à LFBB.</p>
+    <h2>Cordo (coordination des fréquences)</h2>
+    <p>Position « Cordo » d'un CRNA : vous ne contrôlez aucun avion, vous gérez les fréquences des secteurs du CRNA (à Bordeaux : H, L, N, P, R, T, X, Z en bas, UN et US en haut) et vous êtes en liaison avec tous les contrôleurs. Chaque vol qui va entrer dans le CRNA (FL115 et plus) fait l'objet d'un appel de l'unité précédente — Brest, Paris, Madrid… ou une approche pour un départ — environ 2 à 3 minutes avant l'entrée : « AFR1234, entre dans LFBB secteur UN au FL350, quelle fréquence ? ». Donnez la fréquence du secteur d'entrée : bouton <b>Fréquence…</b> de la carte REQ, clic sur REQ dans l'étiquette, commande <code>AFR1234 132.555</code>, ou simplement <code>132.555</code> (répond au vol sélectionné, sinon à la demande la plus ancienne). Le contrôleur la transmet au pilote, qui appelle le secteur en entrant : +5 si c'est le bon secteur ; mauvais secteur ou fréquence sans personne : −10, et on vous redemande. Pas de réponse avant l'entrée : −10 et relance. Étiquette : <b>›UN 132.555</b> = secteur d'entrée et fréquence donnée (<b>?</b> pas encore), puis secteur et fréquence en cours une fois entré (vert : en contact ; <b>---</b> rouge : injoignable). Les fréquences des secteurs sont affichées sur le radar et dans la fenêtre <b>ATC</b>, avec les fréquences libres et celles en réparation. De temps en temps une fréquence de secteur tombe en panne (au plus deux à la fois) : le secteur vous demande une fréquence de secours, à choisir parmi les libres (fenêtre ATC) : bouton <b>Fréquence…</b> de la carte REQ « SECT P », commande <code>FQ P 131.080</code> (secteur P), ou <code>FQ 131.080</code> (secteur en panne qui attend depuis le plus longtemps) : +10 en moins d'une minute, +5 ensuite, −10 par minute sans fréquence. Une fréquence en panne ou déjà utilisée par un autre secteur est refusée (−5). Les vols déjà annoncés avec la fréquence en panne vous sont redemandés. Une fréquence réparée (10 à 20 min) redevient libre. Les fréquences de secours sont fictives.</p>
+    <p><b>Clic droit sur un secteur dans la fenêtre ATC</b> (ou clic simple) : fréquence principale, trafic du secteur, liste des fréquences libres à donner (secours si la fréquence est en panne, sinon deuxième fréquence) et « Libérer la 2e fréquence ». <b>Deuxième fréquence</b> : un secteur chargé (7 vols ou plus) demande une fréquence de plus (carte REQ, 90 s, +5, −10 sans réponse) ; ses deux fréquences sont alors valables pour les vols qui y entrent (affichées <b>128.380 / 118.805</b>). Quand le trafic retombe (3 vols ou moins pendant 1 min), il rend la deuxième d'elle-même ; vous pouvez aussi la libérer (<code>FQ P LIB</code>). Une panne d'une des deux fréquences laisse le secteur sur l'autre.</p>
+    <h2>Cordo France</h2>
+    <p>Profil « France » : les 48 secteurs des cinq CRNA à la fois. On vous appelle pour chaque vol qui entre en France (centre étranger, approche) <b>et</b> pour chaque vol qui passe d'un CRNA à un autre (« Paris US : AFR1234, entre chez Bordeaux UN au FL350… ») : le menu Fréquence… est rangé par CRNA. Les secteurs s'écrivent avec le centre : <code>FQ BB-UN 118.505</code> (BB Bordeaux, FF Paris, RR Brest, MM Marseille, EE Reims). Pour rester lisible, seuls les vols qui demandent une action ont une étiquette complète (zoomez pour voir les autres indicatifs).</p>
     <h2>Entraînement militaire</h2>
     <p>Réglage « Entraînement militaire » : des Rafale de Mont-de-Marsan (indicatifs GASCO, VIPER, LYNX…) partent s'entraîner dans les vraies TRA 34 (A, B, C, D, E, N) autour de Mont-de-Marsan, la R 34 A2, et les TRA 43 (Massif central) et TRA 10 B (Poitou) — limites de l'eAIP ENR 5.2. Le CDC de Mont-de-Marsan annonce l'activation 3 minutes à l'avance ; la zone est fermée à la circulation générale jusqu'au retour des avions. Sur tous les postes, déviez votre trafic ; sur le poste Essais en vol, ces zones ne sont pas disponibles pour vos essais tant qu'elles sont tenues.</p>
     <h2>Essais en vol vus d'un poste en route</h2>
@@ -458,7 +458,7 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
     <h2>Écran</h2>
     <p class="hint">Molette ou pincement : zoom. Glisser : déplacer la carte. Glisser une étiquette : la déplacer. Clic droit + glisser (ou bouton Mesure) : relèvement et distance. Bouton Trajectoires (ou vol sélectionné puis clic droit sur un autre vol) : prolonge les routes des deux avions, calcule leur point de croisement, le rapprochement minimal (CPA) et l'écart vertical, puis indique si les caps actuels sont dangereux et propose un cap d'évitement. Le transfert demande toujours une confirmation. Barre d'espace : pause.</p>
     <h2>Données</h2>
-    <p class="hint">Limites latérales des secteurs et des FIR voisines : VATSpy (VATSIM, approximation des limites réelles). VOR et terrains : OurAirports. Les points à 5 lettres (ORVEL, PERIX…), les fréquences et les limites verticales (inférieur FL115–FL345, supérieur au-dessus de FL345) sont simplifiés ou fictifs. Performances avions inspirées des ordres de grandeur réels (atmosphère ISA, croisement IAS/Mach, taux de montée selon l'altitude). Outil d'entraînement ludique, sans valeur opérationnelle.</p>
+    <p class="hint">Limites latérales des secteurs de LFBB et des FIR voisines : VATSpy (VATSIM, approximation des limites réelles). Limites des autres CRNA : tirées de VATSpy et simplifiées (Reims = partie de la FIR Paris à l'est de 3,6–4,4°E) ; leurs secteurs, leurs noms et leurs fréquences sont <b>fictifs</b> (découpage automatique). Points OCENX, OCESX, CANAX, SARDX, AFRIX, BALEX : fictifs. VOR et terrains : OurAirports. Les points à 5 lettres (ORVEL, PERIX…), les fréquences et les limites verticales (inférieur FL115–FL345, supérieur au-dessus de FL345) sont simplifiés ou fictifs. Performances avions inspirées des ordres de grandeur réels (atmosphère ISA, croisement IAS/Mach, taux de montée selon l'altitude). Outil d'entraînement ludique, sans valeur opérationnelle.</p>
   </div>
 </div>
 
@@ -470,9 +470,24 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
 'use strict';
 const GEO=__GEO__;
 
+/* ===================== Profils (CRNA) ===================== */
+// Un profil = un CRNA (ou la France entière pour la Cordo nationale). La géographie est calculée au chargement pour le profil actif ;
+// changer de profil recharge la page (#LFFF dans l'adresse, et localStorage). Secteurs hors LFBB : découpage FICTIF (data/gen_crna.py).
+const CITY={LFBB:'Bordeaux',LFFF:'Paris',LFRR:'Brest',LFMM:'Marseille',LFEE:'Reims'},CR2={LFBB:'BB',LFFF:'FF',LFRR:'RR',LFMM:'MM',LFEE:'EE'};
+const PROFS={
+ LFBB:{n:'CRNA Sud-Ouest (Bordeaux)',c:[45.0,0.9],crna:['LFBB']},
+ LFFF:{n:'CRNA Nord (Paris)',c:[48.7,2.0],crna:['LFFF']},
+ LFRR:{n:'CRNA Ouest (Brest)',c:[47.0,-3.8],crna:['LFRR']},
+ LFMM:{n:'CRNA Sud-Est (Marseille)',c:[42.9,6.2],crna:['LFMM']},
+ LFEE:{n:'CRNA Est (Reims)',c:[48.6,5.7],crna:['LFEE']},
+ FR:{n:'France · Cordo nationale (tous les CRNA)',c:[46.4,1.8],crna:['LFFF','LFEE','LFRR','LFBB','LFMM'],cordoOnly:1},
+};
+const PROF_ID=(()=>{const h=(location.hash||'').slice(1).toUpperCase();if(PROFS[h])return h;try{const v=localStorage.getItem('opencrna.prof');if(PROFS[v])return v}catch(e){}return 'LFBB'})();
+const PROF=PROFS[PROF_ID],MULTI=PROF.crna.length>1,PCITY=MULTI?'France':CITY[PROF_ID],ISBB=PROF_ID==='LFBB';
+
 /* ===================== Géométrie ===================== */
 const D2R=Math.PI/180,R2D=180/Math.PI;
-const LAT0=45.0,LON0=0.9,KX=Math.cos(LAT0*D2R);
+const LAT0=PROF.c[0],LON0=PROF.c[1],KX=Math.cos(LAT0*D2R);
 const P=(la,lo)=>({x:(lo-LON0)*60*KX,y:(la-LAT0)*60});
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const norm=h=>((h%360)+360)%360;
@@ -485,10 +500,19 @@ function wpick(l){let s=0;for(const x of l)s+=x[1];let r=Math.random()*s;for(con
 function pipXY(x,y,p){let ins=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const xi=p[i][0],yi=p[i][1],xj=p[j][0],yj=p[j][1];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)ins=!ins}return ins}
 function mkPoly(a){const p=a.map(([la,lo])=>{const q=P(la,lo);return[q.x,q.y]});let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9,sx=0,sy=0;for(const[x,y]of p){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);sx+=x;sy+=y}return{p,x0,x1,y0,y1,cx:sx/p.length,cy:sy/p.length}}
 const inPoly=(x,y,Q)=>x>=Q.x0&&x<=Q.x1&&y>=Q.y0&&y<=Q.y1&&pipXY(x,y,Q.p);
-const SECT={};for(const k in GEO.sectors)SECT[k]=mkPoly(GEO.sectors[k]);
-const LFBB=mkPoly(GEO.lfbb);
-const FIRS={};for(const k in GEO.firs)FIRS[k]=GEO.firs[k].map(mkPoly);
-const LOWER=['H','L','N','P','R','T','X','Z'],UPPER=['UN','US'];
+// secteurs du profil : clé = code local (ex. UN), ou CR2-code en Cordo France (ex. BB-UN) ; SECI[k] = {c: CRNA, s: code, n: nom, f: fréquence, u: supérieur}
+const SECT={},SECI={};for(const c of PROF.crna)for(const s in GEO.crna[c].sec){const d=GEO.crna[c].sec[s],k=MULTI?CR2[c]+'-'+s:s;SECT[k]=mkPoly(d.p);SECI[k]={c,s,n:d.n,f:d.f,u:d.u}}
+const HOME=PROF.crna.map(c=>mkPoly(GEO.crna[c].area)),HOMEC={};PROF.crna.forEach((c,i)=>HOMEC[c]=HOME[i]);
+const inHome=(x,y)=>HOME.some(Q=>inPoly(x,y,Q)),homeEdge=(x,y)=>Math.min(...HOME.map(Q=>edgeDist(Q.p,x,y)));
+const FIRS={};for(const k in GEO.firs)if(!PROF.crna.includes(k))FIRS[k]=GEO.firs[k].map(mkPoly);
+const LOWER=Object.keys(SECI).filter(k=>!SECI[k].u),UPPER=Object.keys(SECI).filter(k=>SECI[k].u);
+const SECFREQ={},SECNAME={};for(const k in SECI){SECFREQ[k]=SECI[k].f;SECNAME[k]=SECI[k].n}
+const secSh=k=>CITY[SECI[k].c]+' '+SECI[k].s;
+// rayon de suppression des vols et de création du trafic de fond (NM autour du centre du profil)
+const FAR_R=ISBB?330:Math.round(Math.max(...HOME.flatMap(Q=>Q.p.map(([x,y])=>Math.hypot(x,y))))+130),SPAWN_R=FAR_R-100;
+// densité du trafic de fond proportionnelle à la surface du profil (LFBB = 1)
+const polyArea=Q=>{let A=0;for(let i=0,j=Q.p.length-1;i<Q.p.length;j=i++)A+=Q.p[j][0]*Q.p[i][1]-Q.p[i][0]*Q.p[j][1];return Math.abs(A)/2};
+const AREA_K=ISBB?1:MULTI?HOME.reduce((s,Q)=>s+polyArea(Q),0)/58000*.55:Math.max(.9,HOME.reduce((s,Q)=>s+polyArea(Q),0)/58000); // petits CRNA (Paris, Reims) : au moins la densité de LFBB // Cordo France : allégé (un vol y traverse souvent plusieurs CRNA)
 
 /* ===================== Atmosphère ISA ===================== */
 const isaT=h=>h<36089?288.15-0.0019812*h:216.65;
@@ -557,6 +581,14 @@ const AL={
  TRA:{say:'Transavia',t:[['B738',1]],cs:['n4']},
  TAM:{say:'TAM',t:[['B77W',1]],h:['B77W','B789'],cs:['n4']},
  NJE:{say:'Fraction',t:[['C56X',1]],cs:['n3a']},
+ HOP:{say:'Air Hop',fr:1,t:[['E190',3],['CRJ9',2],['E195',1]],cs:['n4','n2a2']},
+ CCM:{say:'Corsica',fr:1,t:[['A320',3],['A20N',2]],cs:['n3','n2a']},
+ DAH:{say:'Air Algérie',fr:1,t:[['B738',3],['A332',1]],h:['A332'],cs:['n4','n3']},
+ TAR:{say:'Tunair',fr:1,t:[['A320',3],['A20N',2]],cs:['n3']},
+ DAL:{say:'Delta',t:[['A332',1]],h:['A332','A359','B77W'],cs:['n3','n2']},
+ UAL:{say:'United',t:[['B789',1]],h:['B789','B77W'],cs:['n3','n2']},
+ AAL:{say:'American',t:[['B789',1]],h:['B789','B77W'],cs:['n3','n2']},
+ ACA:{say:'Air Canada',t:[['B789',1]],h:['B789','A332','B77W'],cs:['n3','n2']},
 };
 const LET='ABCDEFGHJKLMNPQRSTUVWXYZ';
 // Codes transpondeur : 4 chiffres octaux, hors codes spéciaux (7500/7600/7700) et 2000/1000/7000
@@ -568,7 +600,9 @@ function genCs(code){const f=pick(AL[code].cs);const d=n=>{let s=String(1+Math.f
 const PTS={};
 for(const[id,name,la,lo,fq]of GEO.vors){const q=P(la,lo);PTS[id]={id,name,type:'vor',x:q.x,y:q.y,freq:fq}}
 for(const id in GEO.airports){const[name,la,lo]=GEO.airports[id];const q=P(la,lo);PTS[id]={id,name,type:'apt',x:q.x,y:q.y}}
-const FIXDEF={PELIX:[47.95,2.00],ORVEL:[47.55,1.85],VIERX:[46.95,1.35],CORVA:[45.25,1.65],FIGOL:[44.45,1.55],LANDO:[44.20,-1.25],SOLAN:[43.85,-2.35],ORDAX:[42.90,-4.40],MEDIX:[45.05,-1.20],OLONE:[46.35,-0.85],RUFAX:[45.95,0.25],PERIX:[45.15,0.80],CAHIX:[44.45,1.20],ANDOX:[42.95,1.55],BOURX:[46.30,2.55],DORDX:[45.30,0.15],GUERX:[46.10,1.95],CASTX:[43.70,2.45],ORTHX:[43.40,-0.85],MONTX:[43.95,-0.55],MILAX:[44.10,2.55],AURIX:[44.70,2.10],NORAX:[48.60,0.60]};
+const FIXDEF={PELIX:[47.95,2.00],ORVEL:[47.55,1.85],VIERX:[46.95,1.35],CORVA:[45.25,1.65],FIGOL:[44.45,1.55],LANDO:[44.20,-1.25],SOLAN:[43.85,-2.35],ORDAX:[42.90,-4.40],MEDIX:[45.05,-1.20],OLONE:[46.35,-0.85],RUFAX:[45.95,0.25],PERIX:[45.15,0.80],CAHIX:[44.45,1.20],ANDOX:[42.95,1.55],BOURX:[46.30,2.55],DORDX:[45.30,0.15],GUERX:[46.10,1.95],CASTX:[43.70,2.45],ORTHX:[43.40,-0.85],MONTX:[43.95,-0.55],MILAX:[44.10,2.55],AURIX:[44.70,2.10],NORAX:[48.60,0.60],
+ // réseau national : sorties océaniques et Méditerranée (FICTIFS)
+ OCENX:[49.20,-9.20],OCESX:[46.60,-9.20],CANAX:[44.00,-8.60],SARDX:[40.20,8.40],AFRIX:[39.20,5.60],BALEX:[40.60,3.60]};
 for(const id in FIXDEF){const q=P(...FIXDEF[id]);PTS[id]={id,name:id,type:'fix',x:q.x,y:q.y}}
 
 /* ===================== Unités voisines ===================== */
@@ -579,14 +613,35 @@ const UNITS={
  LECM:{code:'CM',name:'Madrid Control',en:'Madrid Control',sh:'Madrid',freq:'133.950'},
  LECB:{code:'CB',name:'Barcelona Control',en:'Barcelona Control',sh:'Barcelone',freq:'134.705'},
  LFEE:{code:'EE',name:'Reims Contrôle',en:'Reims Control',sh:'Reims',freq:'126.285'},
+ LFBB:{code:'BB',name:'Bordeaux Contrôle',en:'Bordeaux Control',sh:'Bordeaux',freq:'129.885'},
+ EGTT:{code:'TT',name:'London Control',en:'London Control',sh:'Londres',freq:'127.705'},
+ EGGX:{code:'GX',name:'Shanwick Oceanic',en:'Shanwick Oceanic',sh:'Shanwick',freq:'127.655'},
+ EBBU:{code:'BU',name:'Brussels Control',en:'Brussels Control',sh:'Bruxelles',freq:'131.105'},
+ EDGG:{code:'LG',name:'Langen Radar',en:'Langen Radar',sh:'Langen',freq:'126.455'},
+ EDMM:{code:'MU',name:'München Radar',en:'Munich Radar',sh:'Munich',freq:'129.055'},
+ LSAS:{code:'SW',name:'Swiss Radar',en:'Swiss Radar',sh:'Swiss',freq:'134.855'},
+ LIMM:{code:'MI',name:'Milano Radar',en:'Milano Radar',sh:'Milan',freq:'125.505'},
+ LIRR:{code:'RO',name:'Roma Radar',en:'Roma Radar',sh:'Rome',freq:'127.255'},
+ LPPC:{code:'PC',name:'Lisboa Control',en:'Lisboa Control',sh:'Lisbonne',freq:'132.855'},
 };
-const SECFREQ={H:'123.855',L:'126.255',N:'125.105',P:'128.455',R:'133.505',T:'127.680',X:'129.355',Z:'124.505',UN:'132.555',US:'134.880'};
-const APPS={LFBD:['A.BOD','Bordeaux Approche','Bordeaux Approach','118.605'],LFBO:['A.TLS','Toulouse Approche','Toulouse Approach','121.105'],LFBZ:['A.BIQ','Biarritz Approche','Biarritz Approach','119.205'],LFBP:['A.PUF','Pau Approche','Pau Approach','124.205'],LFBT:['A.LDE','Tarbes Approche','Tarbes Approach','121.305'],LFBE:['A.EGC','Bergerac Approche','Bergerac Approach','124.805'],LFBL:['A.LIG','Limoges Approche','Limoges Approach','120.805'],LFBA:['A.AGF','Agen Approche','Agen Approach','119.005'],LFBI:['A.PIS','Poitiers Approche','Poitiers Approach','124.405'],LFBG:['A.CNG','Cognac Approche','Cognac Approach','122.505']};
+const APPS={LFBD:['A.BOD','Bordeaux Approche','Bordeaux Approach','118.605'],LFBO:['A.TLS','Toulouse Approche','Toulouse Approach','121.105'],LFBZ:['A.BIQ','Biarritz Approche','Biarritz Approach','119.205'],LFBP:['A.PUF','Pau Approche','Pau Approach','124.205'],LFBT:['A.LDE','Tarbes Approche','Tarbes Approach','121.305'],LFBE:['A.EGC','Bergerac Approche','Bergerac Approach','124.805'],LFBL:['A.LIG','Limoges Approche','Limoges Approach','120.805'],LFBA:['A.AGF','Agen Approche','Agen Approach','119.005'],LFBI:['A.PIS','Poitiers Approche','Poitiers Approach','124.405'],LFBG:['A.CNG','Cognac Approche','Cognac Approach','122.505'],
+ LFPG:['A.CDG','De Gaulle Approche','De Gaulle Approach','119.255'],LFPO:['A.ORY','Orly Approche','Orly Approach','118.855'],LFQQ:['A.LIL','Lille Approche','Lille Approach','120.275'],LFOB:['A.BVA','Beauvais Approche','Beauvais Approach','118.405'],
+ LFRS:['A.NTE','Nantes Approche','Nantes Approach','124.430'],LFRN:['A.RNS','Rennes Approche','Rennes Approach','120.505'],LFRB:['A.BES','Brest Approche','Brest Approach','119.655'],LFRK:['A.CFR','Caen Approche','Caen Approach','120.930'],LFRG:['A.DOL','Deauville Approche','Deauville Approach','118.230'],
+ LFML:['A.MRS','Marseille Approche','Marseille Approach','120.205'],LFMN:['A.NCE','Nice Approche','Nice Approach','119.855'],LFLL:['A.LYS','Lyon Approche','Lyon Approach','127.330'],LFMT:['A.MPL','Montpellier Approche','Montpellier Approach','122.930'],LFTH:['A.TLN','Hyères Approche','Hyeres Approach','123.105'],LFKJ:['A.AJA','Ajaccio Approche','Ajaccio Approach','121.430'],LFKB:['A.BIA','Bastia Approche','Bastia Approach','120.630'],LFLS:['A.GNB','Grenoble Approche','Grenoble Approach','119.580'],LFMP:['A.PGF','Perpignan Approche','Perpignan Approach','120.830'],
+ LFST:['A.SXB','Strasbourg Approche','Strasbourg Approach','119.405'],LFSB:['A.BSL','Bâle Approche','Basel Approach','119.330'],LFJL:['A.ETZ','Metz Approche','Metz Approach','118.930'],LFSD:['A.DIJ','Dijon Approche','Dijon Approach','124.580'],LFOK:['A.XCR','Vatry Approche','Vatry Approach','121.630']};
+// approches situées dans le profil (unités sous le FL115), terrains de la région (symbole ▽, arrivées du trafic réel), terrains de déroutement
+const HOME_APPS=Object.keys(APPS).filter(ic=>PTS[ic]&&inHome(PTS[ic].x,PTS[ic].y));
+const LOC_APTS=new Set(Object.keys(GEO.airports).filter(ic=>/^LF/.test(ic)&&PTS[ic]&&inHome(PTS[ic].x,PTS[ic].y)));
 function appUnit(icao){const a=APPS[icao];return{code:a[0],name:a[1],en:a[2],sh:a[1],freq:a[3]}}
 
 /* ===================== Configurations de secteurs ===================== */
-const SECNAME={R:'Poitou-Charentes',Z:'Landes / Côte basque',N:'Pyrénées',X:'Quercy / Agenais',H:'Haut-Languedoc / Roussillon',L:'Limousin',T:'Auvergne',P:'Berry',UN:'Supérieur Nord',US:'Supérieur Sud'};
-const CONFIGS=[
+const CONFIGS=PROF.cordoOnly?[{id:'CORDO',name:'Cordo France · coordination des fréquences de tous les CRNA',sec:['*'],floor:115,ceil:660,cordo:1,freq:'TÉL'}]:!ISBB?[
+ {id:'SUP',name:UPPER.join(' + ')+' · Regroupement supérieur',sec:UPPER,floor:345,ceil:660},
+ ...UPPER.map(k=>({id:k,name:k+' · '+SECNAME[k],sec:[k],floor:345,ceil:660})),
+ {id:'INF',name:'Inférieur · '+LOWER.join('+'),sec:LOWER,floor:115,ceil:345},
+ ...LOWER.map(k=>({id:k,name:k+' · '+SECNAME[k],sec:[k],floor:115,ceil:345})),
+ {id:'ALL',name:PROF_ID+' · Regroupement total (nuit)',sec:['*'],floor:115,ceil:660},
+ {id:'CORDO',name:'Cordo '+PROF_ID+' · coordination des fréquences',sec:['*'],floor:115,ceil:660,cordo:1,freq:'TÉL'}]:[
  {id:'US',name:'US · Supérieur Sud',sec:['US'],floor:345,ceil:660},
  {id:'UN',name:'UN · Supérieur Nord',sec:['UN'],floor:345,ceil:660},
  {id:'UNUS',name:'UN + US · Regroupement supérieur',sec:['UN','US'],floor:345,ceil:660},
@@ -604,7 +659,7 @@ const CONFIGS=[
 const AP_UK=['EGLL','EGKK','EGSS','EGGW','EGCC','EGBB','EGPH','EIDW','EGGD'],AP_BNL=['EHAM','EBBR','EHEH','EBCI'];
 const AP_DE=['EDDF','EDDM','EDDL','EDDS','EDDH','EDDB','LSZH','LOWW','EPWA'],AP_ITA=['LIMC','LIML','LIRF','LIPZ','LIMF'];
 const AP_IBW=['LPPT','LPPR','LPFR','GCLP','GCTS','GCRR','LEST','LEVX','GMMN'],AP_ESE=['LEVC','LEAL','LEPA','LEIB','LEMI'],AP_BCN=['LEBL','LEGE','LERS'],AP_SAM=['SBGR','SBGL','SCEL','SAEZ'];
-const FLOWDEF=[
+const FLOWDEF_BB=[
  // Avion de reconnaissance U-2 (USAF) : transit très haute altitude Fairford ⇄ Morón
  {r:'NORAX AMB POI CNA BMC LANDO BTZ PPN SIE',from:['EGVA'],to:['LEMO'],al:[['DRG',1]],mil:1,rfl:[610,650],w:3.5},
  // Militaires en orbite (hippodrome entre deux points, quelques tours puis reprise de la route) : AWACS de l'OTAN au-dessus des Landes, ravitailleurs
@@ -642,6 +697,66 @@ const FLOWDEF=[
  {r:'ROA TIS CFA GUERX POI NTS',from:['LSGG','LSZH','LFLL','LIMC','LIML','EDDM','LOWW'],to:['LFRS','EIDW','EGLL','EGKK','EGCC'],al:[['EZY',3],['RYR',2],['AFR',1],['BAW',1],['SWR',1]],rfl:[330,400],w:2.5},
  {r:'LFBD LANDO BTZ PPN SIE',to:['LEMG','LEZL','LEMD','LEAL'],al:[['VOE',3],['RYR',2],['IBE',1]],rfl:[280,360],w:.8},
 ];
+// Réseau national (profils autres que LFBB et Cordo France) : routes d'une frontière (ou d'un terrain) à l'autre, réalistes mais simplifiées
+const AP_NA=['KJFK','KBOS','CYUL','KIAD','KATL','KORD'],AP_NAF=['DAAG','DTTA','DAON'];
+const FLOWNAT=[
+ // Atlantique Nord (Brest) : Paris, Europe ⇄ Amérique du Nord, Afrique de l'Ouest
+ {r:'LFPG PON ROU CAN JSY ARE OCENX',to:AP_NA,al:[['AFR',5],['DAL',2],['UAL',1],['AAL',1],['ACA',1]],heavy:1,rfl:[340,380],w:4},
+ {r:'NTM REM CTL BSN PON ROU CAN JSY ARE OCENX',from:AP_DE,to:AP_NA,al:[['DLH',4],['UAL',2],['SWR',1],['DAL',1]],heavy:1,rfl:[340,380],w:2},
+ {r:'HOC BLM LUL RLP TRO PTV VMP ANG NTS QPR OCESX',from:['LSZH','LIMC','EDDM','LOWW'],to:['KJFK','KIAD','KATL'],al:[['SWR',2],['DLH',2],['DAL',1],['AAL',1]],heavy:1,rfl:[340,380],w:1.5},
+ {r:'LFPG PTV AMB ANG NTS OCESX',to:['GOBD','GOOY','GCLP'],al:[['AFR',4],['TVF',1]],rfl:[340,380],w:1.2},
+ // Royaume-Uni ⇄ Portugal, Canaries, Espagne (Brest, Bordeaux)
+ {r:'BHD GUR ARE QPR OCESX CANAX',from:AP_UK,to:['LPPT','LPPR','LPFR','GCLP','GCTS','GCRR'],al:[['TAP',3],['EZY',3],['RYR',3],['TOM',2],['BAW',2],['EXS',2]],rfl:[340,400],w:5},
+ {r:'SAM JSY DIN REN NTS CNA BMC LANDO BTZ PPN SIE',from:AP_UK,to:['LEMD','LEMG','LEZL'],al:[['BAW',3],['EZY',3],['RYR',3],['IBE',2],['VLG',2]],rfl:[340,400],w:4},
+ // Bretagne, Pays de la Loire
+ {r:'LFPO RBT CHW LGL REN LFRN',al:[['AFR',2],['HOP',2]],rfl:[200,280],w:.8},
+ {r:'LFPO RBT CHW LGL REN ARE LFRB',al:[['AFR',3],['HOP',2]],rfl:[260,340],w:1.5},
+ {r:'LFLL LSE ROA MOU NEV AMB ANG NTS LFRS',al:[['EZY',2],['VOE',2],['HOP',1]],rfl:[300,380],w:1.2},
+ {r:'LFMN NIZ DGN MTL VNE ROA MOU NEV AMB ANG NTS LFRS',al:[['EZY',3],['VOE',2],['AFR',1]],rfl:[330,390],w:1.2},
+ {r:'LFRS NTS CNA MEDIX SOLAN ORDAX',to:['LPPT','LPPR','LPFR'],al:[['TAP',2],['VOE',1],['EZY',1]],rfl:[300,380],w:1},
+ // Benelux, Royaume-Uni ⇄ péninsule Ibérique (Paris → Bordeaux)
+ {r:'KOK BNE ABB ROU EVX CHW AMB POI CNA MEDIX SOLAN ORDAX',from:AP_BNL.concat(['EGLL','EGKK']),to:AP_IBW,al:[['KLM',2],['TRA',2],['RYR',2],['EZY',2],['TAP',2],['BAW',1]],rfl:[340,400],w:4},
+ {r:'CIV CMB CPE CRL PTV AMB POI CNA BMC LANDO BTZ PPN SIE',from:AP_BNL.concat(['EDDL']),to:['LEMD','LEMG','LEZL'],al:[['IBE',3],['KLM',2],['RYR',2],['VLG',2]],rfl:[340,400],w:3},
+ // Benelux, Royaume-Uni ⇄ Barcelone, Baléares (Paris → Marseille)
+ {r:'CIV CMB CTL BRY NEV MOU CFA MEN FJR PPG GIR',from:AP_BNL.concat(['EGLL','EGKK','EGSS']),to:AP_BCN.concat(['LEPA','LEIB']),al:[['VLG',3],['RYR',3],['EZY',3],['TRA',2],['KLM',1],['BAW',1]],rfl:[340,400],w:5},
+ {r:'DVR BNE ABB BVS PTV NEV MOU CFA MEN FJR BALEX',from:AP_UK,to:['LEPA','LEIB','LEAL','LEVC'],al:[['EZY',3],['RYR',3],['TOM',2],['EXS',2],['BAW',1]],rfl:[340,400],w:4},
+ // Allemagne, Suisse ⇄ Espagne de l'Est (Reims → Marseille)
+ {r:'KRH STR EPL LUL DJL ATN LSE VNE MTL AVN FJR PPG GIR',from:AP_DE,to:AP_BCN.concat(AP_ESE),al:[['DLH',3],['EWG',3],['VLG',2],['RYR',2],['SWR',1]],rfl:[340,400],w:5},
+ {r:'LSGG PAS LSE VNE MTL AVN FJR PPG GIR',to:AP_BCN.concat(AP_ESE,['LEMD']),al:[['EZY',3],['SWR',2],['VLG',2],['IBE',1]],rfl:[320,380],w:2},
+ // Royaume-Uni, Benelux ⇄ Suisse, Italie (Paris, Reims)
+ {r:'KOK CMB REM CAV RLP LUL BLM HOC',from:AP_UK.concat(AP_BNL),to:['LSZH','LIMC','LIML','LIRF','LOWW'],al:[['EZY',3],['BAW',2],['SWR',2],['ITY',2],['KLM',1]],rfl:[340,400],w:4},
+ {r:'DVR BNE CMB CTL TRO DJL CBY TOP',from:AP_UK,to:['LIMC','LIML','LIRF','LIPZ','LIMF'],al:[['EZY',3],['BAW',2],['ITY',2],['RYR',2]],rfl:[340,400],w:4},
+ {r:'LFPG CLM BRY TRO RLP LUL BLM HOC',to:['LSZH','LOWW','EDDM','LIMC'],al:[['AFR',4],['SWR',2],['DLH',1]],rfl:[300,380],w:3},
+ {r:'LFPG BSN CTL REM MMD NTM',to:['EDDF','EDDL','EDDB','EDDH'],al:[['AFR',4],['DLH',2],['EWG',1]],rfl:[300,380],w:3},
+ {r:'LFPO MLN BRY TRO DJL PAS LSGG',al:[['AFR',3],['EZY',3],['SWR',1]],rfl:[280,360],w:2},
+ {r:'ALB NIZ DGN MTL VNE ROA MOU LCA AMB VMP EVX ROU DPE BNE DVR',from:AP_ITA,to:AP_UK,al:[['EZY',3],['BAW',2],['ITY',2],['RYR',1]],rfl:[340,400],w:3},
+ // Paris ⇄ Sud-Est, Corse ; Lille, Strasbourg, Bâle
+ {r:'LFPO MLN NEV MOU ROA VNE MTL AVN MRM LFML',al:[['AFR',5],['EZY',3],['TVF',1]],rfl:[310,390],w:4},
+ {r:'LFPO MLN NEV ATN LSE CBY DGN LFMN',al:[['AFR',5],['EZY',4]],rfl:[330,390],w:5},
+ {r:'LFPG CLM TRO DJL LSE MTL AVN MRM LFML',al:[['AFR',4],['EZY',1]],rfl:[310,390],w:2},
+ {r:'LFPG CLM TRO DJL LSE CBY DGN LFMN',al:[['AFR',4],['EZY',2]],rfl:[330,390],w:2.5},
+ {r:'LFPO PTV NEV CFA MEN FJR LFMT',al:[['AFR',4],['EZY',2],['TVF',1]],rfl:[310,370],w:2},
+ {r:'LFPO MLN NEV ATN LSE MTL AVN LUC STP AJO LFKJ',al:[['AFR',3],['CCM',3],['TVF',1],['VOE',1]],rfl:[310,390],w:2},
+ {r:'LFPO MLN NEV ATN LSE CBY DGN NIZ BTA LFKB',al:[['AFR',3],['CCM',3],['VOE',1]],rfl:[310,390],w:1.5},
+ {r:'LFML MRM AVN MTL VNE ROA ATN NEV MLN CLM CPE CMB LEQ LFQQ',al:[['VOE',2],['EZY',2],['HOP',2]],rfl:[310,390],w:1.2},
+ {r:'LFST STR EPL DJL ATN LSE MTL AVN MRM LFML',al:[['AFR',2],['VOE',2],['HOP',1]],rfl:[300,380],w:1},
+ {r:'LFSB BLM LUL DJL ATN LSE MTL AVN FJR PPG GIR',to:AP_BCN.concat(['LEPA','LEMD']),al:[['EZY',3],['VLG',2]],rfl:[330,390],w:1.5},
+ // Méditerranée : Italie ⇄ Espagne, Europe ⇄ Afrique du Nord, Baléares, Sardaigne
+ {r:'GEN ALB NIZ LUC MTG FJR PPG GIR',from:AP_ITA.concat(['LGAV']),to:AP_BCN.concat(['LEMD','LEVC','LEAL','LEPA']),al:[['VLG',3],['ITY',3],['RYR',3],['IBE',2],['EZY',1]],rfl:[330,400],w:5},
+ {r:'HOC BLM LUL DJL LSE VNE MTL AVN MRM AFRIX',from:['LSZH','EDDF','EDDM','EDDS','EHAM','EBBR'],to:AP_NAF,al:[['DAH',3],['TAR',3],['DLH',1],['SWR',1]],rfl:[340,390],w:3},
+ {r:'LFPO MLN NEV MOU ROA VNE MTL AVN MRM AFRIX',to:AP_NAF,al:[['AFR',3],['DAH',4],['TAR',3],['TVF',2]],rfl:[330,390],w:4},
+ {r:'LFPG CLM NEV MOU CFA MEN FJR BALEX',to:['LEPA','LEIB'],al:[['TVF',2],['VLG',2],['EZY',2]],rfl:[330,390],w:2},
+ {r:'LUX EPL DJL LSE MTL AVN LUC STP AJO SARDX',from:AP_DE.concat(AP_BNL),to:['LIEO','LIEE','DTTA'],al:[['DLH',2],['EWG',2],['KLM',1],['TAR',1]],rfl:[340,390],w:2},
+ {r:'TOP DGN AVN FJR PPG GIR',from:['LIMC','LIML','LIPZ','LOWW'],to:AP_BCN.concat(['LEMD','LPPT']),al:[['ITY',2],['VLG',2],['TAP',1],['IBE',1]],rfl:[340,400],w:2},
+ // Sud-Ouest (Toulouse, Bordeaux) ⇄ Nord-Est, Benelux, Allemagne, Italie
+ {r:'LFBO GAI AURIX CFA MOU NEV TRO CAV REM MMD NTM',to:['EDDF','EDDM','EBBR','EHAM'],al:[['AFR',2],['DLH',2],['KLM',1],['EZY',1]],rfl:[330,390],w:2},
+ {r:'LFBD DORDX LMG LCA NEV TRO CAV REM CTL CMB CIV',to:AP_BNL.concat(['EDDL']),al:[['KLM',2],['EZY',2],['VLG',1]],rfl:[330,390],w:1.5},
+ {r:'LFBO GAI FJR MRM LUC NIZ ALB',to:AP_ITA,al:[['EZY',2],['ITY',2],['VOE',1]],rfl:[320,380],w:1.5},
+];
+// flux du profil : LFBB garde les siens ; ailleurs, flux qui traversent le profil et dont les extrémités sont un terrain ou hors du profil
+const FLOWDEF=ISBB?FLOWDEF_BB:FLOWDEF_BB.concat(FLOWNAT).filter(f=>{const t=f.r.split(' ').map(k=>PTS[k]);if(t.some(q=>!q))return false;
+ const end=q=>q.type==='apt'||!inHome(q.x,q.y);if(!end(t[0])||!end(t[t.length-1]))return false;
+ for(let i=0;i<t.length-1;i++){const L=dist(t[i].x,t[i].y,t[i+1].x,t[i+1].y),n=Math.ceil(L/8);for(let j=0;j<=n;j++){const x=t[i].x+(t[i+1].x-t[i].x)*j/n,y=t[i].y+(t[i+1].y-t[i].y)*j/n;if(inHome(x,y))return true}}return false});
 const FLOWS=[];
 for(const f of FLOWDEF){FLOWS.push(f);FLOWS.push({...f,r:f.r.split(' ').reverse().join(' '),from:f.to,to:f.from,rev:1})}
 for(const f of FLOWS){f.tok=f.r.split(' ');f.pts=f.tok.map(t=>PTS[t]);if(f.pts.some(p=>!p))console.warn('point inconnu',f.r)}
@@ -656,7 +771,7 @@ function windAt(h){if(!WX.on)return{dir:0,spd:0,vx:0,vy:0};const f=clamp(h/35000
 const SIM={scrInt:0,nextScr:1e9,real:false,rtNext:1e9,caps:[],capInt:0,nextCap:1e9,testInt:0,nextTest:1e9,trainInt:0,nextTrain:1e9,mil:[],alerts:[],coords:[],coordRate:0,coordSeq:0,nordoRate:0,convInt:0,nextConv:1e9,t:0,speed:1,running:false,acs:[],cfg:null,vol:null,lambda:30,startUTC:0,score:0,done:0,sepLoss:0,pen:[],events:[],sepPairs:new Map(),stca:new Set(),acc:0,last1s:0,lastRadar:-99,voice:false,queue:[],seq:0};
 let VOL=null;
 function setupVolume(cfg){sepA=sepB=null;
- const polys=cfg.test?[LFBB,...TZONES.map(z=>z.Q)]:cfg.sec[0]==='*'?[LFBB]:cfg.sec.map(k=>SECT[k]);
+ const polys=cfg.test?[...HOME,...TZONES.map(z=>z.Q)]:cfg.sec[0]==='*'?HOME:cfg.sec.map(k=>SECT[k]);
  const fr=cfg.freq||SECFREQ[cfg.sec[0]]||'132.555';
  VOL={cfg,polys,floor:cfg.floor,ceil:cfg.ceil,freq:fr,layer:cfg.sec[0]==='*'?LOWER:(cfg.floor>=300?UPPER:LOWER)};
 }
@@ -667,16 +782,18 @@ const inVol=(x,y,alt)=>alt>=VOL.floor*100&&alt<VOL.ceil*100&&latIn(x,y);
 const floor10=fl=>Math.floor(fl/10)*10, ceilUp10=fl=>Math.ceil((fl+1)/10)*10;
 
 function unitAt(x,y,alt,a){
- if(inPoly(x,y,LFBB)){
-  if(alt<11500){let best=null,bd=1e9;for(const ic of [a.arr,a.dep]){if(ic&&APPS[ic]){const p=PTS[ic];const d=dist(x,y,p.x,p.y);if(d<bd&&d<80){bd=d;best=ic}}}
-   if(!best){for(const ic in APPS){const p=PTS[ic];const d=dist(x,y,p.x,p.y);if(d<bd){bd=d;best=ic}}}return appUnit(best)}
-  const layer=alt>=34500?UPPER:LOWER;
-  for(const k of layer)if(inPoly(x,y,SECT[k]))return{code:k,name:'Bordeaux Contrôle',en:'Bordeaux Control',sh:'Bordeaux '+k,freq:SECFREQ[k]};
-  return{code:'BB',name:'Bordeaux Contrôle',en:'Bordeaux Control',sh:'Bordeaux',freq:'132.555'};
+ if(inHome(x,y)){
+  if(alt<11500){let best=null,bd=1e9;for(const ic of [a.arr,a.dep]){if(ic&&APPS[ic]&&PTS[ic]){const p=PTS[ic];const d=dist(x,y,p.x,p.y);if(d<bd&&d<80){bd=d;best=ic}}}
+   if(!best){for(const ic of HOME_APPS){const p=PTS[ic];const d=dist(x,y,p.x,p.y);if(d<bd){bd=d;best=ic}}}if(best)return appUnit(best)}
+  const k=secAt(x,y,Math.max(alt,11500));if(k){const c=CITY[SECI[k].c];return{code:k,name:c+' Contrôle',en:c+' Control',sh:secSh(k),freq:SECFREQ[k]}}
+  return{code:CR2[PROF.crna[0]],name:PCITY+' Contrôle',en:PCITY+' Control',sh:PCITY,freq:VOL?VOL.freq:'132.555'};
  }
- for(const k of ['LFMM','LECB','LECM','LFFF','LFRR','LFEE'])if(FIRS[k]&&FIRS[k].some(Q=>inPoly(x,y,Q)))return UNITS[k];
- if(y>100)return UNITS.LFFF; if(y<-150)return UNITS.LECM; if(x<-120)return UNITS.LFRR; return UNITS.LFMM;
+ for(const k in FIRS)if(UNITS[k]&&FIRS[k].some(Q=>inPoly(x,y,Q)))return UNITS[k];
+ let best='LFFF',bd=1e9;for(const k in FIRS)if(UNITS[k])for(const Q of FIRS[k]){const d=edgeDist(Q.p,x,y);if(d<bd){bd=d;best=k}}return UNITS[best];
 }
+// secteur (contrôleur) à une position : null sous le FL115 (approches) ou hors du profil
+function secAt(x,y,alt){if(alt<11500||!inHome(x,y))return null;const L=alt>=34500?UPPER:LOWER;for(const k of L)if(inPoly(x,y,SECT[k]))return k;
+ let b=null,bd=1e9;for(const k of L){const Q=SECT[k];if(!inPoly(x,y,HOMEC[SECI[k].c]))continue;const d=dist(x,y,Q.cx,Q.cy);if(d<bd){bd=d;b=k}}return b}
 
 /* ===================== Modèle avion ===================== */
 function remDist(a){let d=0;const w=a.pts[a.leg];if(!w)return 0;d=dist(a.x,a.y,w.x,w.y);for(let i=a.leg;i<a.pts.length-1;i++)d+=dist(a.pts[i].x,a.pts[i].y,a.pts[i+1].x,a.pts[i+1].y);return d}
@@ -791,7 +908,7 @@ function trySpawn(kind,tau){
   if(kind==='b'&&TZONES.some(z=>z.st!=='off')&&S.some(s=>zoneAt(s.x,s.y,s.alt)||TZONES.some(z=>z.st==='pend'&&inZone(z,s.x,s.y,s.alt))))continue;
   let k=0;
   if(kind==='c'){const tt=an.entryT+(tau!=null?tau:-rnd(330,540));k=Math.max(0,Math.round(tt/10));if(k>=S.length-3||S[k].t>=an.exitT-60)continue}
-  else{const idx=[];for(let q=0;q<S.length;q+=3){const s=S[q];if(Math.hypot(s.x,s.y)<230)idx.push(q)}if(!idx.length)continue;k=tau==='start'?pick(idx):idx[0]}
+  else{const idx=[];for(let q=0;q<S.length;q+=3){const s=S[q];if(Math.hypot(s.x,s.y)<SPAWN_R)idx.push(q)}if(!idx.length)continue;k=tau==='start'?pick(idx):idx[0]}
   applySample(a,S[k]);a.cfl=plannedCfl(a);
   const t0=S[k].t;a.pred=S.slice(k).map(s=>({...s,t:s.t-t0+SIM.t}));
   if(an){a.concerned=true;Object.assign(a,{entryT:an.entryT-t0+SIM.t,exitT:an.exitT-t0+SIM.t,entryKind:an.entryKind,exitKind:an.exitKind,efl:an.efl,eflKind:an.eflKind,xfl:an.xfl,xflKind:an.xflKind,prev:an.prev,next:an.next,entryPt:an.entryPt,exitPt:an.exitPt});
@@ -808,7 +925,7 @@ function trySpawn(kind,tau){
    La page demande l'état du ciel au processus principal (window.opencrna.opensky, voir mac/app/preload.js).
    L'API gratuite donne indicatif, position, altitude, vitesse, route, vario, transpondeur — pas le type ni la destination :
    type déduit de la flotte de la compagnie, arrivée déduite d'une descente vers un terrain LFBB, route = balises le long de la trace. */
-const RT_BOX={lamin:42.0,lomin:-3.5,lamax:48.0,lomax:5.0};
+const RT_BOX=ISBB?{lamin:42.0,lomin:-3.5,lamax:48.0,lomax:5.0}:(()=>{const L=PROF.crna.flatMap(c=>GEO.crna[c].area),la=L.map(q=>q[0]),lo=L.map(q=>q[1]);return{lamin:Math.min(...la)-.5,lomin:Math.min(...lo)-.7,lamax:Math.max(...la)+.5,lomax:Math.max(...lo)+.7}})();
 const RT={busy:false,remaining:null,count:0,missing:new Map()};
 const rtAvailable=()=>!!(window.opencrna&&window.opencrna.opensky);
 async function rtFetch(){if(RT.busy)return null;RT.busy=true;
@@ -858,7 +975,7 @@ async function rtRefresh(){SIM.rtNext=SIM.t+90;const st=await rtFetch();if(!st||
 function rtChip(){const el=document.getElementById('hdRt');if(!el)return;el.hidden=!SIM.real;el.innerHTML='<span class="k">Trafic réel</span>'+RT.count+' avions'+(RT.remaining!=null?' · quota '+RT.remaining:'')}
 function simInitial(T){const n=Math.round(4+SIM.lambda/5);
  if(!T)for(let i=0;i<n;i++)trySpawn('c',rnd(-720,300));
- for(let i=0;i<Math.round((T?12:6)+SIM.lambda*(T?.55:.3));i++)trySpawn('b','start')}
+ for(let i=0;i<Math.round(AREA_K*((T?12:6)+SIM.lambda*(T?.55:.3)));i++)trySpawn('b','start')}
 function maybeNordo(a){
  if(!SIM.nordoRate||SIM.acs.filter(q=>q.nordo&&!q.nordo.done).length>=Math.max(1,Math.ceil(SIM.nordoRate/4)))return;
  if(Math.random()<SIM.nordoRate/Math.max(10,SIM.lambda)){const never=SIM.t<a.offerT-20&&Math.random()<.6;a.nordo={kind:never?'never':'mid'};if(never){a.silent=true;a.nordo.onset=a.offerT}}
@@ -916,7 +1033,7 @@ window.addEventListener('focus',()=>voiceReset());
 function pilot(a,txt){log('plt','◂ '+txt);speak(txt,a.fr)}
 function atc(txt){log('atc','▸ '+txt)}
 const flTxt=(fl,fr)=>fr?'niveau '+fl:'flight level '+fl;
-const myName=fr=>VOL&&VOL.cfg.cordo?(fr?'Cordo Bordeaux':'Bordeaux Coordination'):VOL&&VOL.cfg.test?(fr?'Bordeaux Essais':'Bordeaux Test Control'):(fr?'Bordeaux':'Bordeaux Control');
+const myName=fr=>VOL&&VOL.cfg.cordo?(fr?'Cordo '+PCITY:PCITY+' Coordination'):VOL&&VOL.cfg.test?(fr?'Bordeaux Essais':'Bordeaux Test Control'):(fr?PCITY:PCITY+' Control');
 const greet=fr=>{const h=Math.floor((SIM.startUTC+SIM.t)/3600)%24;return fr?(h>=17?'bonsoir':'bonjour'):(h<11?'good morning':h<17?'good afternoon':'good evening')};
 function pilotCall(a){
  if(a.silent)return;a.called=true;
@@ -947,7 +1064,7 @@ function cmdSquawk(a,code){
  queue(a,rnd(2,4),()=>{a.sq=code;a.dupeT=0;pilot(a,(a.fr?'Transpondeur ':'Squawk ')+code+', '+a.say);if(sel===a)renderPanel(true)});
 }
 /* Urgences en vol (MAYDAY, transpondeur 7700) : dépressurisation, panne moteur, urgence médicale */
-const DIV_APS=['LFBD','LFBO','LFBZ','LFBP','LFBT','LFBE','LFBL','LFBA','LFBI','LFBG'];
+const DIV_APS=ISBB?['LFBD','LFBO','LFBZ','LFBP','LFBT','LFBE','LFBL','LFBA','LFBI','LFBG']:HOME_APPS;
 const EMTXT={dep:['dépressurisation','depressurisation'],eng:['panne moteur','engine failure'],med:['urgence médicale','medical emergency']};
 // Unité qui reprend un vol dérouté : l'approche du terrain si on est un secteur inférieur, sinon le secteur inférieur au-dessus du terrain
 function divUnit(ic,a){return VOL.floor<=150&&APPS[ic]?appUnit(ic):unitAt(PTS[ic].x,PTS[ic].y,VOL.floor*100-1500,a)}
@@ -995,7 +1112,7 @@ function tickHijacks(now){
    cible hors LFBB → transfert au CRNA voisin à la limite de LFBB ; cible dans LFBB → interception chez moi puis retour Marsan. */
 function spawnScramble(){if(VOL.cfg.test||SIM.acs.some(a=>a.po&&!a.poGone))return;
  const out=Math.random()<.7;let q=null;
- for(let k=0;k<120&&!q;k++){const b=rnd(0,360)*D2R,r=out?rnd(190,280):rnd(40,170),x=r*Math.sin(b),y=r*Math.cos(b),alt=Math.round(rnd(28,38))*1000;if(out?!inPoly(x,y,LFBB):inPoly(x,y,LFBB)&&!inVol(x,y,alt))q={x,y,alt}}
+ for(let k=0;k<120&&!q;k++){const b=rnd(0,360)*D2R,r=out?rnd(190,280):rnd(40,170),x=r*Math.sin(b),y=r*Math.cos(b),alt=Math.round(rnd(28,38))*1000;if(out?!inHome(x,y):inHome(x,y)&&!inVol(x,y,alt))q={x,y,alt}}
  if(!q)return;
  const code=pick(['RYR','EZY','VLG','BAW','DLH','IBE','TAP']),pfT=PERF.A320,c0=PTS.LFBD,hd=norm(brg(q.x,q.y,c0.x,c0.y)+rnd(-60,60)),cs=genCs(code);
  const T={id:++SIM.seq,cs,al:code,say:AL[code].say+' '+cs.slice(3),fr:false,type:'A320',pf:pfT,wake:'M',dep:'????',arr:'????',depAp:null,arrAp:null,rfl:q.alt/100,tok:[],pts:[{id:'',x:q.x,y:q.y},{id:'',x:q.x+500*Math.sin(hd*D2R),y:q.y+500*Math.cos(hd*D2R)}],
@@ -1015,7 +1132,7 @@ function spawnScramble(){if(VOL.cfg.test||SIM.acs.some(a=>a.po&&!a.poGone))retur
 }
 function cmdTargetInfo(a){if(!a.po){log('sys',a.cs+' n\'est pas une PO sur alerte');return}if(!needFreq(a))return;const T=a.poT;
  if(!SIM.acs.includes(T)){atc(a.say+', la cible n\'est plus suivie au radar');return}
- atc(a.say+', cible au '+pad3(brg(a.x,a.y,T.x,T.y))+' pour '+Math.round(dist(a.x,a.y,T.x,T.y))+' nautiques, niveau '+pad3(T.alt/100)+', route '+pad3(T.trk)+', '+Math.round(T.gs)+' nœuds'+(a.poOut&&inPoly(a.x,a.y,LFBB)?', cible hors LFBB, chez '+a.next.sh:''));
+ atc(a.say+', cible au '+pad3(brg(a.x,a.y,T.x,T.y))+' pour '+Math.round(dist(a.x,a.y,T.x,T.y))+' nautiques, niveau '+pad3(T.alt/100)+', route '+pad3(T.trk)+', '+Math.round(T.gs)+' nœuds'+(a.poOut&&inHome(a.x,a.y)?', cible hors LFBB, chez '+a.next.sh:''));
  if(!a.poInfoT){SIM.score+=10;log('good','Infos cible transmises à '+a.cs+' (+10)')}a.poInfoT=SIM.t;if(a.req&&a.req.kind==='info')a.req=null;
  queue(a,rnd(2,3),()=>pilot(a,'Reçu, '+a.say));
 }
@@ -1026,7 +1143,7 @@ function tickScramble(now){
   if(a.state==='assumed'&&!a.poAsked){a.poAsked=1;a.req={kind:'climb',fl:650,t:now};pilot(a,myName(1)+', '+a.say+', demandons montée niveau 650, Mach 2,5 et infos sur la cible')}
   if(a.state==='assumed'&&!a.poDone&&!a.judy&&alive&&now-(a.poInfoT||a.assumedAt||now)>200&&now-(a.poAskT||0)>120){a.poAskT=now;a.req={kind:'info',t:now};pilot(a,myName(1)+', '+a.say+', demandons '+(a.poInfoT?'une mise à jour sur la cible':'les infos sur la cible'))}
   // cible sortie de LFBB pendant la poursuite : l'unité suivante devient le CRNA voisin
-  if(!a.poDone&&alive&&!a.poOut&&!inPoly(T.x,T.y,LFBB)){a.poOut=true;a.next=unitAt(T.x,T.y,T.alt,T);log('sys','La cible de '+a.cs+' a quitté LFBB : transfert prévu à '+a.next.sh+'.')}
+  if(!a.poDone&&alive&&!a.poOut&&!inHome(T.x,T.y)){a.poOut=true;a.next=unitAt(T.x,T.y,T.alt,T);log('sys','La cible de '+a.cs+' a quitté LFBB : transfert prévu à '+a.next.sh+'.')}
   // JUDY : la patrouille a la cible au radar de bord et termine l'interception elle-même (toujours sur ma fréquence)
   if(a.state==='assumed'&&!a.poDone&&alive&&a.poInfoT&&!a.judy&&dist(a.x,a.y,T.x,T.y)<30){a.judy=true;a.req=null;pilot(a,myName(1)+', '+a.say+', contact radar sur la cible, JUDY, on prend l\'interception à notre compte')}
   if(a.state==='assumed'&&a.judy&&!a.poDone&&alive){const d=dist(a.x,a.y,T.x,T.y);a.mode='nav';a.pts=[{id:'CIBLE',x:T.x,y:T.y}];a.leg=0;a.cfl=Math.round(T.alt/1000)*10;a.spdMode='mach';a.spdVal=d>12?1.2:.85}
@@ -1167,75 +1284,108 @@ function poAskComm(al){const a=al.a;
   onNo:()=>{log('mil','▸ '+myName(1)+' → '+al.lead.cs+' : négatif, restez en escorte à distance pour le moment.');al.reask=SIM.t+90},
   onLate:()=>{penalty(a,'poc',-5,a.cs+' : demande de la PO restée sans réponse');log('mil','◂ '+al.lead.cs+' : toujours en attente de votre autorisation.');al.reask=SIM.t+30}});
  log('mil','◂ '+al.lead.cs+' : demande autorisation de contacter l\'équipage de '+a.cs+'.')}
-/* ===================== Cordo LFBB : attribution des fréquences ===================== */
-// Poste « Cordo » (config cordo:1) : aucun avion à contrôler. Pour chaque vol qui entre dans un secteur LFBB (FL115 et plus), l'unité
-// précédente demande la fréquence à transmettre au pilote ; le pilote appelle ensuite le secteur sur cette fréquence. Les fréquences
-// des secteurs tombent parfois en panne : la Cordo attribue une fréquence de secours (fréquences de secours FICTIVES).
-const CF_SPARE=['121.250','124.230','126.580','127.355','128.930','131.080','132.905','133.230','135.105','135.530'];
-const CF_SECS=LOWER.concat(UPPER),isCordo=()=>!!(VOL&&VOL.cfg.cordo);
+/* ===================== Cordo : attribution des fréquences ===================== */
+// Poste « Cordo » (config cordo:1) : aucun avion à contrôler. Pour chaque vol qui entre dans un secteur du CRNA (FL115 et plus) — ou,
+// en Cordo France, qui passe d'un CRNA à un autre — l'unité précédente demande la fréquence à transmettre au pilote ; le pilote appelle
+// ensuite le secteur sur cette fréquence. Un secteur chargé demande une deuxième fréquence (fq2), qu'il rend quand le trafic baisse ;
+// les fréquences tombent parfois en panne : la Cordo attribue une fréquence de secours. Fréquences de secours FICTIVES.
+const CF_SECS=Object.keys(SECI),isCordo=()=>!!(VOL&&VOL.cfg.cordo&&SIM.cf),CF_HI=7,CF_LO=3;
+const CF_SPARE=ISBB?['121.250','124.230','126.580','127.355','128.930','131.080','132.905','133.230','135.105','135.530']:(()=>{
+ const used=new Set([...Object.values(SECFREQ),...Object.values(UNITS).map(u=>u.freq),...Object.values(APPS).map(a=>a[3])]),out=[],n=Math.max(12,Math.round(CF_SECS.length*.8));let x=4242;
+ while(out.length<n){x=(x*1103515245+12345)%2147483648;const f=(118+(x>>8)%19)+'.'+String([5,30,55,80][(x>>4)%4]+100*((x>>12)%10)).padStart(3,'0');if(!used.has(f)&&!out.includes(f))out.push(f)}return out.sort()})();
 const cfAll=()=>[...new Set(Object.values(SECFREQ).concat(CF_SPARE))].sort();
-const cfSecOf=f=>CF_SECS.find(k=>SIM.cf.fq[k]===f)||null,cfFree=()=>cfAll().filter(f=>!cfSecOf(f)&&!SIM.cf.broken[f]);
+const cfFreqs=k=>[SIM.cf.fq[k],SIM.cf.fq2[k]].filter(Boolean),cfSecOf=f=>CF_SECS.find(k=>SIM.cf.fq[k]===f||SIM.cf.fq2[k]===f)||null;
+const cfFree=()=>cfAll().filter(f=>!cfSecOf(f)&&!SIM.cf.broken[f]);
 const cfWatch=a=>!(a.mil||a.test||a.train||a.ai||a.po||a.target);
-function cfInit(){SIM.cf={fq:{...SECFREQ},broken:{},failT:{},nextFail:SIM.t+rnd(150,300)}}
-// secteur LFBB (contrôleur Bordeaux) à une position ; null sous le FL115 (approches) ou hors LFBB
-function secAt(x,y,alt){if(alt<11500||!inPoly(x,y,LFBB))return null;const L=alt>=34500?UPPER:LOWER;for(const k of L)if(inPoly(x,y,SECT[k]))return k;
- let b=L[0],bd=1e9;for(const k of L){const d=dist(x,y,SECT[k].cx,SECT[k].cy);if(d<bd){bd=d;b=k}}return b}
-// entrée prévue dans LFBB : instant, secteur, niveau et unité précédente (qui appellera la Cordo)
-function cfScan(a){const k0=secAt(a.x,a.y,a.alt);if(k0){a.cE=0;a.cIn=k0;a.cFq=SIM.cf.fq[k0];a.cOk=!!a.cFq;return}
- const b={...a};let pu=unitAt(a.x,a.y,a.alt,a);
- for(let t=10;t<=1500;t+=10){stepAc(b,10);if(b.routeEnd)break;const k=secAt(b.x,b.y,b.alt);if(k){a.cE=SIM.t+t;a.cSec=k;a.cFl=Math.round(b.alt/1000)*10;a.cPrev=pu;a.cAskT=a.cE-rnd(110,190);return}pu=unitAt(b.x,b.y,b.alt,b)}
- a.cE=null;a.cRe=SIM.t+240}
-function cfAsk(a,from,text){if(SIM.coords.some(c=>c.a===a&&c.kind==='cfq'))return;coordLog(from,text);
- addCoord({a,kind:'cfq',from,text,ok:'Fréquence…',pick:1,deadline:Math.max(SIM.t+45,a.cIn?0:a.cE),
-  onLate:()=>{penalty(null,'',-10,a.cs+' : fréquence non transmise à '+from);cfAsk(a,from,a.cs+(a.cIn?' est chez vous sans fréquence':' arrive à la limite')+', j\'attends toujours la fréquence !')}})}
-function cfAskSec(k,f){addCoord({a:null,kind:'cfs',sec:k,from:'Bordeaux '+k,text:'Panne de la fréquence '+f+' : attribuez une fréquence de secours au secteur '+k+'.',ok:'Fréquence…',pick:1,deadline:SIM.t+60,
- onLate:()=>{penalty(null,'',-10,'Secteur '+k+' toujours sans fréquence : ses vols sont injoignables');cfAskSec(k,f)}})}
+function cfTracked(a){return !!(a.cT&&(a.cPend||a.cIn))}
+const cfUnit=k=>({code:k,name:CITY[SECI[k].c]+' Contrôle',en:CITY[SECI[k].c]+' Control',sh:secSh(k),freq:SIM.cf.fq[k]||''});
+// saisie d'un secteur : UN, BB-UN, BBUN
+function cfKey(t){t=(t||'').toUpperCase();if(SECI[t])return t;const m=t.match(/^([A-Z]{2})-?([A-Z0-9]{1,3})$/);if(m&&SECI[m[1]+'-'+m[2]])return m[1]+'-'+m[2];return null}
+function cfInit(){SIM.cf={fq:{...SECFREQ},fq2:{},broken:{},failT:{},relT:{},lowT:{},load:{},nextLoad:0,nextFail:SIM.t+rnd(150,300)}}
+// prochaine entrée dans un CRNA (autre que celui où le vol se trouve) : instant, secteur, niveau et unité précédente (qui appellera la Cordo)
+function cfScan(a){const cur=a.cIn?SECI[a.cIn].c:null,b={...a};let pu=unitAt(a.x,a.y,a.alt,a);
+ for(let t=10;t<=1500;t+=10){stepAc(b,10);if(b.routeEnd)break;const k=secAt(b.x,b.y,b.alt);
+  if(k&&SECI[k].c!==cur){Object.assign(a,{cPend:true,cE:SIM.t+t,cSec:k,cFl:Math.round(b.alt/1000)*10,cPrev:pu,cAskT:SIM.t+t-rnd(110,190),cAsked:0,cGv:null,cEid:(a.cEid||0)+1});return}
+  pu=unitAt(b.x,b.y,b.alt,b)}
+ a.cPend=false;a.cRe=SIM.t+240}
+function cfAsk(a,from,text,eid){if(SIM.coords.some(c=>c.a===a&&c.kind==='cfq'))return;coordLog(from,text);
+ addCoord({a,kind:'cfq',eid,from,text,ok:'Fréquence…',pick:1,deadline:Math.max(SIM.t+45,a.cPend&&eid===a.cEid?a.cE:0),
+  onLate:()=>{penalty(null,'',-10,a.cs+' : fréquence non transmise à '+from);cfAsk(a,from,a.cs+(a.cPend&&eid===a.cEid?' arrive à la limite':' est chez vous sans fréquence')+', j\'attends toujours la fréquence !',eid)}})}
+function cfAskSec(k,f){addCoord({a:null,kind:'cfs',sec:k,from:secSh(k),text:'Panne de la fréquence '+f+' : attribuez une fréquence de secours au secteur '+k+'.',ok:'Fréquence…',pick:1,deadline:SIM.t+60,
+ onLate:()=>{penalty(null,'',-10,secSh(k)+' toujours sans fréquence : ses vols sont injoignables');cfAskSec(k,f)}})}
+function cfAsk2(k,n){coordLog(secSh(k),'Je suis chargé, '+n+' vols : il me faut une deuxième fréquence.');
+ addCoord({a:null,kind:'cf2',sec:k,from:secSh(k),text:'Trafic chargé ('+n+' vols) : ouvrez une deuxième fréquence au secteur '+k+'.',ok:'Fréquence…',pick:1,deadline:SIM.t+90,valid:()=>SIM.cf.fq[k]&&!SIM.cf.fq2[k],
+  onLate:()=>{penalty(null,'',-10,secSh(k)+' : deuxième fréquence non ouverte');SIM.cf.relT[k]=SIM.t-60}})}
 // je donne une fréquence pour un vol
 function cmdGiveFreq(a,f){const c=SIM.coords.find(c=>c.a===a&&c.kind==='cfq');if(!c){log('sys','Aucune demande de fréquence pour '+a.cs);return}
  if(!cfAll().includes(f)){log('bad',f+' : fréquence inconnue de la Cordo');return}
- SIM.coords.splice(SIM.coords.indexOf(c),1);a.cFq=f;coordMe(c.from+', '+a.cs+', fréquence '+f+'.');
+ SIM.coords.splice(SIM.coords.indexOf(c),1);coordMe(c.from+', '+a.cs+', fréquence '+f+'.');
  SIM.queue.push({t:SIM.t+rnd(2,4),a,fn:()=>coordLog(c.from,'Je lui donne '+f+', merci.')});
- if(a.cIn)SIM.queue.push({t:SIM.t+rnd(12,25),a,fn:()=>cfCheck(a)});renderAct()}
-// j'attribue une fréquence à un secteur (secours après panne, ou changement)
-function cmdSecFreq(k,f){const cf=SIM.cf;
- if(!CF_SECS.includes(k)){log('bad','FQ : secteur attendu ('+CF_SECS.join(', ')+'), ex. FQ P 131.080');return}
+ if(a.cPend&&c.eid===a.cEid)a.cGv=f;else{a.cFq=f;a.cOk=false;SIM.queue.push({t:SIM.t+rnd(12,25),a,fn:()=>cfCheck(a)})}renderAct()}
+// j'attribue une fréquence à un secteur : principale (secours après panne) ou deuxième fréquence
+function cmdSecFreq(k0,f){const cf=SIM.cf,k=cfKey(k0);
+ if(!k){log('bad','FQ : secteur inconnu '+(k0||'')+' (ex. FQ '+CF_SECS[0]+' '+(cfFree()[0]||'131.080')+')');return}
  if(!cfAll().includes(f)){log('bad',f+' : fréquence inconnue de la Cordo');return}
- if(cf.fq[k]===f){log('sys','Le secteur '+k+' est déjà sur '+f);return}
- if(cf.broken[f]){penalty(null,'',-5,f+' est en panne : refusée par le secteur '+k);coordLog('Bordeaux '+k,f+' ne fonctionne pas, il me faut une autre fréquence !');return}
- const j=cfSecOf(f);if(j){penalty(null,'',-5,f+' est déjà la fréquence du secteur '+j);coordLog('Bordeaux '+j,'Attention, '+f+' c\'est ma fréquence !');return}
- const old=cf.fq[k],c=SIM.coords.find(c=>c.kind==='cfs'&&c.sec===k);cf.fq[k]=f;coordMe('Bordeaux '+k+', votre fréquence : '+f+'.');
- if(c){SIM.coords.splice(SIM.coords.indexOf(c),1);const p=SIM.t-cf.failT[k]<60?10:5;SIM.score+=p;log('good','Secteur '+k+' de nouveau joignable sur '+f+' (+'+p+')')}
- const L=SIM.acs.filter(a=>a.cIn===k&&(a.cOk||a.cLost));for(const a of L){a.cFq=f;a.cOk=true;a.cLost=false}
- coordLog('Bordeaux '+k,'Reçu '+f+(L.length?', je passe mes '+L.length+' vol'+(L.length>1?'s':'')+' dessus.':'.'));
- if(old)for(const a of SIM.acs)if(!a.cIn&&a.cFq===old){a.cFq=null;cfAsk(a,a.cPrev.sh,a.cs+' : je lui avais donné '+old+', le secteur '+k+' a changé de fréquence. Laquelle ?')}
+ if(cfFreqs(k).includes(f)){log('sys',secSh(k)+' est déjà sur '+f);return}
+ if(cf.broken[f]){penalty(null,'',-5,f+' est en panne : refusée par '+secSh(k));coordLog(secSh(k),f+' ne fonctionne pas, il me faut une autre fréquence !');return}
+ const j=cfSecOf(f);if(j){penalty(null,'',-5,f+' est déjà une fréquence de '+secSh(j));coordLog(secSh(j),'Attention, '+f+' c\'est ma fréquence !');return}
+ if(!cf.fq[k]){cf.fq[k]=f;coordMe(secSh(k)+', votre fréquence : '+f+'.');const c=SIM.coords.find(c=>c.kind==='cfs'&&c.sec===k);
+  if(c){SIM.coords.splice(SIM.coords.indexOf(c),1);const p=SIM.t-cf.failT[k]<60?10:5;SIM.score+=p;log('good',secSh(k)+' de nouveau joignable sur '+f+' (+'+p+')')}
+  const L=SIM.acs.filter(a=>a.cIn===k&&(a.cOk||a.cLost));for(const a of L){a.cFq=f;a.cOk=true;a.cLost=false}
+  coordLog(secSh(k),'Reçu '+f+(L.length?', je passe mes '+L.length+' vol'+(L.length>1?'s':'')+' dessus.':'.'))}
+ else if(!cf.fq2[k]){cf.fq2[k]=f;coordMe(secSh(k)+', deuxième fréquence : '+f+'.');const c=SIM.coords.find(c=>c.kind==='cf2'&&c.sec===k);
+  if(c){SIM.coords.splice(SIM.coords.indexOf(c),1);SIM.score+=5;log('good',secSh(k)+' : deuxième fréquence '+f+' ouverte (+5)')}
+  coordLog(secSh(k),'Reçu '+f+', je partage le secteur dessus.')}
+ else{log('sys',secSh(k)+' a déjà deux fréquences : libérez-en une (clic droit dans ATC, ou FQ '+k+' LIB)');return}
  renderAct()}
-function cfFail(k){const cf=SIM.cf,f=cf.fq[k];cf.fq[k]=null;cf.broken[f]=SIM.t+rnd(600,1200);cf.failT[k]=SIM.t;
- coordLog('Bordeaux '+k,'Panne de ma fréquence '+f+' ! J\'ai besoin d\'une fréquence de secours.');showToast('Panne fréquence '+f+' · secteur '+k);cfAskSec(k,f);
- for(const a of SIM.acs)if(!a.cIn&&a.cFq===f){a.cFq=null;cfAsk(a,a.cPrev.sh,a.cs+' : je lui avais donné '+f+', elle est en panne. Quelle fréquence ?')}
- for(const a of SIM.acs)if(a.cIn===k&&a.cOk){a.cOk=false;a.cLost=true}}
+function cfRelease(k,auto){const cf=SIM.cf,f=cf.fq2[k];if(!f){if(!auto)log('sys',secSh(k)+' n\'a pas de deuxième fréquence');return}
+ cf.fq2[k]=null;cf.relT[k]=SIM.t;cf.lowT[k]=0;for(const a of SIM.acs)if(a.cFq===f&&a.cIn===k)a.cFq=cf.fq[k];
+ if(auto)coordLog(secSh(k),'Trafic en baisse, je rends la '+f+'.');else coordMe(secSh(k)+', libérez la '+f+'.');renderAct()}
+function cfFail(k){const cf=SIM.cf,f=pick(cfFreqs(k));cf.broken[f]=SIM.t+rnd(600,1200);
+ if(cf.fq[k]===f){cf.fq[k]=cf.fq2[k]||null;cf.fq2[k]=null}else cf.fq2[k]=null;const nf=cf.fq[k];
+ coordLog(secSh(k),'Panne de ma fréquence '+f+(nf?', je garde la '+nf+'.':' ! J\'ai besoin d\'une fréquence de secours.'));showToast('Panne fréquence '+f+' · '+secSh(k));
+ if(!nf){cf.failT[k]=SIM.t;cfAskSec(k,f)}
+ for(const a of SIM.acs){if(a.cPend&&a.cGv===f){a.cGv=null;cfAsk(a,a.cPrev.sh,a.cs+' : je lui avais donné '+f+', elle est en panne. Quelle fréquence ?',a.cEid)}
+  if(a.cIn===k&&a.cFq===f){if(nf)a.cFq=nf;else if(a.cOk){a.cOk=false;a.cLost=true}}}}
 // le pilote appelle sur la fréquence reçue : bon secteur, mauvais secteur ou personne
-function cfCheck(a){if(a.cOk||!a.cFq)return;const cf=SIM.cf,f=a.cFq;let k=secAt(a.x,a.y,a.alt)||a.cIn;
- if(f===cf.fq[k]||f===cf.fq[a.cSec]){if(f!==cf.fq[k])k=a.cSec;a.cIn=k;a.cOk=true;SIM.done++;SIM.score+=5;log('good',a.cs+' contacte Bordeaux '+k+' sur '+f+' (+5)');return}
- a.cFq=null;a.cSec=k;const j=cfSecOf(f);
- if(j){penalty(null,'',-10,a.cs+' a appelé le secteur '+j+' au lieu du '+k);cfAsk(a,'Bordeaux '+j,a.cs+' m\'appelle sur '+f+' mais il est pour le secteur '+k+'. Quelle fréquence je lui donne ?')}
- else{penalty(null,'',-10,a.cs+' : personne sur '+f);cfAsk(a,a.cPrev?a.cPrev.sh:'Bordeaux '+k,a.cs+' n\'a personne sur '+f+', il revient chez moi. Quelle fréquence ?')}}
-function tickCordo(now){if(!isCordo())return;const cf=SIM.cf;
- for(const a of SIM.acs){if(!cfWatch(a))continue;
-  if(a.cE===undefined||(a.cE===null&&now>=a.cRe))cfScan(a);if(!a.cE&&!a.cIn)continue;
-  const k=secAt(a.x,a.y,a.alt);
-  if(!a.cIn){if(!a.cAsked&&now>=a.cAskT&&a.cPrev){a.cAsked=1;cfAsk(a,a.cPrev.sh,a.cs+', '+a.type+', entre dans LFBB secteur '+a.cSec+' au FL'+pad3(a.cFl)+' dans '+Math.max(1,Math.round((a.cE-now)/60))+' min. Quelle fréquence ?')}
-   if(k){a.cIn=k;if(a.cFq)cfCheck(a)}}
-  else if(k&&k!==a.cIn){a.cIn=k;if(a.cOk||a.cLost){a.cFq=cf.fq[k];a.cOk=!!a.cFq;a.cLost=!a.cOk}}} // passage d'un secteur LFBB à l'autre : les secteurs se coordonnent entre eux
+function cfCheck(a){if(a.cOk||!a.cFq)return;const f=a.cFq;let k=secAt(a.x,a.y,a.alt)||a.cIn;if(!k)return;
+ if(cfFreqs(k).includes(f)||(a.cAnn&&cfFreqs(a.cAnn).includes(f))){if(!cfFreqs(k).includes(f))k=a.cAnn;a.cIn=k;a.cOk=true;SIM.done++;SIM.score+=5;log('good',a.cs+' contacte '+secSh(k)+' sur '+f+' (+5)');return}
+ a.cFq=null;a.cAnn=k;const j=cfSecOf(f);
+ if(j){penalty(null,'',-10,a.cs+' a appelé '+secSh(j)+' au lieu de '+secSh(k));cfAsk(a,secSh(j),a.cs+' m\'appelle sur '+f+' mais il est pour '+secSh(k)+'. Quelle fréquence je lui donne ?',-1)}
+ else{penalty(null,'',-10,a.cs+' : personne sur '+f);cfAsk(a,a.cPrev?a.cPrev.sh:secSh(k),a.cs+' n\'a personne sur '+f+', il revient chez moi. Quelle fréquence ?',-1)}}
+function tickCordo(now){if(!isCordo())return;const cf=SIM.cf,load={};
+ for(const a of SIM.acs){if(!cfWatch(a))continue;const k=secAt(a.x,a.y,a.alt);if(k)load[k]=(load[k]||0)+1;
+  if(!a.cT){a.cT=1;if(k){a.cIn=k;a.cFq=cf.fq[k];a.cOk=!!a.cFq}cfScan(a)}
+  const curC=a.cIn?SECI[a.cIn].c:null;
+  if(a.cPend){
+   if(!a.cAsked&&now>=a.cAskT&&a.cPrev&&!SIM.coords.some(c=>c.a===a&&c.kind==='cfq')){a.cAsked=1;cfAsk(a,a.cPrev.sh,a.cs+', '+a.type+', entre '+(MULTI?'chez '+secSh(a.cSec):'dans '+PROF_ID+' secteur '+a.cSec)+' au FL'+pad3(a.cFl)+' dans '+Math.max(1,Math.round((a.cE-now)/60))+' min. Quelle fréquence ?',a.cEid)}
+   if(k&&SECI[k].c!==curC){a.cPend=false;a.cIn=k;a.cAnn=a.cSec;a.cFq=a.cGv;a.cGv=null;a.cOk=false;a.cLost=false;if(a.cFq)cfCheck(a);if(MULTI)cfScan(a)}
+   else if(now>a.cE+240)cfScan(a)}
+  else{
+   if(k&&SECI[k].c!==curC){a.cIn=k;a.cFq=cf.fq[k];a.cOk=!!a.cFq;a.cLost=false} // entrée non prévue : les centres se sont coordonnés
+   if(now>=(a.cRe||0)&&(MULTI||!a.cIn))cfScan(a)}
+  if(k&&a.cIn&&k!==a.cIn&&SECI[k].c===SECI[a.cIn].c){a.cIn=k;if(a.cOk||a.cLost){const f=cf.fq[k];a.cFq=f;a.cOk=!!f;a.cLost=!f}} // dans un même CRNA, les secteurs se coordonnent entre eux
+  if(!k&&a.cIn&&!inHome(a.x,a.y)){a.cIn=null;a.cOk=false}}
  for(const f in cf.broken)if(now>=cf.broken[f]){delete cf.broken[f];log('sys','Fréquence '+f+' réparée : de nouveau disponible.')}
- if(now>=cf.nextFail){cf.nextFail=now+rnd(240,480);const ok=CF_SECS.filter(k=>cf.fq[k]);if(CF_SECS.length-ok.length<2)cfFail(pick(ok))}}
-// choix de fréquence (carte REQ, clic sur l'étiquette, OK)
+ // charge des secteurs : deuxième fréquence demandée au-delà de CF_HI vols, rendue après 1 min sous CF_LO
+ if(now>=cf.nextLoad){cf.nextLoad=now+15;for(const k of CF_SECS){const n=load[k]||0;cf.load[k]=n;
+  if(cf.fq[k]&&!cf.fq2[k]&&n>=CF_HI&&now-(cf.relT[k]??-999)>120&&!SIM.coords.some(c=>c.kind==='cf2'&&c.sec===k))cfAsk2(k,n);
+  if(cf.fq2[k]&&n<=CF_LO){cf.lowT[k]=(cf.lowT[k]||0)+15;if(cf.lowT[k]>=60)cfRelease(k,true)}else cf.lowT[k]=0}}
+ if(now>=cf.nextFail){cf.nextFail=now+rnd(240,480)/Math.sqrt(Math.max(1,CF_SECS.length/10));const ok=CF_SECS.filter(k=>cf.fq[k]);if(CF_SECS.length-ok.length<Math.max(2,Math.round(CF_SECS.length/12)))cfFail(pick(ok))}}
+// choix de fréquence pour un vol (carte REQ, clic sur l'étiquette, OK) ; menu d'un secteur (carte panne / 2e fréquence, clic droit dans ATC)
 function cfMenu(c,cx,cy){if(cx==null){const r=cv.getBoundingClientRect();cx=r.left+r.width/2-120;cy=r.top+90}const cf=SIM.cf;
- if(c.kind==='cfq'){showMenu('Fréquence pour '+c.a.cs,[{t:c.text,dis:1}].concat(CF_SECS.map(k=>cf.fq[k]?{t:'Bordeaux '+k+' · '+SECNAME[k],k:cf.fq[k],fn:()=>cmdGiveFreq(c.a,cf.fq[k])}:{t:'Bordeaux '+k+' · fréquence en panne',dis:1,warn:1})),cx,cy);return}
- const fr=cfFree();showMenu('Secours secteur '+c.sec,[{t:c.text,dis:1}].concat(fr.length?fr.map(f=>({t:f,k:'libre',fn:()=>cmdSecFreq(c.sec,f)})):[{t:'Aucune fréquence libre',dis:1}]),cx,cy)}
-// fenêtre ATC du poste Cordo : fréquences des secteurs, fréquences libres et en réparation
-function cfAtcHtml(){const cf=SIM.cf,row=(c,n,f,cls)=>'<div class="ar'+(cls?' '+cls:'')+'"><span class="c">'+c+'</span><span>'+n+'</span><span class="f">'+f+'</span></div>';
- return CF_SECS.map(k=>row((sel&&sel.cSec===k&&!sel.cIn?'› ':'  ')+k,SECNAME[k],cf.fq[k]||'PANNE',cf.fq[k]?(sel&&(sel.cIn||sel.cSec)===k?'nx':''):'pn')).join('')
-  +'<div class="ah2">Libres</div>'+cfFree().map(f=>row('  ','secours',f,'')).join('')
+ if(c.kind!=='cfq'){cfSecMenu(c.sec,cx,cy);return}
+ const items=ks=>ks.flatMap(k=>{const L=cfFreqs(k);return L.length?L.map(f=>({t:secSh(k)+' · '+SECNAME[k],k:f,fn:()=>cmdGiveFreq(c.a,f)})):[{t:secSh(k)+' · fréquence en panne',dis:1,warn:1}]});
+ showMenu('Fréquence pour '+c.a.cs,[{t:c.text,dis:1}].concat(MULTI?PROF.crna.map(cr=>({t:CITY[cr]+' ('+cr+')',sub:()=>items(CF_SECS.filter(k=>SECI[k].c===cr))})):items(CF_SECS)),cx,cy)}
+function cfSecMenu(k,cx,cy){const cf=SIM.cf,fr=cfFree(),it=[{t:secSh(k)+' · '+SECNAME[k],dis:1},{t:'Trafic : '+(cf.load[k]||0)+' vols',dis:1},
+  {t:'Fréquence principale',k:cf.fq[k]||'EN PANNE',dis:1,warn:!cf.fq[k]}].concat(cf.fq2[k]?[{t:'Libérer la 2e fréquence',k:cf.fq2[k],fn:()=>cfRelease(k,false)}]:[]);
+ if(!cf.fq[k]||!cf.fq2[k])it.push({sep:1},{t:!cf.fq[k]?'Donner une fréquence de secours :':'Ouvrir une 2e fréquence :',dis:1},...(fr.length?fr.map(f=>({t:'  '+f,k:'libre',fn:()=>cmdSecFreq(k,f)})):[{t:'Aucune fréquence libre',dis:1}]));
+ showMenu('Secteur '+k,it,cx,cy)}
+// fenêtre ATC du poste Cordo : fréquences des secteurs (clic droit = attribuer), fréquences libres et en réparation
+function cfAtcHtml(){const cf=SIM.cf,row=(c,n,f,cls,k)=>'<div class="ar'+(cls?' '+cls:'')+'"'+(k?' data-sec="'+k+'"':'')+'><span class="c">'+c+'</span><span>'+n+'</span><span class="f">'+f+'</span></div>';
+ const secRow=k=>row((sel&&sel.cPend&&sel.cSec===k?'› ':'  ')+(MULTI?SECI[k].s:k),SECNAME[k]+' <i>'+(cf.load[k]||0)+'</i>',cf.fq[k]?cf.fq[k]+(cf.fq2[k]?' / '+cf.fq2[k]:''):'PANNE',cf.fq[k]?(sel&&(sel.cIn===k||(sel.cPend&&sel.cSec===k))?'nx':cf.fq2[k]?'dbl':''):'pn',k);
+ return (MULTI?PROF.crna.map(cr=>'<div class="ah2">'+CITY[cr]+' · '+cr+'</div>'+CF_SECS.filter(k=>SECI[k].c===cr).map(secRow).join('')).join(''):CF_SECS.map(secRow).join(''))
+  +'<div class="ah2">Libres ('+cfFree().length+')</div>'+cfFree().map(f=>row('  ','secours',f,'')).join('')
   +(Object.keys(cf.broken).length?'<div class="ah2">En réparation</div>'+Object.keys(cf.broken).map(f=>row('  ',fmtT(Math.max(0,cf.broken[f]-SIM.t)),f,'pn')).join(''):'')}
 /* ===================== Essais en vol : zones d'essais et Rafale ===================== */
 // Zones militaires RÉELLES (eAIP France ENR 5.1, voir data/gen_milzones.py) : R/D de Cazaux, Mont-de-Marsan, Cognac, Atlantique…
@@ -1436,7 +1586,7 @@ function processAlerts(now){
    else if(alive&&a.silent&&Math.random()<.8){al.stage=4;al.tRec=now+rnd(8,16);log('mil','◂ '+al.lead.cs+' : l\'équipage nous a vus et répond par signaux, il devrait vous rappeler.')}
    else{al.stage=5;log('mil','◂ '+al.lead.cs+' : pas de réaction de l\'équipage, on reste en escorte.')}}
   if(al.stage===4&&now>=al.tRec){al.stage=9;if(alive&&a.silent)recoverNordo(a,'radio');a.alerted=false;log('mil','◂ '+al.lead.cs+' : on dégage, retour '+al.base.n+'.');rtb(al)}
-  if(al.stage>=2&&al.stage!==4&&al.stage<9&&al.lead&&(!alive||!inPoly(a.x,a.y,LFBB))){al.stage=9;log('mil','◂ Défense aérienne : '+a.cs+' a quitté la région, suivi relayé à la zone voisine. '+al.lead.cs+' retour '+al.base.n+'.');rtb(al)}
+  if(al.stage>=2&&al.stage!==4&&al.stage<9&&al.lead&&(!alive||!inHome(a.x,a.y))){al.stage=9;log('mil','◂ Défense aérienne : '+a.cs+' a quitté la région, suivi relayé à la zone voisine. '+al.lead.cs+' retour '+al.base.n+'.');rtb(al)}
   if(al.stage>=2&&al.stage<9&&!alive){al.stage=9;rtb(al)}
  }
 }
@@ -1535,7 +1685,7 @@ function cmdTransfer(a,auto){
  if(!auto){atc(a.fr?a.say+', contactez '+u.name.replace(' Contrôle','').replace(' Approche',' Approche')+' '+u.freq+', au revoir':a.say+', contact '+u.en+' '+u.freq+', goodbye');
   queue(a,rnd(1.5,3),()=>pilot(a,a.fr?u.freq+', au revoir, '+a.say:u.freq+', '+a.say+', goodbye'))}
  if(!ok&&!a.flags.p_xfl){penalty(a,'xfl',-10,a.cs+' : XFL non respecté (attendu '+xflTxt(a)+', autorisé FL'+a.cfl+')');a.flags.xflPenObj=SIM.pen[SIM.pen.length-1]}
- if(a.po&&!a.poScored){a.poScored=1;const edge=!inPoly(a.x,a.y,LFBB)||edgeDist(LFBB.p,a.x,a.y)<25;if(a.poDone)log('good','PO '+a.cs+' rendue à '+a.next.sh);else if(a.poOut&&a.poInfoT&&edge){SIM.score+=20;log('good','PO '+a.cs+' transférée à '+a.next.sh+' à la limite de LFBB, cible renseignée (+20)')}else penalty(a,'potf',-10,'PO '+a.cs+' transférée '+(a.poInfoT?'trop tôt (loin de la limite de LFBB)':'sans infos sur la cible'))}
+ if(a.po&&!a.poScored){a.poScored=1;const edge=!inHome(a.x,a.y)||homeEdge(a.x,a.y)<25;if(a.poDone)log('good','PO '+a.cs+' rendue à '+a.next.sh);else if(a.poOut&&a.poInfoT&&edge){SIM.score+=20;log('good','PO '+a.cs+' transférée à '+a.next.sh+' à la limite de LFBB, cible renseignée (+20)')}else penalty(a,'potf',-10,'PO '+a.cs+' transférée '+(a.poInfoT?'trop tôt (loin de la limite de LFBB)':'sans infos sur la cible'))}
  if(a.hij&&!a.hij.done){if(a.hij.real&&!a.alerted)penalty(a,'hjt',-20,a.cs+' (7500) transféré sans que la défense aérienne soit alertée');}
  else if(a.emerg&&!a.emerg.done){a.emerg.done=true;if(a.arrAp&&DIV_APS.includes(a.arrAp)&&a.emerg.ack){SIM.score+=20;log('good','Urgence de '+a.cs+' bien gérée : dérouté vers '+apName(a.arrAp)+' (+20)')}else penalty(a,'emtf',-15,a.cs+' transféré sans déroutement organisé')}
  if(a.test&&!a.testDone)penalty(a,'tnd',-20,a.cs+' transféré avant la fin du programme d\'essais');
@@ -1613,7 +1763,7 @@ function tick1s(){
    if(a.state==='assumed'){
     a.tte=a.inv?timeToExit(a):null;
     // empiètement libre : le vol reste à vous tant que vous ne l'avez pas transféré ; simple rappel après 30 s hors secteur
-    if(a.wasIn&&!a.inv&&!nearVol(a)&&!(a.po&&inPoly(a.x,a.y,LFBB))){a.outT=(a.outT||0)+1;if(a.outT===30&&!a.flags.outHint){a.flags.outHint=1;log('sys',a.cs+' est sorti de votre secteur : transférez-le à '+a.next.sh+' '+a.next.freq+'.')}}else a.outT=0;
+    if(a.wasIn&&!a.inv&&!nearVol(a)&&!(a.po&&inHome(a.x,a.y))){a.outT=(a.outT||0)+1;if(a.outT===30&&!a.flags.outHint){a.flags.outHint=1;log('sys',a.cs+' est sorti de votre secteur : transférez-le à '+a.next.sh+' '+a.next.freq+'.')}}else a.outT=0;
     // demandes pilote
     if(a.state==='assumed'&&!a.silent&&Math.abs(a.alt-a.cfl*100)<100){const pl=plannedCfl(a);const since=now-(a.flags.reqT||0);
      if(pl>a.cfl&&a.cfl<a.rfl&&since>100){a.flags.reqT=now;a.req={kind:'climb',fl:a.rfl,t:now};pilot(a,a.fr?myName(1)+', '+a.say+', on aimerait monter niveau '+a.rfl:myName(0)+', '+a.say+', request climb FL'+a.rfl)}
@@ -1628,14 +1778,14 @@ function tick1s(){
  if(SIM.real&&now>=SIM.rtNext)rtRefresh();
  if(!SIM.real&&SIM.convInt&&now>=SIM.nextConv)SIM.nextConv=now+(spawnConverging()?SIM.convInt*rnd(.7,1.3):30);
  // retraits
- SIM.acs=SIM.acs.filter(a=>{const far=Math.hypot(a.x,a.y)>330;const gone=arrived(a)||far;if(gone){if(a.test&&!a.ai&&a.testDone&&a.state==='transferred'&&arrived(a)){SIM.score+=30;log('good',a.cs+' posé à '+apName(a.base)+', mission d\'essais réussie (+30)')}if(a.state==='assumed'){penalty(a,'tf',-10,a.cs+' : quitte la couverture sans transfert')}if(a.hij&&a.hij.real&&a.hij.forced&&arrived(a)&&!a.hij.done){a.hij.done=true;a.emerg.done=true;SIM.score+=30;log('good','Détournement de '+a.cs+' terminé : posé sous escorte à Mont-de-Marsan (+30)')}if(a===sel)selectAc(null);if(a===sepA||a===sepB){sepA=sepB=null}}return!gone});
+ SIM.acs=SIM.acs.filter(a=>{const far=Math.hypot(a.x,a.y)>FAR_R;const gone=arrived(a)||far;if(gone){if(a.test&&!a.ai&&a.testDone&&a.state==='transferred'&&arrived(a)){SIM.score+=30;log('good',a.cs+' posé à '+apName(a.base)+', mission d\'essais réussie (+30)')}if(a.state==='assumed'){penalty(a,'tf',-10,a.cs+' : quitte la couverture sans transfert')}if(a.hij&&a.hij.real&&a.hij.forced&&arrived(a)&&!a.hij.done){a.hij.done=true;a.emerg.done=true;SIM.score+=30;log('good','Détournement de '+a.cs+' terminé : posé sous escorte à Mont-de-Marsan (+30)')}if(a===sel)selectAc(null);if(a===sepA||a===sepB){sepA=sepB=null}}return!gone});
  // séparation
  checkSeparation();
  // génération
  const nConc=SIM.acs.filter(a=>a.concerned&&(a.state==='pre'||a.state==='offered')).length;
  if(!SIM.real&&!VOL.cfg.test&&!VOL.cfg.cordo&&Math.random()<SIM.lambda/3600&&nConc<Math.max(14,Math.round(SIM.lambda/4)))trySpawn('c');
- const nBg=SIM.acs.filter(a=>!a.concerned).length;const bgTarget=VOL.cfg.cordo?Math.round(16+SIM.lambda*.7):VOL.cfg.test?Math.round(14+SIM.lambda*.6):Math.round(6+SIM.lambda*.35);
- if(!SIM.real&&nBg<bgTarget&&Math.random()<.04)trySpawn('b');
+ const nBg=SIM.acs.filter(a=>!a.concerned).length;const bgTarget=Math.round(AREA_K*(VOL.cfg.cordo?16+SIM.lambda*.7:VOL.cfg.test?14+SIM.lambda*.6:6+SIM.lambda*.35));
+ if(!SIM.real&&nBg<bgTarget&&Math.random()<.04*Math.max(1,AREA_K))trySpawn('b');
 }
 function timeToExit(a){const b={...a};for(let t=10;t<=1800;t+=10){stepAc(b,10);if(!inVol(b.x,b.y,b.alt)||b.routeEnd)return t}return 99999}
 function isMine(a){return a.state==='assumed'||(a.concerned&&a.inv&&(a.state==='offered'||a.state==='missed'))}
@@ -1699,6 +1849,9 @@ const sx=x=>W/2+(x-VIEW.cx)*VIEW.s,sy=y=>H/2-(y-VIEW.cy)*VIEW.s;
 const wx=X=>VIEW.cx+(X-W/2)/VIEW.s,wy=Y=>VIEW.cy-(Y-H/2)/VIEW.s;
 function fitSector(){if(!W)resize();let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const Q of VOL.polys){x0=Math.min(x0,Q.x0);x1=Math.max(x1,Q.x1);y0=Math.min(y0,Q.y0);y1=Math.max(y1,Q.y1)}
  VIEW.cx=(x0+x1)/2;VIEW.cy=(y0+y1)/2;VIEW.s=Math.min((W-40)/(x1-x0+50),(H-40)/(y1-y0+50));if(!isFinite(VIEW.s)||VIEW.s<=0)VIEW.s=2}
+// noms des FIR voisines : LFBB garde ses positions ; ailleurs, près du sommet le plus proche du profil, 40 NM vers l'intérieur
+const FIRLBL=ISBB?[['PARIS',48.45,3.2],['BREST',46.3,-2.6],['MARSEILLE',44.6,4.75],['MADRID',42.25,-2.6],['BARCELONA',42.15,1.2]].map(([n,la,lo])=>{const q=P(la,lo);return[n,q.x,q.y]}):
+ Object.keys(FIRS).filter(k=>UNITS[k]).map(k=>{let b=null,bd=1e9,Q0=null;for(const Q of FIRS[k])for(const[x,y]of Q.p){const d=Math.hypot(x,y);if(d<bd){bd=d;b=[x,y];Q0=Q}}const dx=Q0.cx-b[0],dy=Q0.cy-b[1],L=Math.hypot(dx,dy)||1,m=Math.min(40,L*.5);return[UNITS[k].sh.toUpperCase(),b[0]+dx/L*m,b[1]+dy/L*m]});
 function polyPath(p){ctx.beginPath();for(let i=0;i<p.length;i++){const X=sx(p[i][0]),Y=sy(p[i][1]);i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)}ctx.closePath()}
 let blink=0;
 const labelBoxes=[];
@@ -1707,19 +1860,20 @@ function draw(){
  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle=COL.outside;ctx.fillRect(0,0,W,H);
  if(!VOL)return;
  blink=(performance.now()/500|0)%2;
- polyPath(LFBB.p);ctx.fillStyle=COL.lfbb;ctx.fill();
+ for(const Q of HOME){polyPath(Q.p);ctx.fillStyle=COL.lfbb;ctx.fill()}
  for(const Q of VOL.polys){polyPath(Q.p);ctx.fillStyle=COL.mine;ctx.fill()}
  // FIR voisines (hors LFBB)
- ctx.save();ctx.beginPath();ctx.rect(0,0,W,H);for(let i=0;i<LFBB.p.length;i++){const X=sx(LFBB.p[i][0]),Y=sy(LFBB.p[i][1]);i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)}ctx.closePath();ctx.clip('evenodd');
+ ctx.save();ctx.beginPath();ctx.rect(0,0,W,H);for(const Q of HOME){for(let i=0;i<Q.p.length;i++){const X=sx(Q.p[i][0]),Y=sy(Q.p[i][1]);i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)}ctx.closePath()}ctx.clip('evenodd');
  ctx.strokeStyle=COL.fir;ctx.lineWidth=1;for(const k in FIRS)for(const Q of FIRS[k]){polyPath(Q.p);ctx.stroke()}ctx.restore();
  ctx.font='600 12px '+fUI;ctx.fillStyle=COL.firTxt;ctx.textAlign='center';
- for(const[nm,la,lo]of [['PARIS',48.45,3.2],['BREST',46.3,-2.6],['MARSEILLE',44.6,4.75],['MADRID',42.25,-2.6],['BARCELONA',42.15,1.2]]){const q=P(la,lo);ctx.fillText(nm,sx(q.x),sy(q.y))}
+ for(const[nm,x,y]of FIRLBL)ctx.fillText(nm,sx(x),sy(y));
  // secteurs LFBB
  if(isCordo()){ctx.font='600 12px '+fUI;for(const[L,d,dy]of [[LOWER,[5,5],0],[UPPER,[2,7],16]]){ctx.setLineDash(d);ctx.strokeStyle=COL.sec;for(const k of L){polyPath(SECT[k].p);ctx.stroke()}ctx.setLineDash([]);
-  for(const k of L){const Q=SECT[k],f=SIM.cf.fq[k];ctx.fillStyle=f?COL.secTxt:COL.crit;ctx.fillText(k+' '+(f||'PANNE'),sx(Q.cx),sy(Q.cy)+dy)}}}
+  for(const k of L){const Q=SECT[k],f=SIM.cf.fq[k],f2=SIM.cf.fq2[k];ctx.fillStyle=f?COL.secTxt:COL.crit;ctx.fillText((MULTI?SECI[k].s:k)+' '+(f?f+(f2?' / '+f2:''):'PANNE'),sx(Q.cx),sy(Q.cy)+dy)}}}
  else if(LAY.secs){ctx.setLineDash([5,5]);ctx.strokeStyle=COL.sec;for(const k of VOL.layer){polyPath(SECT[k].p);ctx.stroke()}ctx.setLineDash([]);
   ctx.fillStyle=COL.secTxt;ctx.font='600 13px '+fUI;for(const k of VOL.layer){const Q=SECT[k];ctx.fillText(k,sx(Q.cx),sy(Q.cy))}}
- ctx.strokeStyle='#414141';ctx.lineWidth=1.2;polyPath(LFBB.p);ctx.stroke();
+ ctx.strokeStyle='#414141';ctx.lineWidth=1.2;for(const Q of HOME){polyPath(Q.p);ctx.stroke()}
+ if(MULTI){ctx.font='600 13px '+fUI;ctx.fillStyle=COL.firTxt;ctx.textAlign='center';PROF.crna.forEach((c,i)=>ctx.fillText(c+' · '+CITY[c].toUpperCase(),sx(HOME[i].cx),sy(HOME[i].cy)-26));ctx.textAlign='left'}
  ctx.strokeStyle=COL.mineLine;ctx.lineWidth=1.6;for(const Q of VOL.polys){polyPath(Q.p);ctx.stroke()}ctx.lineWidth=1;
  drawZones();
  // plancher / plafond au centre du volume
@@ -1746,9 +1900,9 @@ function draw(){
  if(!SIM.running||SIM.speed===0){ctx.fillStyle='rgba(255,255,255,.85)';ctx.font='600 13px '+fUI;ctx.fillText(SIM.running?'PAUSE':'',12,20)}
 }
 const fUI="'Barlow Semi Condensed',Arial,sans-serif",fMono="'JetBrains Mono',ui-monospace,monospace";
-const DCAT={loc:['▽','Arrivée région LFBB'],fr:['○','France'],ib:['◇','Espagne · Portugal · Canaries'],uk:['□','Royaume-Uni · Irlande'],eu:['⬡','Europe du Nord et de l\'Est · Italie · Suisse'],lh:['☆','Long-courrier'],unk:['+','Destination inconnue (trafic réel)'],mil:['✕','Militaire (U-2, ravitailleur, AWACS)']};
+const DCAT={loc:['▽','Arrivée région '+(MULTI?'(France)':PROF_ID)],fr:['○','France'],ib:['◇','Espagne · Portugal · Canaries'],uk:['□','Royaume-Uni · Irlande'],eu:['⬡','Europe du Nord et de l\'Est · Italie · Suisse'],lh:['☆','Long-courrier'],unk:['+','Destination inconnue (trafic réel)'],mil:['✕','Militaire (U-2, ravitailleur, AWACS)']};
 const catOf=a=>a.mil?'mil':a.real&&!a.arrAp&&a.arr==='????'?'unk':destCat(a.arr);
-const LFBB_APTS=new Set(['LFBD','LFBO','LFBZ','LFBP','LFBT','LFBE','LFBL','LFBA','LFBI','LFBG','LFBU','LFBV','LFBX','LFCR','LFBM','LFBC','LFBY','LFCK']);
+const LFBB_APTS=ISBB?new Set(['LFBD','LFBO','LFBZ','LFBP','LFBT','LFBE','LFBL','LFBA','LFBI','LFBG','LFBU','LFBV','LFBX','LFCR','LFBM','LFBC','LFBY','LFCK']):LOC_APTS;
 function destCat(ic){if(!ic)return'eu';if(LFBB_APTS.has(ic))return'loc';if(ic.startsWith('LF'))return'fr';if(/^(LE|LP|GC|GM)/.test(ic))return'ib';if(/^(EG|EI)/.test(ic))return'uk';if(/^(S|K|C|M|T|F|O|V|R|Z|Y|U|W|N|H|D|A|B|P)/.test(ic))return'lh';return'eu'}
 function drawShape(cat,X,Y,r){ctx.beginPath();
  if(cat==='loc'){ctx.moveTo(X-r,Y-r*.75);ctx.lineTo(X+r,Y-r*.75);ctx.lineTo(X,Y+r*1.05);ctx.closePath()}
@@ -1760,8 +1914,8 @@ function drawShape(cat,X,Y,r){ctx.beginPath();
  else if(cat==='mil'){const q=r*1.05;ctx.moveTo(X-q,Y-q);ctx.lineTo(X+q,Y+q);ctx.moveTo(X+q,Y-q);ctx.lineTo(X-q,Y+q)}
  else{for(let k=0;k<10;k++){const an=-Math.PI/2+k*Math.PI/5;const rr=k%2?r*.55:r*1.35;const px=X+rr*Math.cos(an),py=Y+rr*Math.sin(an);k?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath()}
  ctx.stroke()}
-function acColor(a){if(isCordo()&&(a.cE||a.cIn)&&cfWatch(a)){if(SIM.coords.some(c=>c.a===a))return COL.call;if(a.cIn)return a.cOk?COL.mine1:COL.miss;return a.cFq?COL.pre:COL.bg}if(a.state==='pre'&&SIM.t<a.preT)return COL.bg;if(a.state==='assumed')return COL.mine1;if(a.state==='offered')return COL.call;if(a.state==='pre')return COL.pre;if(a.state==='transferred')return COL.xfer;if(a.state==='missed')return COL.miss;return COL.bg}
-function visible(a){if(!a.plot)return false;if(a.concerned||(isCordo()&&(a.cE||a.cIn)))return true;if(!LAY.bg)return false;if(LAY.vfilt&&(a.plot.alt<VOL.floor*100-8000||a.plot.alt>VOL.ceil*100+2000))return false;return true}
+function acColor(a){if(isCordo()&&cfTracked(a)&&cfWatch(a)){if(SIM.coords.some(c=>c.a===a))return COL.call;if(a.cPend&&a.cGv)return COL.pre;if(a.cIn)return a.cOk?COL.mine1:COL.miss;return COL.bg}if(a.state==='pre'&&SIM.t<a.preT)return COL.bg;if(a.state==='assumed')return COL.mine1;if(a.state==='offered')return COL.call;if(a.state==='pre')return COL.pre;if(a.state==='transferred')return COL.xfer;if(a.state==='missed')return COL.miss;return COL.bg}
+function visible(a){if(!a.plot)return false;if(a.concerned||(isCordo()&&cfTracked(a)))return true;if(!LAY.bg)return false;if(LAY.vfilt&&(a.plot.alt<VOL.floor*100-8000||a.plot.alt>VOL.ceil*100+2000))return false;return true}
 function stcaOf(a){for(const k of SIM.stca){const[i,j]=k.split('-');if(+i===a.id||+j===a.id)return true}return false}
 function drawTraffic(){
  labelBoxes.length=0;
@@ -1784,7 +1938,7 @@ function drawTraffic(){
   if(a.state==='assumed')ctx.fillRect(X-1.4,Y-1.4,2.8,2.8);
   ctx.lineWidth=1;
   // étiquette
-  const lines=labelLines(a);const wch=Math.max(...lines.map(l=>l.reduce((s,f)=>s+f.t.length,0)));
+  const lines=labelLines(a);if(!lines.length){a._bw=a._bh=0;continue}const wch=Math.max(...lines.map(l=>l.reduce((s,f)=>s+f.t.length,0)));
   const LX=X+a.lx,LY=Y+a.ly;const bw=wch*cwm+8,bh=lines.length*lh+4;
   // trait de rappel
   const ax=clamp(X,LX,LX+bw),ay=clamp(Y,LY,LY+bh);ctx.strokeStyle=col;ctx.globalAlpha=.6;ctx.beginPath();ctx.moveTo(X,Y);ctx.lineTo(ax,ay);ctx.stroke();ctx.globalAlpha=1;
@@ -1828,7 +1982,9 @@ function labelLines(a){
  if(a.po)tg.push({t:' PO',c:COL.crit,b:1});
  if(a.downed)tg.unshift({t:' ABATTU',c:COL.crit,b:1});
  if(a.train)return[[{t:a.sq||'----',k:'cs',b:1}],[{t:afl+tr}]];
- if(isCordo()&&cfWatch(a)&&(a.cE||a.cIn))return[[cs,...tg],[{t:afl+tr+' '+gs}],a.cIn?[{t:a.cIn+' '+(a.cOk?a.cFq:'---'),c:a.cOk?null:COL.crit}]:[{t:'›'+a.cSec+' '+(a.cFq||'?')}]];
+ // Cordo : étiquette complète seulement pour les vols qui demandent une action ; indicatif seul sinon (rien en Cordo France vue de loin)
+ if(isCordo()&&cfWatch(a)&&cfTracked(a)&&!(SIM.coords.some(c=>c.a===a)||(a.cIn&&!a.cOk)||a===sel||a.hl||(a.cPend&&SIM.t>=a.cAskT-30)))return MULTI&&VIEW.s<1.6?[]:[[cs]];
+ if(isCordo()&&cfWatch(a)&&cfTracked(a))return[[cs,...tg],[{t:afl+tr+' '+gs}],a.cPend&&(!a.cIn||SIM.t>=a.cAskT)?[{t:'›'+a.cSec+' '+(a.cGv||'?')}]:[{t:a.cIn+' '+(a.cOk?a.cFq:'---'),c:a.cOk?null:COL.crit}]];
  if(!a.concerned||(a.state==='pre'&&SIM.t<a.preT)){return[[cs,...tg],[{t:afl+tr+' '+gs}]]}
  if(a.state==='transferred')return[[cs,...tg],[{t:afl+tr+' '+gs+' ›'+a.next.code}]];
  if(a.state==='offered'&&blink)cs.bgc='rgba(255,207,92,.30)';
@@ -1994,6 +2150,7 @@ function renderAtc(){const el=document.getElementById('atcList');if(!el||winEl('
  const u=[{code:VOL.cfg.test?'ESS':VOL.cfg.id,sh:myName(1)+' (vous)',freq:VOL.freq}].concat(Object.values(UNITS),Object.keys(APPS).map(appUnit));
  const h=u.map(x=>{const nx=sel&&sel.next&&sel.next.freq===x.freq&&sel.next.sh===x.sh,pv=sel&&sel.prev&&sel.prev.freq===x.freq&&sel.prev.sh===x.sh;return '<div class="ar'+(nx?' nx':'')+'"><span class="c">'+(nx?'›':pv?'‹':' ')+' '+x.code+'</span><span>'+x.sh+'</span><span class="f">'+x.freq+'</span></div>'}).join('');
  if(h!==renderAtc.k){renderAtc.k=h;el.innerHTML=h}}
+{const el=document.getElementById('atcList');if(el){const h=e=>{const r=e.target.closest('[data-sec]');if(!r||!isCordo())return;e.preventDefault();cfSecMenu(r.dataset.sec,e.clientX,e.clientY)};el.addEventListener('contextmenu',h);el.addEventListener('click',h)}}
 // Menu PVD (réglages d'écran)
 document.getElementById('btnPvd').onclick=e=>{const r=e.currentTarget.getBoundingClientRect();showMenu('PVD',[
  {t:'Thème Aurora (bleu nuit)',on:THEME==='aurora',fn:()=>{applyTheme('aurora');saveSettings()}},{t:'Thème Noir (noir et gris)',on:THEME==='noir',fn:()=>{applyTheme('noir');saveSettings()}},{sep:1},
@@ -2243,7 +2400,7 @@ function updateUI(){
 
 /* ===================== Ligne de commande ===================== */
 const cmdEl=document.getElementById('cmd');const hist=[];let hIdx=-1;
-function findAc(tok){tok=tok.toUpperCase();let m=SIM.acs.filter(a=>a.cs===tok);if(m.length)return m[0];m=SIM.acs.filter(a=>(a.concerned||a.cE||a.cIn)&&(a.cs.endsWith(tok)||a.cs.slice(3)===tok||a.cs.includes(tok)));if(m.length===1)return m[0];if(m.length>1)return m.find(a=>a.state==='assumed'||a.state==='offered')||m[0];return null}
+function findAc(tok){tok=tok.toUpperCase();let m=SIM.acs.filter(a=>a.cs===tok);if(m.length)return m[0];m=SIM.acs.filter(a=>(a.concerned||cfTracked(a))&&(a.cs.endsWith(tok)||a.cs.slice(3)===tok||a.cs.includes(tok)));if(m.length===1)return m[0];if(m.length>1)return m.find(a=>a.state==='assumed'||a.state==='offered')||m[0];return null}
 function runTokens(a,toks){
  for(let i=0;i<toks.length;i++){const t=toks[i];let m;
   if(/^(A|ASS|ASSUME|ACC)$/.test(t))cmdAssume(a);
@@ -2270,7 +2427,7 @@ function runTokens(a,toks){
   else if(t==='PO'){const al=SIM.alerts.find(x=>x.a===a&&x.stage<9&&x.lead);if(!al){log('sys','Pas de patrouille en vol pour '+a.cs);continue}const c=SIM.coords.find(c=>c.a===a&&c.kind==='poInfo');if(c)answerCoord(c.id,true);else poInfo(al)}
   else if(/^(OK|ACCEPT|NO|NON|REFUS)$/.test(t)){const c=SIM.coords.find(c=>c.a===a&&!c.mine);const yes=/^(OK|ACCEPT)$/.test(t);if(!c&&a.req&&reqOf(a)){if(yes){if(a.req.kind==='info')cmdTargetInfo(a);else cmdLevel(a,a.req.fl)}else refuseReq(a);continue}if(!c){log('sys','Aucune demande en attente pour '+a.cs);continue}if(!c.no&&!/^(OK|ACCEPT)$/.test(t)){log('sys','Cette demande ne se refuse pas');continue}answerCoord(c.id,/^(OK|ACCEPT)$/.test(t))}
   else if(/^(CIBLE|TGT|TARGET)$/.test(t))cmdTargetInfo(a);
-  else if((m=t.match(/^(1[1-3]\d)[.,](\d{1,3})$/))){if(isCordo())cmdGiveFreq(a,m[1]+'.'+m[2].padEnd(3,'0'));else log('sys','Fréquences : poste Cordo LFBB seulement')}
+  else if((m=t.match(/^(1[1-3]\d)[.,](\d{1,3})$/))){if(isCordo())cmdGiveFreq(a,m[1]+'.'+m[2].padEnd(3,'0'));else log('sys','Fréquences : poste Cordo seulement')}
   else if(t==='ROUTE'){a.showRoute=!a.showRoute}
   else if(/^(FPL|FLPLAN|PLAN)$/.test(t)){const r=cv.getBoundingClientRect();showFpl(a,r.left+r.width/2-150,r.top+80)}
   else if(t==='HL'){const f={CFL:'cfl',ALT:'cfl',SPD:'spd',WP:'nav',CS:'cs',OFF:null,AUCUN:null}[toks[i+1]];if(toks[i+1]&&f!==undefined){i++;a.hl=f}else log('bad','HL : CFL, SPD, WP, CS ou OFF')}
@@ -2285,10 +2442,11 @@ function runTokens(a,toks){
 function runGlobal(toks){const t=toks[0];let m;
  if(t==='ZONE'||t==='ZON'){const z=TZ[toks[1]];if(!z){log('bad','ZONE : identifiant attendu (ex. ZONE D31D)');return true}if(!VOL.cfg.test){log('sys','Les zones sont gérées par d\'autres organismes sur ce poste');return true}toggleZone(z);return true}
  const fqOf=v=>{const m2=(v||'').match(/^(1[1-3]\d)[.,]?(\d{1,3})$/);return m2?m2[1]+'.'+m2[2].padEnd(3,'0'):null};
- if(t==='FQ'||t==='FREQ'){if(!isCordo()){log('sys','FQ : poste Cordo LFBB seulement');return true}
+ if(t==='FQ'||t==='FREQ'){if(!isCordo()){log('sys','FQ : poste Cordo seulement');return true}
+  if(/^(LIB|LIBERE|LIBERER|REL)$/.test(toks[2]||'')){const k=cfKey(toks[1]);if(k)cfRelease(k,false);else log('bad','FQ : secteur inconnu');return true}
   // FQ P 131.080 = secours pour le secteur P ; FQ 131.080 = pour le secteur en panne qui attend depuis le plus longtemps
   let k=toks[1],f=fqOf(toks[2]);if(!f&&fqOf(toks[1])){f=fqOf(toks[1]);const c=SIM.coords.find(c=>c.kind==='cfs');if(!c){log('sys','Aucun secteur en panne : FQ secteur fréquence (ex. FQ P 131.080)');return true}k=c.sec}
-  if(!f){log('bad','FQ : secteur et fréquence attendus (ex. FQ P 131.080)');return true}cmdSecFreq(k,f);return true}
+  if(!f){log('bad','FQ : secteur et fréquence attendus (ex. FQ '+CF_SECS[0]+' '+(cfFree()[0]||'131.080')+'), ou FQ secteur LIB');return true}cmdSecFreq(k,f);return true}
  // Cordo : une fréquence seule répond à la demande du vol sélectionné, sinon à la plus ancienne demande de fréquence
  if(isCordo()&&toks.length===1&&/^1[1-3]\d[.,]\d{1,3}$/.test(t)){const c=SIM.coords.find(c=>c.kind==='cfq'&&c.a===sel)||SIM.coords.find(c=>c.kind==='cfq');if(!c){log('sys','Aucune demande de fréquence en attente');return true}cmdGiveFreq(c.a,fqOf(t));return true}
  if(t==='PAUSE'||t==='P'){setSpeed(SIM.speed===0?(SIM.prevSpeed||1):0);return true}
@@ -2336,17 +2494,17 @@ const CMDS=[
  {c:'HL',d:'Highlight d\'un champ de l\'étiquette',ex:()=>'HL CFL'},{c:'VEC',d:'Vecteur vitesse de ce vol'},
  {c:'TRAJ',d:'Trajectoires et CPA avec un autre vol',ex:()=>'TRAJ '+((SIM.acs.find(q=>q.state==='assumed'&&q!==sel)||{}).cs||'AFR123')},
  {c:'CTR',d:'Centrer l\'écran sur ce vol'}];
-const GCMDS=[{c:'FQ',d:'Cordo : fréquence de secours d\'un secteur',ex:()=>'FQ P '+(SIM.cf&&cfFree()[0]||'131.080')},{c:'ZONE',d:'Activer / désactiver une zone (poste Essais)',ex:()=>'ZONE D31D'},{c:'PAUSE',d:'Pause / reprise'},{c:'X2',d:'Vitesse de simulation ×1, ×2, ×4'},{c:'SECT',d:'Recentrer sur le secteur'},{c:'AIDE',d:'Commandes et règles'}];
+const GCMDS=[{c:'FQ',d:'Cordo : fréquence de secours d\'un secteur',ex:()=>'FQ '+CF_SECS[0]+' '+(SIM.cf&&cfFree()[0]||'131.080')},{c:'ZONE',d:'Activer / désactiver une zone (poste Essais)',ex:()=>'ZONE D31D'},{c:'PAUSE',d:'Pause / reprise'},{c:'X2',d:'Vitesse de simulation ×1, ×2, ×4'},{c:'SECT',d:'Recentrer sur le secteur'},{c:'AIDE',d:'Commandes et règles'}];
 const sugEl=document.getElementById('cmdSug');let sugs=[],sugI=0;
 function mkSug(tokIns,lbl,ex,d){return{ins:tokIns,lbl,ex,d}}
 function computeSugs(){
  const v=cmdEl.value.toUpperCase(),trail=/\s$/.test(v),toks=v.trim().split(/\s+/).filter(Boolean),cur=trail?'':(toks.length?toks[toks.length-1]:''),prev=trail?toks[toks.length-1]:toks[toks.length-2];
  let a=null;if(toks.length&&(toks.length>1||trail)&&!CMD_WORD.test(toks[0]))a=findAc(toks[0]);if(!a)a=sel;const cs=a?a.cs:'AFR6142',out=[];
- const acList=q=>SIM.acs.filter(x=>(x.concerned||x.cE||x.cIn)&&x.cs.startsWith(q)).sort((x,y)=>(y.state==='assumed')-(x.state==='assumed')||(y.state==='offered')-(x.state==='offered')).slice(0,6).map(x=>mkSug(x.cs,x.cs,x.cs+' '+(x.state==='offered'?'A':pad3(x.cfl)),x.type+' · FL'+pad3(x.alt/100)+' · '+(STATE_TXT[x.state]||'')));
+ const acList=q=>SIM.acs.filter(x=>(x.concerned||cfTracked(x))&&x.cs.startsWith(q)).sort((x,y)=>(y.state==='assumed')-(x.state==='assumed')||(y.state==='offered')-(x.state==='offered')).slice(0,6).map(x=>mkSug(x.cs,x.cs,x.cs+' '+(x.state==='offered'?'A':pad3(x.cfl)),x.type+' · FL'+pad3(x.alt/100)+' · '+(STATE_TXT[x.state]||'')));
  if(prev==='DCT'||prev==='DIR'){const pts=(a?a.pts.slice(a.leg).map(p=>p.id):[]).concat(Object.keys(PTS).filter(k=>PTS[k].type!=='apt'||k.startsWith('LF')));[...new Set(pts)].filter(id=>id.startsWith(cur)).slice(0,8).forEach(id=>out.push(mkSug(id,id,cs+' DCT '+id,PTS[id].name||'')));return out}
  if(prev==='TRAJ')return acList(cur).filter(x=>!a||x.ins!==a.cs);
  if(prev==='HL')return[['CFL','niveau autorisé'],['SPD','vitesse'],['WP','cap / point'],['CS','indicatif'],['OFF','aucun']].filter(([k])=>k.startsWith(cur)).map(([k,d])=>mkSug(k,k,cs+' HL '+k,d));
- if(prev==='FQ')return CF_SECS.filter(k=>k.startsWith(cur)).map(k=>mkSug(k,k,'FQ '+k+' '+(SIM.cf&&cfFree()[0]||''),SECNAME[k]+' · '+(SIM.cf&&SIM.cf.fq[k]||'en panne')));
+ if(prev==='FQ')return CF_SECS.filter(k=>k.startsWith(cur)).map(k=>mkSug(k,k,'FQ '+k+' '+(SIM.cf&&cfFree()[0]||''),SECNAME[k]+' · '+(SIM.cf?(SIM.cf.fq[k]||'en panne')+(SIM.cf.fq2[k]?' / '+SIM.cf.fq2[k]:''):SECFREQ[k])));
  if(prev==='ZONE')return TZONES.filter(z=>z.id.startsWith(cur)).slice(0,8).map(z=>mkSug(z.id,z.id,'ZONE '+z.id,z.n+' · '+z.lim+(z.st!=='off'?' · active':'')));
  if(prev==='SQ'||prev==='SQK')return[mkSug('','(vide)',cs+' SQ','nouveau code attribué automatiquement'),mkSug('4521','4521',cs+' SQ 4521','code donné (4 chiffres de 0 à 7)')];
  if(prev==='MAN')return[mkSug('5 30 D','5 30 D',cs+' MAN 5 30 D','5 G pendant 30 s, virage à droite (G = gauche)')];
@@ -2384,7 +2542,7 @@ document.querySelectorAll('#speedSeg button').forEach(b=>b.onclick=()=>setSpeed(
 document.getElementById('btnStrips').onclick=()=>{stripsEl.classList.toggle('closed');panelEl.classList.add('closed')};
 document.getElementById('btnPanel').onclick=()=>{panelEl.classList.toggle('closed');stripsEl.classList.add('closed')};
 const layersEl=document.getElementById('layers');
-const LAYNAMES=[['legend','Légende des symboles'],['routes','Routes'],['fixes','Points'],['vors','VOR'],['apts','Terrains'],['secs','Secteurs LFBB'],['bg','Trafic non concerné'],['vfilt','Filtre vertical'],['hist','Traînées radar']];
+const LAYNAMES=[['legend','Légende des symboles'],['routes','Routes'],['fixes','Points'],['vors','VOR'],['apts','Terrains'],['secs','Secteurs '+(MULTI?'des CRNA':PROF_ID)],['bg','Trafic non concerné'],['vfilt','Filtre vertical'],['hist','Traînées radar']];
 layersEl.innerHTML=LAYNAMES.map(([k,n])=>'<label><input type="checkbox" data-l="'+k+'"> '+n+'</label>').join('');
 function renderLegend(){const el=document.getElementById('legend');el.hidden=!LAY.legend;el.innerHTML='<span class="lt">Destination</span>'+Object.values(DCAT).map(([g,n])=>'<b>'+g+'</b><span>'+n.split(' · ')[0].replace('Europe du Nord et de l\'Est','Europe')+'</span>').join('')+'<b>▲</b><span>Chasse (PO)</span>'}
 function syncLayers(){renderLegend();syncPrefBar();layersEl.querySelectorAll('[data-l]').forEach(c=>c.checked=!!LAY[c.dataset.l]);document.getElementById('vecSel').value=String(LAY.vec)}
@@ -2399,23 +2557,28 @@ document.getElementById('helpModal').addEventListener('click',e=>{if(e.target.id
 function saveSettings(){try{localStorage.setItem('opencrna.v1',JSON.stringify({nordo:selNordo.value,conv:selConv.value,coord:selCoord.value,test:selTest.value,train:selTrain.value,cap:selCap.value,scr:selScr.value,traffic:selTraffic.value,emerg:selEmerg.value,cfg:selCfg.value,den:selDen.value,wind:chkWind.checked,voice:chkVoice.checked,lay:LAY,theme:THEME}))}catch(e){}}
 function loadSettings(){try{const s=JSON.parse(localStorage.getItem('opencrna.v1')||'null');if(!s)return;if(s.cfg)selCfg.value=s.cfg;if(s.nordo!=null)selNordo.value=s.nordo;if(s.conv!=null)selConv.value=s.conv;if(s.coord!=null)selCoord.value=s.coord;if(s.test!=null)selTest.value=s.test;if(s.train!=null)selTrain.value=s.train;if(s.cap!=null)selCap.value=s.cap;if(s.scr!=null)selScr.value=s.scr;if(s.traffic)selTraffic.value=s.traffic;if(s.emerg!=null)selEmerg.value=s.emerg;if(s.den)selDen.value=s.den;chkWind.checked=s.wind!==false;chkVoice.checked=!!s.voice;if(s.lay)Object.assign(LAY,s.lay);if(s.theme)applyTheme(s.theme)}catch(e){}}
 const selNordo=document.getElementById('selNordo'),selConv=document.getElementById('selConv'),selCoord=document.getElementById('selCoord'),selTest=document.getElementById('selTest'),selTrain=document.getElementById('selTrain'),selCap=document.getElementById('selCap'),selScr=document.getElementById('selScr'),selTraffic=document.getElementById('selTraffic'),selEmerg=document.getElementById('selEmerg'),selCfg=document.getElementById('selConfig'),selDen=document.getElementById('selDensity'),chkWind=document.getElementById('chkWind'),chkVoice=document.getElementById('chkVoice');
-selCfg.innerHTML=CONFIGS.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');selCfg.value='US';
-function cfgInfo(){const c=CONFIGS.find(q=>q.id===selCfg.value);if(c.cordo){document.getElementById('cfgInfo').textContent='Poste Cordo LFBB · coordination des fréquences de toute la région. Vous ne contrôlez aucun avion : pour chaque vol qui entre dans LFBB, l\'unité précédente (centre voisin ou approche) vous demande la fréquence à donner au pilote ; donnez celle du secteur d\'entrée. Quand une fréquence de secteur tombe en panne, attribuez-lui une fréquence de secours libre. Les autres réglages (pertes radio, essais, PO…) ne s\'appliquent pas.';return}if(c.test){document.getElementById('cfgInfo').textContent='Poste Essais en vol · toute la région LFBB, FL100 à FL600, fréquence '+c.freq+'. Vous ne contrôlez que les Rafale d\'essais de Mérignac : activez une zone d\'essais, acheminez-les entre les trafics civils (gérés par les secteurs, mais la séparation compte), faites leur programme puis ramenez-les à Bordeaux Approche. Les réglages de pertes radio, convergences et demandes des centres ne s\'appliquent pas.';return}
- document.getElementById('cfgInfo').textContent='Volume : '+(c.sec[0]==='*'?'toute la région LFBB':'secteur'+(c.sec.length>1?'s ':' ')+c.sec.join(', '))+' · FL'+c.floor+' à '+(c.ceil>=660?'FL660':'FL'+c.ceil)+'. '+(c.floor>=300?'Secteur supérieur : survols en croisière, montées des départs Toulouse/Bordeaux et descentes des arrivées.':'Secteur inférieur : beaucoup de montées et descentes, transferts aux approches de Bordeaux, Toulouse, Biarritz, Pau.')}
+selCfg.innerHTML=CONFIGS.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');selCfg.value=CONFIGS.some(c=>c.id==='US')?'US':CONFIGS[0].id;
+// profil (CRNA) : la géographie est construite au chargement, on recharge la page sur le nouveau profil
+const selProfile=document.getElementById('selProfile');selProfile.innerHTML=Object.keys(PROFS).map(k=>'<option value="'+k+'">'+(k==='FR'?'':k+' · ')+PROFS[k].n+'</option>').join('');selProfile.value=PROF_ID;
+selProfile.onchange=()=>{try{localStorage.setItem('opencrna.prof',selProfile.value)}catch(e){}location.hash=selProfile.value;location.reload()};
+// fonctions militaires (essais, entraînement, PO sur alerte, CAP) : profil LFBB seulement
+if(!ISBB)for(const id of ['selTest','selTrain','selScr','selCap']){const e=document.getElementById(id);if(e){e.disabled=true;e.title='Disponible sur le profil LFBB'}}
+function cfgInfo(){const c=CONFIGS.find(q=>q.id===selCfg.value)||CONFIGS[0];if(c.cordo){document.getElementById('cfgInfo').textContent=(MULTI?'Cordo France · coordination des fréquences des '+CF_SECS.length+' secteurs des cinq CRNA. Pour chaque vol qui entre en France ou passe d\'un CRNA à un autre':'Poste Cordo '+PROF_ID+' · coordination des fréquences de toute la région. Pour chaque vol qui entre dans '+PROF_ID)+', l\'unité précédente (centre voisin ou approche) vous demande la fréquence à donner au pilote : donnez celle du secteur d\'entrée. Une fréquence en panne : attribuez une fréquence de secours libre (clic droit sur le secteur dans la fenêtre ATC). Un secteur chargé demande une deuxième fréquence. Vous ne contrôlez aucun avion ; les autres réglages ne s\'appliquent pas.';return}if(c.test){document.getElementById('cfgInfo').textContent='Poste Essais en vol · toute la région LFBB, FL100 à FL600, fréquence '+c.freq+'. Vous ne contrôlez que les Rafale d\'essais de Mérignac : activez une zone d\'essais, acheminez-les entre les trafics civils (gérés par les secteurs, mais la séparation compte), faites leur programme puis ramenez-les à Bordeaux Approche. Les réglages de pertes radio, convergences et demandes des centres ne s\'appliquent pas.';return}
+ document.getElementById('cfgInfo').textContent='Volume : '+(c.sec[0]==='*'?'toute la région '+PROF_ID:'secteur'+(c.sec.length>1?'s ':' ')+c.sec.join(', '))+' · FL'+c.floor+' à '+(c.ceil>=660?'FL660':'FL'+c.ceil)+'. '+(c.floor>=300?'Secteur supérieur : survols en croisière, montées des départs Toulouse/Bordeaux et descentes des arrivées.':'Secteur inférieur : beaucoup de montées et descentes, transferts aux approches'+(ISBB?' de Bordeaux, Toulouse, Biarritz, Pau':' ('+HOME_APPS.map(apName).join(', ')+')')+'.')}
 selCfg.onchange=cfgInfo;
-loadSettings();if(!document.body.dataset.theme)applyTheme('aurora');for(const k in WINDEF)placeWin(k);syncLayers();cfgInfo();
+loadSettings();if(!CONFIGS.some(c=>c.id===selCfg.value))selCfg.value=CONFIGS.some(c=>c.id==='US')?'US':CONFIGS[0].id;if(!document.body.dataset.theme)applyTheme('aurora');for(const k in WINDEF)placeWin(k);syncLayers();cfgInfo();
 
 function startGame(){
- const cfg=CONFIGS.find(q=>q.id===selCfg.value);setupVolume(cfg);saveSettings();const T=!!(cfg.test||cfg.cordo),C=!!cfg.cordo;
- Object.assign(SIM,{t:0,acs:[],score:0,done:0,sepLoss:0,pen:[],sepPairs:new Map(),stca:new Set(),acc:0,last1s:0,lastRadar:-99,queue:[],lambda:+selDen.value,voice:chkVoice.checked,running:true,mil:[],alerts:[],nordoRate:T?0:+selNordo.value,convInt:T?0:+selConv.value,coords:[],coordRate:T?0:+selCoord.value,emRate:T?0:+selEmerg.value,scrInt:T?0:+selScr.value,nextScr:+selScr.value?rnd(120,600):1e9,real:selTraffic.value==='real'&&rtAvailable(),rtNext:1e9,caps:[],capInt:C?0:+selCap.value,nextCap:+selCap.value&&!C?rnd(20,300):1e9,trainInt:C?0:+selTrain.value,nextTrain:+selTrain.value&&!C?rnd(30,180):1e9,testInt:C?0:+selTest.value*(T?1:2),nextTest:+selTest.value?(T?rnd(20,45):rnd(60,240)):1e9});for(const z of TZONES){z.st='off';z.tAct=0;z.ai=false;z.owner=''}SIM.nextConv=SIM.convInt?rnd(60,150):1e9;if(C)cfInit();
+ const cfg=CONFIGS.find(q=>q.id===selCfg.value)||CONFIGS[0];setupVolume(cfg);saveSettings();const T=!!(cfg.test||cfg.cordo),C=!!cfg.cordo,M=C||!ISBB; // M : pas d'essais, d'entraînement ni de PO (Cordo, profils hors LFBB)
+ Object.assign(SIM,{t:0,acs:[],score:0,done:0,sepLoss:0,pen:[],sepPairs:new Map(),stca:new Set(),acc:0,last1s:0,lastRadar:-99,queue:[],lambda:+selDen.value,voice:chkVoice.checked,running:true,mil:[],alerts:[],nordoRate:T?0:+selNordo.value,convInt:T?0:+selConv.value,coords:[],coordRate:T?0:+selCoord.value,emRate:T?0:+selEmerg.value,scrInt:T||M?0:+selScr.value,nextScr:+selScr.value&&!M?rnd(120,600):1e9,real:selTraffic.value==='real'&&rtAvailable(),rtNext:1e9,caps:[],capInt:M?0:+selCap.value,nextCap:+selCap.value&&!M?rnd(20,300):1e9,trainInt:M?0:+selTrain.value,nextTrain:+selTrain.value&&!M?rnd(30,180):1e9,testInt:M?0:+selTest.value*(T?1:2),nextTest:+selTest.value?(T?rnd(20,45):rnd(60,240)):1e9});for(const z of TZONES){z.st='off';z.tAct=0;z.ai=false;z.owner=''}SIM.nextConv=SIM.convInt?rnd(60,150):1e9;if(C)cfInit();
  SIM.startUTC=SIM.real?(()=>{const d=new Date();return d.getUTCHours()*3600+d.getUTCMinutes()*60+d.getUTCSeconds()})():(Math.floor(rnd(7,19))*3600+Math.floor(rnd(0,59))*60);
  WX.on=chkWind.checked;WX.dir=Math.round(rnd(250,300));WX.jet=Math.round(rnd(45,115));
  const w=windAt(35000);document.getElementById('hdWind').innerHTML='<span class="k">Vent FL350</span>'+(WX.on?pad3(w.dir)+'°/'+Math.round(w.spd)+' kt':'calme');
- document.getElementById('hdSector').textContent='LFBB_'+(cfg.test?'ESS':cfg.cordo?'CORDO':cfg.id.replace(/\W/g,''))+'_CTR · '+VOL.freq+' · FL'+cfg.floor+'–'+(cfg.ceil>=660?'660':cfg.ceil);document.getElementById('hdSector').title=cfg.name;
+ document.getElementById('hdSector').textContent=(MULTI?'FRANCE':PROF_ID)+'_'+(cfg.test?'ESS':cfg.cordo?'CORDO':cfg.id.replace(/\W/g,''))+'_CTR · '+VOL.freq+' · FL'+cfg.floor+'–'+(cfg.ceil>=660?'660':cfg.ceil);document.getElementById('hdSector').title=cfg.name;
  logEl.innerHTML='';selectAc(null);if(actEl){actEl.innerHTML='';renderAct.k=''}renderAtc.k='';if(C)toggleWin('atc',true);
  resize();fitSector();
  // trafic initial : relève en cours (réel en direct, ou généré)
- if(SIM.real){log('sys','Trafic réel : chargement de l\'état du ciel au-dessus de LFBB (OpenSky Network)…');rtChip();
+ if(SIM.real){log('sys','Trafic réel : chargement de l\'état du ciel au-dessus de '+(MULTI?'la France':PROF_ID)+' (OpenSky Network)…');rtChip();
   rtRefresh().then(n=>{if(n===false){SIM.real=false;rtChip();log('sys','Trafic réel indisponible : trafic simulé à la place.');simInitial(T)}else{for(const a of SIM.acs)if(a.state==='offered')a.offeredAt=SIM.t;log('sys','Trafic réel : '+n+' avions chargés, mise à jour toutes les 90 s. Relève : '+SIM.acs.filter(a=>a.state==='assumed').length+' vols déjà sous contrôle, '+SIM.acs.filter(a=>a.state==='offered').length+' en appel.')}radarSweep()})}
  if(!SIM.real){if(selTraffic.value==='real')log('sys','Le trafic réel n\'est disponible que dans l\'app Mac (OpenSky Network) : trafic simulé.');simInitial(T)}
  radarSweep();radarSweep();
