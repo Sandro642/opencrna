@@ -70,6 +70,7 @@ header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
 #atcList .ar{display:grid;grid-template-columns:auto 1fr auto;gap:8px;padding:2px 10px}
 #atcList .ar.nx{background:var(--panel2);color:#fff}
 #atcList .ar .c{color:var(--accent)} #atcList .ar .f{color:var(--mute)}
+#atcList .ar.pn .f,#atcList .ar.pn .c{color:#ff6b5e} #atcList .ah2{padding:6px 10px 2px;color:var(--mute);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em}
 .tm{display:grid;grid-template-columns:auto auto auto minmax(0,1fr);gap:0;border:1px solid var(--line2);font-family:var(--f-mono);font-size:12px;background:var(--pvd)}
 .tm .tmc{display:flex;flex-direction:column;padding:4px 8px;border-right:1px solid var(--line);gap:1px;min-width:0}
 .tm .tmc b{color:#fff;font-weight:600}.tm .tmc .m{color:var(--mute)}
@@ -402,6 +403,8 @@ table.cmds td:first-child{font-family:var(--f-mono);color:var(--accent);white-sp
     <p>Les secteurs et centres voisins (Brest, Paris, Marseille, Madrid…) peuvent demander à vous passer un vol pré-annoncé à un autre niveau ou en cap. La demande apparaît dans la catégorie <b>Coordinations ATC</b> en haut des strips : <b>Accepter</b> ou <b>Refuser</b> dans la minute (sans réponse : pénalité, le vol arrive comme prévu). Un vol accepté en cap devra être remis en navigation (<code>RES</code> ou direct). Dans l'autre sens, pour un vol sous contrôle, demandez au secteur suivant un autre <b>niveau de sortie</b> (fiche vol → <b>Coordination sortie</b>, ou commande <code>XFL 350</code>) : il accepte ou refuse selon son trafic, le sens de vol et sa charge ; si c'est accepté, le nouveau XFL compte pour le transfert. Pendant une alerte COMLOSS, la PO demande les <b>infos de vol</b> de l'avion (bouton <b>Transmettre</b>, ou <b>Infos vol → PO</b> dans la fiche vol à tout moment), puis votre <b>autorisation</b> pour se présenter au cockpit et communiquer avec l'équipage : tant que vous n'avez pas autorisé, la patrouille reste en escorte.</p>
     <h2>Essais en vol</h2>
     <p>Position « Essais en vol » (dans la liste des positions) : un poste dédié, sur toute la région LFBB de FL100 à FL600. Vous ne contrôlez que les vols d'essais ; le trafic civil, géré par les secteurs, est affiché et vous devez en séparer vos Rafale (sauf à l'intérieur d'une zone active). Régulièrement, un avion d'essais décolle : Rafale ou Falcon 6X de Dassault Aviation depuis Mérignac (indicatif OACI DAB, « Dassault »), Airbus A350 ou A321neo depuis Toulouse-Blagnac (AIB, « Airbus Industrie »). Chaque type a son programme : seul le Rafale va en supersonique et tire jusqu'à 9 G ; un Airbus est limité à 2,5 G et à son plafond, un Falcon à 3 G. Il rentre à sa base (Mérignac ou Toulouse) à la fin. Souvent, un « Rafale ESA » (démonstrateur fictif) demande des essais à Mach 2,5 au FL500 et au FL550 dans une grande zone sans plafond. Un programme compte 3 à 5 essais ; l'étiquette affiche <b>ESS 2/4</b> (essais faits / total, ESS ✓ une fois terminé) et le menu clic droit « Programme d'essais » détaille chaque essai et sa progression. Jusqu'à 5 vols d'essais à la fois. Par exemple, un Rafale (indicatif Dassault DAB). Bordeaux Approche vous le transfère en montée ; il annonce la zone qu'il demande et son programme (3 essais, visibles dans sa fiche vol). Ouvrez <b>Zones d'essais</b> (en haut) et activez une zone : l'activation prend 2 minutes, la zone est alors fermée à la circulation générale entre ses limites verticales, et elle le reste jusqu'à ce que vous la désactiviez. Acheminez le Rafale entre les trafics civils jusqu'à une zone active (direct vers son identifiant, par exemple <code>DCT D31D</code>), puis donnez-lui ses essais : niveaux (jusqu'au FL500), vitesses (<code>M1.4</code> : supersonique uniquement en zone active, sinon bang supersonique −20 ; <code>S200</code> pour le vol lent) et <b>manœuvres sous facteur de charge</b> (fiche vol, ou <code>MAN 5 30 D</code> = 5 G pendant 30 s, virage à droite). Chaque essai réussi rapporte +10. Une fois le programme terminé, ramenez-le vers LFBD, descendez-le à son niveau de sortie et transférez-le à Bordeaux Approche (+30 à l'atterrissage), puis désactivez la zone. Les zones sont les <b>vraies zones militaires</b> de la région (eAIP France ENR 5.1, AIRAC du 1er octobre 2026) : D 31 D, D 32, D 33 et D 300 A au-dessus de l'Atlantique, R 31 Cazaux, R 34 A2 Mont-de-Marsan, R 49 Cognac, R 61 H, R 170 B, R 68 C, avec leurs limites verticales officielles. Une zone plafonnée au FL195 ne permet que les essais bas (vol lent, virages) ; les essais en altitude et le supersonique demandent une zone illimitée (UNL). Simplifications : les segments qui suivent la limite des eaux territoriales sont tracés en ligne droite, et les horaires réels d'activation (NOTAM, AUP) ne sont pas simulés : une zone reste active jusqu'à ce que vous la désactiviez.</p>
+    <h2>Cordo LFBB (coordination des fréquences)</h2>
+    <p>Position « Cordo LFBB » : vous ne contrôlez aucun avion, vous gérez les fréquences des dix secteurs de Bordeaux (H, L, N, P, R, T, X, Z en bas, UN et US en haut) et vous êtes en liaison avec tous les contrôleurs. Chaque vol qui va entrer dans LFBB (FL115 et plus) fait l'objet d'un appel de l'unité précédente — Brest, Paris, Madrid… ou une approche pour un départ — environ 2 à 3 minutes avant l'entrée : « AFR1234, entre dans LFBB secteur UN au FL350, quelle fréquence ? ». Donnez la fréquence du secteur d'entrée : bouton <b>Fréquence…</b> de la carte REQ, clic sur REQ dans l'étiquette, ou commande <code>AFR1234 132.555</code>. Le contrôleur la transmet au pilote, qui appelle le secteur en entrant : +5 si c'est le bon secteur ; mauvais secteur ou fréquence sans personne : −10, et on vous redemande. Pas de réponse avant l'entrée : −10 et relance. Étiquette : <b>›UN 132.555</b> = secteur d'entrée et fréquence donnée (<b>?</b> pas encore), puis secteur et fréquence en cours une fois entré (vert : en contact ; <b>---</b> rouge : injoignable). Les fréquences des secteurs sont affichées sur le radar et dans la fenêtre <b>ATC</b>, avec les fréquences libres et celles en réparation. De temps en temps une fréquence de secteur tombe en panne (au plus deux à la fois) : le secteur vous demande une fréquence de secours, à choisir parmi les libres (carte REQ ou <code>FQ P 131.080</code>) : +10 en moins d'une minute, +5 ensuite, −10 par minute sans fréquence. Une fréquence en panne ou déjà utilisée par un autre secteur est refusée (−5). Les vols déjà annoncés avec la fréquence en panne vous sont redemandés. Une fréquence réparée (10 à 20 min) redevient libre. Les fréquences de secours sont fictives.</p>
     <h2>Entraînement militaire</h2>
     <p>Réglage « Entraînement militaire » : des Rafale de Mont-de-Marsan (indicatifs GASCO, VIPER, LYNX…) partent s'entraîner dans les vraies TRA 34 (A, B, C, D, E, N) autour de Mont-de-Marsan, la R 34 A2, et les TRA 43 (Massif central) et TRA 10 B (Poitou) — limites de l'eAIP ENR 5.2. Le CDC de Mont-de-Marsan annonce l'activation 3 minutes à l'avance ; la zone est fermée à la circulation générale jusqu'au retour des avions. Sur tous les postes, déviez votre trafic ; sur le poste Essais en vol, ces zones ne sont pas disponibles pour vos essais tant qu'elles sont tenues.</p>
     <h2>Essais en vol vus d'un poste en route</h2>
@@ -591,6 +594,8 @@ const CONFIGS=[
  {id:'ALL',name:'LFBB · Regroupement total (nuit)',sec:['*'],floor:115,ceil:660},
  // Poste dédié au contrôle des essais en vol : seuls les vols d'essais sont à vous, le trafic civil est géré par les secteurs
  {id:'ESSAIS',name:'Essais en vol · poste de contrôle des essais',sec:['*'],floor:100,ceil:600,test:1,freq:'130.255'},
+ // Poste de coordination des fréquences : aucun vol à contrôler, la Cordo donne aux unités la fréquence du secteur d'entrée et gère les pannes
+ {id:'CORDO',name:'Cordo LFBB · coordination des fréquences',sec:['*'],floor:115,ceil:660,cordo:1,freq:'TÉL'},
 ];
 
 /* ===================== Flux de trafic ===================== */
@@ -778,7 +783,7 @@ function trySpawn(kind,tau){
  // kind: 'c' concerné, 'b' fond ; tau : décalage par rapport à l'entrée (s)
  for(let n=0;n<70;n++){
   const flow=wpick(FLOWS.map(f=>[f,f.w]));const a=makeFlight(flow);const S=predict(a,5400);if(S.length<4)continue;
-  const an=VOL.cfg.test?null:analyze(a,S);
+  const an=VOL.cfg.test||VOL.cfg.cordo?null:analyze(a,S);
   if(kind==='c'&&(!an||an.start))continue;
   if(kind==='b'&&an)continue;
   if(kind==='b'&&TZONES.some(z=>z.st!=='off')&&S.some(s=>zoneAt(s.x,s.y,s.alt)||TZONES.some(z=>z.st==='pend'&&inZone(z,s.x,s.y,s.alt))))continue;
@@ -830,7 +835,7 @@ function mkReal(s){
  a.pts=a.arrAp?[{id:'',x:a.x,y:a.y},PTS[a.arrAp]]:rtRoute(a);a.tok=a.pts.slice(1).map(p=>p.id);
  return a}
 // Classe un vol réel comme les vols générés : non concerné, pré-annoncé, en appel ou déjà sous contrôle (relève)
-function rtPlace(a){let S=predict(a,5400);if(S.length<3)return;let an=VOL.cfg.test?null:analyze(a,S); // poste Essais : le trafic civil réel n'est jamais à vous
+function rtPlace(a){let S=predict(a,5400);if(S.length<3)return;let an=VOL.cfg.test||VOL.cfg.cordo?null:analyze(a,S); // poste Essais : le trafic civil réel n'est jamais à vous
  if(an&&an.start&&!VOL.cfg.test){const tr=a.trk*D2R;for(const back of [40,90,160]){const b={t:-10,x:a.x-back*Math.sin(tr),y:a.y-back*Math.cos(tr),alt:a.alt,hdg:a.hdg,tas:a.tas,vs:0,leg:1,tod:a.tod};if(!inVol(b.x,b.y,b.alt)){an=analyze(a,[b].concat(S));break}}if(an&&an.start)an=null}
  a.pred=S.map(x=>({...x,t:x.t+SIM.t}));a.bornT=SIM.t;
  if(an){a.concerned=true;Object.assign(a,{entryT:an.entryT+SIM.t,exitT:an.exitT+SIM.t,entryKind:an.entryKind,exitKind:an.exitKind,efl:an.efl,eflKind:an.eflKind,xfl:an.xfl,xflKind:an.xflKind,prev:an.prev,next:an.next,entryPt:an.entryPt||'',exitPt:an.exitPt||''});
@@ -905,7 +910,7 @@ window.addEventListener('focus',()=>voiceReset());
 function pilot(a,txt){log('plt','◂ '+txt);speak(txt,a.fr)}
 function atc(txt){log('atc','▸ '+txt)}
 const flTxt=(fl,fr)=>fr?'niveau '+fl:'flight level '+fl;
-const myName=fr=>VOL&&VOL.cfg.test?(fr?'Bordeaux Essais':'Bordeaux Test Control'):(fr?'Bordeaux':'Bordeaux Control');
+const myName=fr=>VOL&&VOL.cfg.cordo?(fr?'Cordo Bordeaux':'Bordeaux Coordination'):VOL&&VOL.cfg.test?(fr?'Bordeaux Essais':'Bordeaux Test Control'):(fr?'Bordeaux':'Bordeaux Control');
 const greet=fr=>{const h=Math.floor((SIM.startUTC+SIM.t)/3600)%24;return fr?(h>=17?'bonsoir':'bonjour'):(h<11?'good morning':h<17?'good afternoon':'good evening')};
 function pilotCall(a){
  if(a.silent)return;a.called=true;
@@ -1098,10 +1103,10 @@ function cmdAlert(a,base,patrol){
 /* ===================== Coordinations ATC (centres voisins, PO) ===================== */
 // Une coordination = demande en attente de réponse : {id,a,kind,from,text,ok,no,deadline,onOk,onNo,onLate}
 function addCoord(c){c.id=++SIM.coordSeq;c.t=SIM.t;SIM.coords.push(c);return c}
-function answerCoord(id,yes){const i=SIM.coords.findIndex(c=>c.id===id);if(i<0)return;const c=SIM.coords.splice(i,1)[0];(yes?c.onOk:c.onNo)&&(yes?c.onOk:c.onNo)();renderStrips()}
+function answerCoord(id,yes,cx,cy){const c0=SIM.coords.find(c=>c.id===id);if(c0&&c0.pick&&yes){cfMenu(c0,cx,cy);return}const i=SIM.coords.findIndex(c=>c.id===id);if(i<0)return;const c=SIM.coords.splice(i,1)[0];(yes?c.onOk:c.onNo)&&(yes?c.onOk:c.onNo)();renderStrips()}
 function tickCoords(now){
  for(const c of SIM.coords.slice()){
-  if(!SIM.acs.includes(c.a)||(c.valid&&!c.valid())){SIM.coords.splice(SIM.coords.indexOf(c),1);continue}
+  if((c.a&&!SIM.acs.includes(c.a))||(c.valid&&!c.valid())){SIM.coords.splice(SIM.coords.indexOf(c),1);continue}
   if(now>=c.deadline){SIM.coords.splice(SIM.coords.indexOf(c),1);c.onLate&&c.onLate()}}
 }
 const coordLog=(from,txt)=>log('coord','☎ '+from+' : '+txt),coordMe=txt=>log('coord','☎ '+myName(1)+' : '+txt);
@@ -1156,6 +1161,76 @@ function poAskComm(al){const a=al.a;
   onNo:()=>{log('mil','▸ '+myName(1)+' → '+al.lead.cs+' : négatif, restez en escorte à distance pour le moment.');al.reask=SIM.t+90},
   onLate:()=>{penalty(a,'poc',-5,a.cs+' : demande de la PO restée sans réponse');log('mil','◂ '+al.lead.cs+' : toujours en attente de votre autorisation.');al.reask=SIM.t+30}});
  log('mil','◂ '+al.lead.cs+' : demande autorisation de contacter l\'équipage de '+a.cs+'.')}
+/* ===================== Cordo LFBB : attribution des fréquences ===================== */
+// Poste « Cordo » (config cordo:1) : aucun avion à contrôler. Pour chaque vol qui entre dans un secteur LFBB (FL115 et plus), l'unité
+// précédente demande la fréquence à transmettre au pilote ; le pilote appelle ensuite le secteur sur cette fréquence. Les fréquences
+// des secteurs tombent parfois en panne : la Cordo attribue une fréquence de secours (fréquences de secours FICTIVES).
+const CF_SPARE=['121.250','124.230','126.580','127.355','128.930','131.080','132.905','133.230','135.105','135.530'];
+const CF_SECS=LOWER.concat(UPPER),isCordo=()=>!!(VOL&&VOL.cfg.cordo);
+const cfAll=()=>[...new Set(Object.values(SECFREQ).concat(CF_SPARE))].sort();
+const cfSecOf=f=>CF_SECS.find(k=>SIM.cf.fq[k]===f)||null,cfFree=()=>cfAll().filter(f=>!cfSecOf(f)&&!SIM.cf.broken[f]);
+const cfWatch=a=>!(a.mil||a.test||a.train||a.ai||a.po||a.target);
+function cfInit(){SIM.cf={fq:{...SECFREQ},broken:{},failT:{},nextFail:SIM.t+rnd(150,300)}}
+// secteur LFBB (contrôleur Bordeaux) à une position ; null sous le FL115 (approches) ou hors LFBB
+function secAt(x,y,alt){if(alt<11500||!inPoly(x,y,LFBB))return null;const L=alt>=34500?UPPER:LOWER;for(const k of L)if(inPoly(x,y,SECT[k]))return k;
+ let b=L[0],bd=1e9;for(const k of L){const d=dist(x,y,SECT[k].cx,SECT[k].cy);if(d<bd){bd=d;b=k}}return b}
+// entrée prévue dans LFBB : instant, secteur, niveau et unité précédente (qui appellera la Cordo)
+function cfScan(a){const k0=secAt(a.x,a.y,a.alt);if(k0){a.cE=0;a.cIn=k0;a.cFq=SIM.cf.fq[k0];a.cOk=!!a.cFq;return}
+ const b={...a};let pu=unitAt(a.x,a.y,a.alt,a);
+ for(let t=10;t<=1500;t+=10){stepAc(b,10);if(b.routeEnd)break;const k=secAt(b.x,b.y,b.alt);if(k){a.cE=SIM.t+t;a.cSec=k;a.cFl=Math.round(b.alt/1000)*10;a.cPrev=pu;a.cAskT=a.cE-rnd(110,190);return}pu=unitAt(b.x,b.y,b.alt,b)}
+ a.cE=null;a.cRe=SIM.t+240}
+function cfAsk(a,from,text){if(SIM.coords.some(c=>c.a===a&&c.kind==='cfq'))return;coordLog(from,text);
+ addCoord({a,kind:'cfq',from,text,ok:'Fréquence…',pick:1,deadline:Math.max(SIM.t+45,a.cIn?0:a.cE),
+  onLate:()=>{penalty(null,'',-10,a.cs+' : fréquence non transmise à '+from);cfAsk(a,from,a.cs+(a.cIn?' est chez vous sans fréquence':' arrive à la limite')+', j\'attends toujours la fréquence !')}})}
+function cfAskSec(k,f){addCoord({a:null,kind:'cfs',sec:k,from:'Bordeaux '+k,text:'Panne de la fréquence '+f+' : attribuez une fréquence de secours au secteur '+k+'.',ok:'Fréquence…',pick:1,deadline:SIM.t+60,
+ onLate:()=>{penalty(null,'',-10,'Secteur '+k+' toujours sans fréquence : ses vols sont injoignables');cfAskSec(k,f)}})}
+// je donne une fréquence pour un vol
+function cmdGiveFreq(a,f){const c=SIM.coords.find(c=>c.a===a&&c.kind==='cfq');if(!c){log('sys','Aucune demande de fréquence pour '+a.cs);return}
+ if(!cfAll().includes(f)){log('bad',f+' : fréquence inconnue de la Cordo');return}
+ SIM.coords.splice(SIM.coords.indexOf(c),1);a.cFq=f;coordMe(c.from+', '+a.cs+', fréquence '+f+'.');
+ SIM.queue.push({t:SIM.t+rnd(2,4),a,fn:()=>coordLog(c.from,'Je lui donne '+f+', merci.')});
+ if(a.cIn)SIM.queue.push({t:SIM.t+rnd(12,25),a,fn:()=>cfCheck(a)});renderAct()}
+// j'attribue une fréquence à un secteur (secours après panne, ou changement)
+function cmdSecFreq(k,f){const cf=SIM.cf;
+ if(!CF_SECS.includes(k)){log('bad','FQ : secteur attendu ('+CF_SECS.join(', ')+'), ex. FQ P 131.080');return}
+ if(!cfAll().includes(f)){log('bad',f+' : fréquence inconnue de la Cordo');return}
+ if(cf.fq[k]===f){log('sys','Le secteur '+k+' est déjà sur '+f);return}
+ if(cf.broken[f]){penalty(null,'',-5,f+' est en panne : refusée par le secteur '+k);coordLog('Bordeaux '+k,f+' ne fonctionne pas, il me faut une autre fréquence !');return}
+ const j=cfSecOf(f);if(j){penalty(null,'',-5,f+' est déjà la fréquence du secteur '+j);coordLog('Bordeaux '+j,'Attention, '+f+' c\'est ma fréquence !');return}
+ const old=cf.fq[k],c=SIM.coords.find(c=>c.kind==='cfs'&&c.sec===k);cf.fq[k]=f;coordMe('Bordeaux '+k+', votre fréquence : '+f+'.');
+ if(c){SIM.coords.splice(SIM.coords.indexOf(c),1);const p=SIM.t-cf.failT[k]<60?10:5;SIM.score+=p;log('good','Secteur '+k+' de nouveau joignable sur '+f+' (+'+p+')')}
+ const L=SIM.acs.filter(a=>a.cIn===k&&(a.cOk||a.cLost));for(const a of L){a.cFq=f;a.cOk=true;a.cLost=false}
+ coordLog('Bordeaux '+k,'Reçu '+f+(L.length?', je passe mes '+L.length+' vol'+(L.length>1?'s':'')+' dessus.':'.'));
+ if(old)for(const a of SIM.acs)if(!a.cIn&&a.cFq===old){a.cFq=null;cfAsk(a,a.cPrev.sh,a.cs+' : je lui avais donné '+old+', le secteur '+k+' a changé de fréquence. Laquelle ?')}
+ renderAct()}
+function cfFail(k){const cf=SIM.cf,f=cf.fq[k];cf.fq[k]=null;cf.broken[f]=SIM.t+rnd(600,1200);cf.failT[k]=SIM.t;
+ coordLog('Bordeaux '+k,'Panne de ma fréquence '+f+' ! J\'ai besoin d\'une fréquence de secours.');showToast('Panne fréquence '+f+' · secteur '+k);cfAskSec(k,f);
+ for(const a of SIM.acs)if(!a.cIn&&a.cFq===f){a.cFq=null;cfAsk(a,a.cPrev.sh,a.cs+' : je lui avais donné '+f+', elle est en panne. Quelle fréquence ?')}
+ for(const a of SIM.acs)if(a.cIn===k&&a.cOk){a.cOk=false;a.cLost=true}}
+// le pilote appelle sur la fréquence reçue : bon secteur, mauvais secteur ou personne
+function cfCheck(a){if(a.cOk||!a.cFq)return;const cf=SIM.cf,k=secAt(a.x,a.y,a.alt)||a.cIn,f=a.cFq;
+ if(f===cf.fq[k]||f===cf.fq[a.cSec]){if(f!==cf.fq[k])k=a.cSec;a.cIn=k;a.cOk=true;SIM.done++;SIM.score+=5;log('good',a.cs+' contacte Bordeaux '+k+' sur '+f+' (+5)');return}
+ a.cFq=null;a.cSec=k;const j=cfSecOf(f);
+ if(j){penalty(null,'',-10,a.cs+' a appelé le secteur '+j+' au lieu du '+k);cfAsk(a,'Bordeaux '+j,a.cs+' m\'appelle sur '+f+' mais il est pour le secteur '+k+'. Quelle fréquence je lui donne ?')}
+ else{penalty(null,'',-10,a.cs+' : personne sur '+f);cfAsk(a,a.cPrev?a.cPrev.sh:'Bordeaux '+k,a.cs+' n\'a personne sur '+f+', il revient chez moi. Quelle fréquence ?')}}
+function tickCordo(now){if(!isCordo())return;const cf=SIM.cf;
+ for(const a of SIM.acs){if(!cfWatch(a))continue;
+  if(a.cE===undefined||(a.cE===null&&now>=a.cRe))cfScan(a);if(!a.cE&&!a.cIn)continue;
+  const k=secAt(a.x,a.y,a.alt);
+  if(!a.cIn){if(!a.cAsked&&now>=a.cAskT&&a.cPrev){a.cAsked=1;cfAsk(a,a.cPrev.sh,a.cs+', '+a.type+', entre dans LFBB secteur '+a.cSec+' au FL'+pad3(a.cFl)+' dans '+Math.max(1,Math.round((a.cE-now)/60))+' min. Quelle fréquence ?')}
+   if(k){a.cIn=k;if(a.cFq)cfCheck(a)}}
+  else if(k&&k!==a.cIn){a.cIn=k;if(a.cOk||a.cLost){a.cFq=cf.fq[k];a.cOk=!!a.cFq;a.cLost=!a.cOk}}} // passage d'un secteur LFBB à l'autre : les secteurs se coordonnent entre eux
+ for(const f in cf.broken)if(now>=cf.broken[f]){delete cf.broken[f];log('sys','Fréquence '+f+' réparée : de nouveau disponible.')}
+ if(now>=cf.nextFail){cf.nextFail=now+rnd(240,480);const ok=CF_SECS.filter(k=>cf.fq[k]);if(CF_SECS.length-ok.length<2)cfFail(pick(ok))}}
+// choix de fréquence (carte REQ, clic sur l'étiquette, OK)
+function cfMenu(c,cx,cy){if(cx==null){const r=cv.getBoundingClientRect();cx=r.left+r.width/2-120;cy=r.top+90}const cf=SIM.cf;
+ if(c.kind==='cfq'){showMenu('Fréquence pour '+c.a.cs,[{t:c.text,dis:1}].concat(CF_SECS.map(k=>cf.fq[k]?{t:'Bordeaux '+k+' · '+SECNAME[k],k:cf.fq[k],fn:()=>cmdGiveFreq(c.a,cf.fq[k])}:{t:'Bordeaux '+k+' · fréquence en panne',dis:1,warn:1})),cx,cy);return}
+ const fr=cfFree();showMenu('Secours secteur '+c.sec,[{t:c.text,dis:1}].concat(fr.length?fr.map(f=>({t:f,k:'libre',fn:()=>cmdSecFreq(c.sec,f)})):[{t:'Aucune fréquence libre',dis:1}]),cx,cy)}
+// fenêtre ATC du poste Cordo : fréquences des secteurs, fréquences libres et en réparation
+function cfAtcHtml(){const cf=SIM.cf,row=(c,n,f,cls)=>'<div class="ar'+(cls?' '+cls:'')+'"><span class="c">'+c+'</span><span>'+n+'</span><span class="f">'+f+'</span></div>';
+ return CF_SECS.map(k=>row((sel&&sel.cSec===k&&!sel.cIn?'› ':'  ')+k,SECNAME[k],cf.fq[k]||'PANNE',cf.fq[k]?(sel&&(sel.cIn||sel.cSec)===k?'nx':''):'pn')).join('')
+  +'<div class="ah2">Libres</div>'+cfFree().map(f=>row('  ','secours',f,'')).join('')
+  +(Object.keys(cf.broken).length?'<div class="ah2">En réparation</div>'+Object.keys(cf.broken).map(f=>row('  ',fmtT(Math.max(0,cf.broken[f]-SIM.t)),f,'pn')).join(''):'')}
 /* ===================== Essais en vol : zones d'essais et Rafale ===================== */
 // Zones militaires RÉELLES (eAIP France ENR 5.1, voir data/gen_milzones.py) : R/D de Cazaux, Mont-de-Marsan, Cognac, Atlantique…
 // Limites officielles ; segments « eaux territoriales » et arcs simplifiés en lignes droites. Horaires réels non simulés : activée jusqu'à désactivation.
@@ -1541,7 +1616,7 @@ function tick1s(){
   }
   if(a.state!=='assumed')autoControl(a);
  }
- processAlerts(now);tickCaps(now);tickScramble(now);tickCoords(now);tickTests(now);tickAiTests(now);tickSquawks();maybeEmergency(now);tickEmergencies(now);tickHijacks(now);
+ processAlerts(now);tickCaps(now);tickScramble(now);tickCoords(now);tickTests(now);tickAiTests(now);tickSquawks();maybeEmergency(now);tickEmergencies(now);tickHijacks(now);tickCordo(now);
  if(SIM.testInt&&now>=SIM.nextTest){SIM.nextTest=now+SIM.testInt*rnd(.8,1.2);if(VOL.cfg.test){if(SIM.acs.filter(a=>a.test&&!a.ai).length<5)spawnTest()}else if(SIM.acs.filter(a=>a.ai&&!a.train).length<2)spawnAiTest()}
  if(SIM.trainInt&&now>=SIM.nextTrain){SIM.nextTrain=now+SIM.trainInt*rnd(.7,1.3);if(SIM.acs.filter(a=>a.train).length<3)spawnAiTest(true)}SIM.mil=SIM.mil.filter(f=>!f.gone);
  if(SIM.real&&now>=SIM.rtNext)rtRefresh();
@@ -1552,8 +1627,8 @@ function tick1s(){
  checkSeparation();
  // génération
  const nConc=SIM.acs.filter(a=>a.concerned&&(a.state==='pre'||a.state==='offered')).length;
- if(!SIM.real&&!VOL.cfg.test&&Math.random()<SIM.lambda/3600&&nConc<14)trySpawn('c');
- const nBg=SIM.acs.filter(a=>!a.concerned).length;const bgTarget=VOL.cfg.test?Math.round(14+SIM.lambda*.6):Math.round(6+SIM.lambda*.35);
+ if(!SIM.real&&!VOL.cfg.test&&!VOL.cfg.cordo&&Math.random()<SIM.lambda/3600&&nConc<14)trySpawn('c');
+ const nBg=SIM.acs.filter(a=>!a.concerned).length;const bgTarget=VOL.cfg.cordo?Math.round(16+SIM.lambda*.7):VOL.cfg.test?Math.round(14+SIM.lambda*.6):Math.round(6+SIM.lambda*.35);
  if(!SIM.real&&nBg<bgTarget&&Math.random()<.04)trySpawn('b');
 }
 function timeToExit(a){const b={...a};for(let t=10;t<=1800;t+=10){stepAc(b,10);if(!inVol(b.x,b.y,b.alt)||b.routeEnd)return t}return 99999}
@@ -1634,7 +1709,9 @@ function draw(){
  ctx.font='600 12px '+fUI;ctx.fillStyle=COL.firTxt;ctx.textAlign='center';
  for(const[nm,la,lo]of [['PARIS',48.45,3.2],['BREST',46.3,-2.6],['MARSEILLE',44.6,4.75],['MADRID',42.25,-2.6],['BARCELONA',42.15,1.2]]){const q=P(la,lo);ctx.fillText(nm,sx(q.x),sy(q.y))}
  // secteurs LFBB
- if(LAY.secs){ctx.setLineDash([5,5]);ctx.strokeStyle=COL.sec;for(const k of VOL.layer){polyPath(SECT[k].p);ctx.stroke()}ctx.setLineDash([]);
+ if(isCordo()){ctx.font='600 12px '+fUI;for(const[L,d,dy]of [[LOWER,[5,5],0],[UPPER,[2,7],16]]){ctx.setLineDash(d);ctx.strokeStyle=COL.sec;for(const k of L){polyPath(SECT[k].p);ctx.stroke()}ctx.setLineDash([]);
+  for(const k of L){const Q=SECT[k],f=SIM.cf.fq[k];ctx.fillStyle=f?COL.secTxt:COL.crit;ctx.fillText(k+' '+(f||'PANNE'),sx(Q.cx),sy(Q.cy)+dy)}}}
+ else if(LAY.secs){ctx.setLineDash([5,5]);ctx.strokeStyle=COL.sec;for(const k of VOL.layer){polyPath(SECT[k].p);ctx.stroke()}ctx.setLineDash([]);
   ctx.fillStyle=COL.secTxt;ctx.font='600 13px '+fUI;for(const k of VOL.layer){const Q=SECT[k];ctx.fillText(k,sx(Q.cx),sy(Q.cy))}}
  ctx.strokeStyle='#414141';ctx.lineWidth=1.2;polyPath(LFBB.p);ctx.stroke();
  ctx.strokeStyle=COL.mineLine;ctx.lineWidth=1.6;for(const Q of VOL.polys){polyPath(Q.p);ctx.stroke()}ctx.lineWidth=1;
@@ -1677,8 +1754,8 @@ function drawShape(cat,X,Y,r){ctx.beginPath();
  else if(cat==='mil'){const q=r*1.05;ctx.moveTo(X-q,Y-q);ctx.lineTo(X+q,Y+q);ctx.moveTo(X+q,Y-q);ctx.lineTo(X-q,Y+q)}
  else{for(let k=0;k<10;k++){const an=-Math.PI/2+k*Math.PI/5;const rr=k%2?r*.55:r*1.35;const px=X+rr*Math.cos(an),py=Y+rr*Math.sin(an);k?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath()}
  ctx.stroke()}
-function acColor(a){if(a.state==='pre'&&SIM.t<a.preT)return COL.bg;if(a.state==='assumed')return COL.mine1;if(a.state==='offered')return COL.call;if(a.state==='pre')return COL.pre;if(a.state==='transferred')return COL.xfer;if(a.state==='missed')return COL.miss;return COL.bg}
-function visible(a){if(!a.plot)return false;if(a.concerned)return true;if(!LAY.bg)return false;if(LAY.vfilt&&(a.plot.alt<VOL.floor*100-8000||a.plot.alt>VOL.ceil*100+2000))return false;return true}
+function acColor(a){if(isCordo()&&(a.cE||a.cIn)&&cfWatch(a)){if(SIM.coords.some(c=>c.a===a))return COL.call;if(a.cIn)return a.cOk?COL.mine1:COL.miss;return a.cFq?COL.pre:COL.bg}if(a.state==='pre'&&SIM.t<a.preT)return COL.bg;if(a.state==='assumed')return COL.mine1;if(a.state==='offered')return COL.call;if(a.state==='pre')return COL.pre;if(a.state==='transferred')return COL.xfer;if(a.state==='missed')return COL.miss;return COL.bg}
+function visible(a){if(!a.plot)return false;if(a.concerned||(isCordo()&&(a.cE||a.cIn)))return true;if(!LAY.bg)return false;if(LAY.vfilt&&(a.plot.alt<VOL.floor*100-8000||a.plot.alt>VOL.ceil*100+2000))return false;return true}
 function stcaOf(a){for(const k of SIM.stca){const[i,j]=k.split('-');if(+i===a.id||+j===a.id)return true}return false}
 function drawTraffic(){
  labelBoxes.length=0;
@@ -1723,11 +1800,12 @@ function reqOf(a){const c=SIM.coords.find(c=>c.a===a&&!c.mine);if(c)return{c};if
 function refuseReq(a){const r=a.req;if(r&&r.kind==='info'){a.req=null;a.poAskT=SIM.t;atc(a.say+', stand-by pour la cible');return}a.req=null;a.flags.reqT=SIM.t;atc(a.fr?a.say+', maintenez niveau '+a.cfl+', '+(r&&r.kind==='desc'?'descente plus tard':'pas de montée pour le moment'):a.say+', maintain FL'+a.cfl+', '+(r&&r.kind==='desc'?'expect descent later':'unable higher at the moment'))}
 // Cartes REQ / ACT en haut à gauche du PVD : demandes des contrôleurs (voisins, PO) à traiter, et mes propres demandes en attente
 const actEl=document.getElementById('actBar');
-function renderAct(){if(!actEl)return;const h=SIM.coords.map(c=>{const mine=!!c.mine;return '<div class="act'+(mine?' mine':'')+'"><div class="ah"><span class="k">'+(mine?'ACT':'REQ')+'</span><span>'+(mine?'→ ':'')+c.from.replace(/^→ /,'')+'</span><span class="cs" data-sel="'+c.a.id+'">'+c.a.cs+'</span><span class="t">'+fmtT(Math.max(0,c.deadline-SIM.t))+'</span></div><div class="tx">'+c.text+'</div>'+(mine?'':'<div class="bt"><button class="primary" data-co="'+c.id+'" data-ok="1">'+(c.ok||'Accepter')+'</button>'+(c.no?'<button data-co="'+c.id+'" data-ok="0">'+c.no+'</button>':'')+'</div>')+'</div>'}).join('');
+function renderAct(){if(!actEl)return;const h=SIM.coords.map(c=>{const mine=!!c.mine;return '<div class="act'+(mine?' mine':'')+'"><div class="ah"><span class="k">'+(mine?'ACT':'REQ')+'</span><span>'+(mine?'→ ':'')+c.from.replace(/^→ /,'')+'</span>'+(c.a?'<span class="cs" data-sel="'+c.a.id+'">'+c.a.cs+'</span>':'<span class="cs">SECT '+c.sec+'</span>')+'<span class="t">'+fmtT(Math.max(0,c.deadline-SIM.t))+'</span></div><div class="tx">'+c.text+'</div>'+(mine?'':'<div class="bt"><button class="primary" data-co="'+c.id+'" data-ok="1">'+(c.ok||'Accepter')+'</button>'+(c.no?'<button data-co="'+c.id+'" data-ok="0">'+c.no+'</button>':'')+'</div>')+'</div>'}).join('');
  if(h!==renderAct.k){renderAct.k=h;actEl.innerHTML=h}}
-if(actEl)actEl.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-co]');if(b){e.preventDefault();answerCoord(+b.dataset.co,b.dataset.ok==='1');renderAct();return}
+if(actEl)actEl.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-co]');if(b){e.preventDefault();answerCoord(+b.dataset.co,b.dataset.ok==='1',e.clientX,e.clientY+8);renderAct();return}
  const s=e.target.closest('[data-sel]');if(s){const a=SIM.acs.find(q=>q.id===+s.dataset.sel);if(a){selectAc(a);if(a.plot){VIEW.cx=a.plot.x;VIEW.cy=a.plot.y}}}});
 function reqMenu(a,cx,cy){const r=reqOf(a);if(!r){log('sys','Aucune demande en attente pour '+a.cs);return}
+if(r.c&&r.c.pick){cfMenu(r.c,cx,cy);return}
  if(r.c){const c=r.c;showMenu('Demande · '+c.from,[{t:c.text,dis:1},{t:(c.ok||'Accepter')+' ('+fmtT(Math.max(0,c.deadline-SIM.t))+')',fn:()=>answerCoord(c.id,true)}].concat(c.no?[{t:c.no,fn:()=>answerCoord(c.id,false)}]:[]),cx,cy);return}
  const p=r.p;if(p.kind==='info'){showMenu('Demande · '+a.cs,[{t:'Demande les infos sur la cible',dis:1},{t:'Donner les infos cible',fn:()=>cmdTargetInfo(a)},{t:'Plus tard (stand-by)',fn:()=>refuseReq(a)}],cx,cy);return}
  showMenu('Demande · '+a.cs,[{t:p.kind==='climb'?'Demande de montée FL'+p.fl:'Prêt pour la descente',dis:1},{t:(p.kind==='climb'?'Autoriser FL':'Descendre FL')+p.fl,fn:()=>cmdLevel(a,p.fl)},{t:'Refuser (maintenez)',fn:()=>refuseReq(a)}],cx,cy)}
@@ -1744,6 +1822,7 @@ function labelLines(a){
  if(a.po)tg.push({t:' PO',c:COL.crit,b:1});
  if(a.downed)tg.unshift({t:' ABATTU',c:COL.crit,b:1});
  if(a.train)return[[{t:a.sq||'----',k:'cs',b:1}],[{t:afl+tr}]];
+ if(isCordo()&&cfWatch(a)&&(a.cE||a.cIn))return[[cs,...tg],[{t:afl+tr+' '+gs}],a.cIn?[{t:a.cIn+' '+(a.cOk?a.cFq:'---'),c:a.cOk?null:COL.crit}]:[{t:'›'+a.cSec+' '+(a.cFq||'?')}]];
  if(!a.concerned||(a.state==='pre'&&SIM.t<a.preT)){return[[cs,...tg],[{t:afl+tr+' '+gs}]]}
  if(a.state==='transferred')return[[cs,...tg],[{t:afl+tr+' '+gs+' ›'+a.next.code}]];
  if(a.state==='offered'&&blink)cs.bgc='rgba(255,207,92,.30)';
@@ -1905,6 +1984,7 @@ document.querySelectorAll('#prefBar [data-l]').forEach(b=>b.onclick=()=>{LAY[b.d
 function syncPrefBar(){document.querySelectorAll('#prefBar [data-l]').forEach(b=>b.classList.toggle('on',!!LAY[b.dataset.l]))}
 // Fenêtre ATC : unités adjacentes et fréquences (fléchées pour le vol sélectionné)
 function renderAtc(){const el=document.getElementById('atcList');if(!el||winEl('atc').hidden)return;
+ if(isCordo()){const h=cfAtcHtml();if(h!==renderAtc.k){renderAtc.k=h;el.innerHTML=h}return}
  const u=[{code:VOL.cfg.test?'ESS':VOL.cfg.id,sh:myName(1)+' (vous)',freq:VOL.freq}].concat(Object.values(UNITS),Object.keys(APPS).map(appUnit));
  const h=u.map(x=>{const nx=sel&&sel.next&&sel.next.freq===x.freq&&sel.next.sh===x.sh,pv=sel&&sel.prev&&sel.prev.freq===x.freq&&sel.prev.sh===x.sh;return '<div class="ar'+(nx?' nx':'')+'"><span class="c">'+(nx?'›':pv?'‹':' ')+' '+x.code+'</span><span>'+x.sh+'</span><span class="f">'+x.freq+'</span></div>'}).join('');
  if(h!==renderAtc.k){renderAtc.k=h;el.innerHTML=h}}
@@ -2137,7 +2217,7 @@ function renderStrips(){
  const als=SIM.alerts.filter(x=>x.stage<9);
  let h=als.length?'<div class="secHead"><span>Défense aérienne</span><span>'+als.length+'</span></div>'+als.map(x=>'<div class="strip alert'+(selPO===x?' sel':'')+'" data-al="'+SIM.alerts.indexOf(x)+'"><span class="cs">'+x.a.cs+'</span><span class="r">COMLOSS</span><span>'+ALSTAGE[x.stage]+'</span><span class="r">'+(x.lead?x.lead.cs:'')+'</span></div>').join(''):'';
  const co=SIM.coords;
- if(co.length)h+='<div class="secHead"><span>Coordinations ATC</span><span>'+co.length+'</span></div>'+co.map(c=>'<div class="strip coord" data-id="'+c.a.id+'"><span class="cs">'+c.a.cs+'</span><span class="r">'+c.from+'</span><span class="ctxt">'+c.text+'</span>'+(c.mine?'':'<span class="cbtn"><button class="primary" data-co="'+c.id+'" data-ok="1">'+c.ok+'</button>'+(c.no?'<button data-co="'+c.id+'" data-ok="0">'+c.no+'</button>':'')+'</span><span class="r">'+fmtT(Math.max(0,c.deadline-SIM.t))+'</span>')+'</div>').join('');
+ if(co.length)h+='<div class="secHead"><span>Coordinations ATC</span><span>'+co.length+'</span></div>'+co.map(c=>'<div class="strip coord" data-id="'+(c.a?c.a.id:'')+'"><span class="cs">'+(c.a?c.a.cs:'SECT '+c.sec)+'</span><span class="r">'+c.from+'</span><span class="ctxt">'+c.text+'</span>'+(c.mine?'':'<span class="cbtn"><button class="primary" data-co="'+c.id+'" data-ok="1">'+c.ok+'</button>'+(c.no?'<button data-co="'+c.id+'" data-ok="0">'+c.no+'</button>':'')+'</span><span class="r">'+fmtT(Math.max(0,c.deadline-SIM.t))+'</span>')+'</div>').join('');
  h+='<div class="secHead s-in"><span>Entrants</span><span>'+inc.length+'</span></div>'+(inc.length?inc.map(a=>strip(a,'in')).join(''):'<div class="empty">Aucun vol pré-annoncé</div>');
  h+='<div class="secHead s-ctl"><span>Sous contrôle</span><span>'+ctl.length+'</span></div>'+(ctl.length?ctl.map(a=>strip(a,'ctl')).join(''):'<div class="empty">Aucun vol assumé</div>');
  h+='<div class="secHead s-x"><span>Transférés</span><span></span></div>'+(xf.length?xf.map(a=>strip(a,'x')).join(''):'<div class="empty">—</div>');
@@ -2157,7 +2237,7 @@ function updateUI(){
 
 /* ===================== Ligne de commande ===================== */
 const cmdEl=document.getElementById('cmd');const hist=[];let hIdx=-1;
-function findAc(tok){tok=tok.toUpperCase();let m=SIM.acs.filter(a=>a.cs===tok);if(m.length)return m[0];m=SIM.acs.filter(a=>a.concerned&&(a.cs.endsWith(tok)||a.cs.slice(3)===tok||a.cs.includes(tok)));if(m.length===1)return m[0];if(m.length>1)return m.find(a=>a.state==='assumed'||a.state==='offered')||m[0];return null}
+function findAc(tok){tok=tok.toUpperCase();let m=SIM.acs.filter(a=>a.cs===tok);if(m.length)return m[0];m=SIM.acs.filter(a=>(a.concerned||a.cE||a.cIn)&&(a.cs.endsWith(tok)||a.cs.slice(3)===tok||a.cs.includes(tok)));if(m.length===1)return m[0];if(m.length>1)return m.find(a=>a.state==='assumed'||a.state==='offered')||m[0];return null}
 function runTokens(a,toks){
  for(let i=0;i<toks.length;i++){const t=toks[i];let m;
   if(/^(A|ASS|ASSUME|ACC)$/.test(t))cmdAssume(a);
@@ -2184,6 +2264,7 @@ function runTokens(a,toks){
   else if(t==='PO'){const al=SIM.alerts.find(x=>x.a===a&&x.stage<9&&x.lead);if(!al){log('sys','Pas de patrouille en vol pour '+a.cs);continue}const c=SIM.coords.find(c=>c.a===a&&c.kind==='poInfo');if(c)answerCoord(c.id,true);else poInfo(al)}
   else if(/^(OK|ACCEPT|NO|NON|REFUS)$/.test(t)){const c=SIM.coords.find(c=>c.a===a&&!c.mine);const yes=/^(OK|ACCEPT)$/.test(t);if(!c&&a.req&&reqOf(a)){if(yes){if(a.req.kind==='info')cmdTargetInfo(a);else cmdLevel(a,a.req.fl)}else refuseReq(a);continue}if(!c){log('sys','Aucune demande en attente pour '+a.cs);continue}if(!c.no&&!/^(OK|ACCEPT)$/.test(t)){log('sys','Cette demande ne se refuse pas');continue}answerCoord(c.id,/^(OK|ACCEPT)$/.test(t))}
   else if(/^(CIBLE|TGT|TARGET)$/.test(t))cmdTargetInfo(a);
+  else if((m=t.match(/^(1[1-3]\d)[.,](\d{1,3})$/))){if(isCordo())cmdGiveFreq(a,m[1]+'.'+m[2].padEnd(3,'0'));else log('sys','Fréquences : poste Cordo LFBB seulement')}
   else if(t==='ROUTE'){a.showRoute=!a.showRoute}
   else if(/^(FPL|FLPLAN|PLAN)$/.test(t)){const r=cv.getBoundingClientRect();showFpl(a,r.left+r.width/2-150,r.top+80)}
   else if(t==='HL'){const f={CFL:'cfl',ALT:'cfl',SPD:'spd',WP:'nav',CS:'cs',OFF:null,AUCUN:null}[toks[i+1]];if(toks[i+1]&&f!==undefined){i++;a.hl=f}else log('bad','HL : CFL, SPD, WP, CS ou OFF')}
@@ -2197,6 +2278,7 @@ function runTokens(a,toks){
 // Commandes sans indicatif : zones, pause, vitesse de simulation, recentrage, coordination en attente
 function runGlobal(toks){const t=toks[0];let m;
  if(t==='ZONE'||t==='ZON'){const z=TZ[toks[1]];if(!z){log('bad','ZONE : identifiant attendu (ex. ZONE D31D)');return true}if(!VOL.cfg.test){log('sys','Les zones sont gérées par d\'autres organismes sur ce poste');return true}toggleZone(z);return true}
+ if(t==='FQ'||t==='FREQ'){if(!isCordo()){log('sys','FQ : poste Cordo LFBB seulement');return true}const m2=(toks[2]||'').match(/^(1[1-3]\d)[.,](\d{1,3})$/);if(!m2){log('bad','FQ : secteur et fréquence attendus (ex. FQ P 131.080)');return true}cmdSecFreq(toks[1],m2[1]+'.'+m2[2].padEnd(3,'0'));return true}
  if(t==='PAUSE'||t==='P'){setSpeed(SIM.speed===0?(SIM.prevSpeed||1):0);return true}
  if((m=t.match(/^X([124])$/))){setSpeed(+m[1]);return true}
  if(t==='SECT'){fitSector();return true}
@@ -2213,7 +2295,7 @@ function runCmd(txt){
  runTokens(a,toks);
 }
 // Catalogue des commandes : sert à l'autocomplétion (exemple construit sur le vol courant) et à reconnaître un mot de commande
-const CMD_WORD=/^(FL\d+|\d{2,3}|[HLRG]\d{1,3}|H[LR]\d{1,3}|M\d{2,3}|M\.\d{2}|M[12][.,]\d{1,2}|S\d{3}|DCT|DIR|RES|NAV|SN|A|T|TFR|REP|RC|SQ|SQK|CSQ|XFL|GUARD|ALERTE|FIN|URG|MAN|PO|CIBLE|OK|NO|ROUTE|FPL|HL|VEC|TRAJ|CTR)$/;
+const CMD_WORD=/^(FL\d+|\d{2,3}|[HLRG]\d{1,3}|H[LR]\d{1,3}|M\d{2,3}|M\.\d{2}|M[12][.,]\d{1,2}|S\d{3}|DCT|DIR|RES|NAV|SN|A|T|TFR|REP|RC|SQ|SQK|CSQ|XFL|GUARD|ALERTE|FIN|URG|MAN|PO|CIBLE|OK|NO|ROUTE|FPL|HL|VEC|TRAJ|CTR|1[1-3]\d[.,]\d{1,3})$/;
 const CMDS=[
  {c:'A',d:'Assumer le vol qui appelle',st:['offered','missed']},
  {c:'370',d:'Niveau autorisé (montée/descente)',ex:a=>a.xfl||a.cfl,st:['assumed']},
@@ -2236,21 +2318,23 @@ const CMDS=[
  {c:'URG',d:'Accuser réception d\'un MAYDAY',st:['assumed']},
  {c:'CIBLE',d:'PO sur alerte : relèvement, distance, niveau et route de la cible',st:['assumed']},
  {c:'MAN',d:'Vol d\'essais : manœuvre sous facteur de charge',ex:()=>'MAN 5 30 D',st:['assumed']},
+ {c:'132.555',d:'Cordo : fréquence à transmettre au pilote',ex:a=>a.cSec&&SIM.cf&&SIM.cf.fq[a.cSec]||'132.555',st:['bg'],cordo:1},
  {c:'OK',d:'Accepter la coordination en attente'},{c:'NO',d:'Refuser la coordination en attente'},
  {c:'ROUTE',d:'Afficher / masquer la route (Tab)'},{c:'FPL',d:'Plan de vol (F8)'},
  {c:'HL',d:'Highlight d\'un champ de l\'étiquette',ex:()=>'HL CFL'},{c:'VEC',d:'Vecteur vitesse de ce vol'},
  {c:'TRAJ',d:'Trajectoires et CPA avec un autre vol',ex:()=>'TRAJ '+((SIM.acs.find(q=>q.state==='assumed'&&q!==sel)||{}).cs||'AFR123')},
  {c:'CTR',d:'Centrer l\'écran sur ce vol'}];
-const GCMDS=[{c:'ZONE',d:'Activer / désactiver une zone (poste Essais)',ex:()=>'ZONE D31D'},{c:'PAUSE',d:'Pause / reprise'},{c:'X2',d:'Vitesse de simulation ×1, ×2, ×4'},{c:'SECT',d:'Recentrer sur le secteur'},{c:'AIDE',d:'Commandes et règles'}];
+const GCMDS=[{c:'FQ',d:'Cordo : fréquence de secours d\'un secteur',ex:()=>'FQ P '+(SIM.cf&&cfFree()[0]||'131.080')},{c:'ZONE',d:'Activer / désactiver une zone (poste Essais)',ex:()=>'ZONE D31D'},{c:'PAUSE',d:'Pause / reprise'},{c:'X2',d:'Vitesse de simulation ×1, ×2, ×4'},{c:'SECT',d:'Recentrer sur le secteur'},{c:'AIDE',d:'Commandes et règles'}];
 const sugEl=document.getElementById('cmdSug');let sugs=[],sugI=0;
 function mkSug(tokIns,lbl,ex,d){return{ins:tokIns,lbl,ex,d}}
 function computeSugs(){
  const v=cmdEl.value.toUpperCase(),trail=/\s$/.test(v),toks=v.trim().split(/\s+/).filter(Boolean),cur=trail?'':(toks.length?toks[toks.length-1]:''),prev=trail?toks[toks.length-1]:toks[toks.length-2];
  let a=null;if(toks.length&&(toks.length>1||trail)&&!CMD_WORD.test(toks[0]))a=findAc(toks[0]);if(!a)a=sel;const cs=a?a.cs:'AFR6142',out=[];
- const acList=q=>SIM.acs.filter(x=>x.concerned&&x.cs.startsWith(q)).sort((x,y)=>(y.state==='assumed')-(x.state==='assumed')||(y.state==='offered')-(x.state==='offered')).slice(0,6).map(x=>mkSug(x.cs,x.cs,x.cs+' '+(x.state==='offered'?'A':pad3(x.cfl)),x.type+' · FL'+pad3(x.alt/100)+' · '+(STATE_TXT[x.state]||'')));
+ const acList=q=>SIM.acs.filter(x=>(x.concerned||x.cE||x.cIn)&&x.cs.startsWith(q)).sort((x,y)=>(y.state==='assumed')-(x.state==='assumed')||(y.state==='offered')-(x.state==='offered')).slice(0,6).map(x=>mkSug(x.cs,x.cs,x.cs+' '+(x.state==='offered'?'A':pad3(x.cfl)),x.type+' · FL'+pad3(x.alt/100)+' · '+(STATE_TXT[x.state]||'')));
  if(prev==='DCT'||prev==='DIR'){const pts=(a?a.pts.slice(a.leg).map(p=>p.id):[]).concat(Object.keys(PTS).filter(k=>PTS[k].type!=='apt'||k.startsWith('LF')));[...new Set(pts)].filter(id=>id.startsWith(cur)).slice(0,8).forEach(id=>out.push(mkSug(id,id,cs+' DCT '+id,PTS[id].name||'')));return out}
  if(prev==='TRAJ')return acList(cur).filter(x=>!a||x.ins!==a.cs);
  if(prev==='HL')return[['CFL','niveau autorisé'],['SPD','vitesse'],['WP','cap / point'],['CS','indicatif'],['OFF','aucun']].filter(([k])=>k.startsWith(cur)).map(([k,d])=>mkSug(k,k,cs+' HL '+k,d));
+ if(prev==='FQ')return CF_SECS.filter(k=>k.startsWith(cur)).map(k=>mkSug(k,k,'FQ '+k+' '+(SIM.cf&&cfFree()[0]||''),SECNAME[k]+' · '+(SIM.cf&&SIM.cf.fq[k]||'en panne')));
  if(prev==='ZONE')return TZONES.filter(z=>z.id.startsWith(cur)).slice(0,8).map(z=>mkSug(z.id,z.id,'ZONE '+z.id,z.n+' · '+z.lim+(z.st!=='off'?' · active':'')));
  if(prev==='SQ'||prev==='SQK')return[mkSug('','(vide)',cs+' SQ','nouveau code attribué automatiquement'),mkSug('4521','4521',cs+' SQ 4521','code donné (4 chiffres de 0 à 7)')];
  if(prev==='MAN')return[mkSug('5 30 D','5 30 D',cs+' MAN 5 30 D','5 G pendant 30 s, virage à droite (G = gauche)')];
@@ -2260,8 +2344,8 @@ function computeSugs(){
  if(a&&!(first&&out.length&&cur.length>=3&&!CMD_WORD.test(cur))){
   if(/^\d{1,3}$/.test(cur))out.push(mkSug(cur,cur.length===3?'FL'+cur:'niveau',cs+' '+(cur.length===3?cur:a.xfl),'Niveau autorisé'));
   else if(/^H[LR]?\d{0,3}$/.test(cur)&&cur.length>1)out.push(mkSug(cur,cur,cs+' '+(cur.length>=4?cur:'H'+pad3(Math.round(a.hdg/5)*5||360)),'Cap'));
-  const rec=CMDS.filter(c=>c.c.startsWith(cur)&&!/^\d/.test(c.c)||(!cur));const ok=c=>!c.st||c.st.includes(a.state);
-  rec.sort((x,y)=>ok(y)-ok(x)).slice(0,cur?8:10).forEach(c=>out.push(Object.assign(mkSug(c.c==='370'?String(c.ex(a)):c.c==='H270'||c.c==='M78'?c.ex(a):c.c,c.c==='370'?'FL…':c.c==='H270'?'H…':c.c==='M78'?'M…':c.c,cs+' '+(c.ex?c.ex(a):c.c),c.d),{dim:!ok(c)})))}
+  const rec=CMDS.filter(c=>(c.c.startsWith(cur)&&!/^\d/.test(c.c)||(!cur))&&(!c.cordo||isCordo()));const ok=c=>!c.st||c.st.includes(a.state);
+  rec.sort((x,y)=>ok(y)-ok(x)).slice(0,cur?8:10).forEach(c=>out.push(Object.assign(mkSug(c.c==='370'?String(c.ex(a)):c.c==='H270'||c.c==='M78'||c.cordo?String(c.ex(a)):c.c,c.c==='370'?'FL…':c.c==='H270'?'H…':c.c==='M78'?'M…':c.c,cs+' '+(c.ex?c.ex(a):c.c),c.d),{dim:!ok(c)})))}
  return out.slice(0,10)}
 function renderSugs(){if(!sugEl)return;sugs=document.activeElement===cmdEl?computeSugs():[];sugI=Math.min(sugI,Math.max(0,sugs.length-1));
  sugEl.hidden=!sugs.length;sugEl.innerHTML=sugs.map((g,i)=>'<div class="sg'+(i===sugI?' cur':'')+(g.dim?' dim':'')+'" data-i="'+i+'"><b>'+g.lbl+'</b><span class="ex">'+g.ex+'</span><span class="d">'+g.d+'</span></div>').join('')}
@@ -2304,19 +2388,19 @@ function saveSettings(){try{localStorage.setItem('opencrna.v1',JSON.stringify({n
 function loadSettings(){try{const s=JSON.parse(localStorage.getItem('opencrna.v1')||'null');if(!s)return;if(s.cfg)selCfg.value=s.cfg;if(s.nordo!=null)selNordo.value=s.nordo;if(s.conv!=null)selConv.value=s.conv;if(s.coord!=null)selCoord.value=s.coord;if(s.test!=null)selTest.value=s.test;if(s.train!=null)selTrain.value=s.train;if(s.cap!=null)selCap.value=s.cap;if(s.scr!=null)selScr.value=s.scr;if(s.traffic)selTraffic.value=s.traffic;if(s.emerg!=null)selEmerg.value=s.emerg;if(s.den)selDen.value=s.den;chkWind.checked=s.wind!==false;chkVoice.checked=!!s.voice;if(s.lay)Object.assign(LAY,s.lay);if(s.theme)applyTheme(s.theme)}catch(e){}}
 const selNordo=document.getElementById('selNordo'),selConv=document.getElementById('selConv'),selCoord=document.getElementById('selCoord'),selTest=document.getElementById('selTest'),selTrain=document.getElementById('selTrain'),selCap=document.getElementById('selCap'),selScr=document.getElementById('selScr'),selTraffic=document.getElementById('selTraffic'),selEmerg=document.getElementById('selEmerg'),selCfg=document.getElementById('selConfig'),selDen=document.getElementById('selDensity'),chkWind=document.getElementById('chkWind'),chkVoice=document.getElementById('chkVoice');
 selCfg.innerHTML=CONFIGS.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');selCfg.value='US';
-function cfgInfo(){const c=CONFIGS.find(q=>q.id===selCfg.value);if(c.test){document.getElementById('cfgInfo').textContent='Poste Essais en vol · toute la région LFBB, FL100 à FL600, fréquence '+c.freq+'. Vous ne contrôlez que les Rafale d\'essais de Mérignac : activez une zone d\'essais, acheminez-les entre les trafics civils (gérés par les secteurs, mais la séparation compte), faites leur programme puis ramenez-les à Bordeaux Approche. Les réglages de pertes radio, convergences et demandes des centres ne s\'appliquent pas.';return}
+function cfgInfo(){const c=CONFIGS.find(q=>q.id===selCfg.value);if(c.cordo){document.getElementById('cfgInfo').textContent='Poste Cordo LFBB · coordination des fréquences de toute la région. Vous ne contrôlez aucun avion : pour chaque vol qui entre dans LFBB, l\'unité précédente (centre voisin ou approche) vous demande la fréquence à donner au pilote ; donnez celle du secteur d\'entrée. Quand une fréquence de secteur tombe en panne, attribuez-lui une fréquence de secours libre. Les autres réglages (pertes radio, essais, PO…) ne s\'appliquent pas.';return}if(c.test){document.getElementById('cfgInfo').textContent='Poste Essais en vol · toute la région LFBB, FL100 à FL600, fréquence '+c.freq+'. Vous ne contrôlez que les Rafale d\'essais de Mérignac : activez une zone d\'essais, acheminez-les entre les trafics civils (gérés par les secteurs, mais la séparation compte), faites leur programme puis ramenez-les à Bordeaux Approche. Les réglages de pertes radio, convergences et demandes des centres ne s\'appliquent pas.';return}
  document.getElementById('cfgInfo').textContent='Volume : '+(c.sec[0]==='*'?'toute la région LFBB':'secteur'+(c.sec.length>1?'s ':' ')+c.sec.join(', '))+' · FL'+c.floor+' à '+(c.ceil>=660?'FL660':'FL'+c.ceil)+'. '+(c.floor>=300?'Secteur supérieur : survols en croisière, montées des départs Toulouse/Bordeaux et descentes des arrivées.':'Secteur inférieur : beaucoup de montées et descentes, transferts aux approches de Bordeaux, Toulouse, Biarritz, Pau.')}
 selCfg.onchange=cfgInfo;
 loadSettings();if(!document.body.dataset.theme)applyTheme('aurora');for(const k in WINDEF)placeWin(k);syncLayers();cfgInfo();
 
 function startGame(){
- const cfg=CONFIGS.find(q=>q.id===selCfg.value);setupVolume(cfg);saveSettings();const T=!!cfg.test;
- Object.assign(SIM,{t:0,acs:[],score:0,done:0,sepLoss:0,pen:[],sepPairs:new Map(),stca:new Set(),acc:0,last1s:0,lastRadar:-99,queue:[],lambda:+selDen.value,voice:chkVoice.checked,running:true,mil:[],alerts:[],nordoRate:T?0:+selNordo.value,convInt:T?0:+selConv.value,coords:[],coordRate:T?0:+selCoord.value,emRate:T?0:+selEmerg.value,scrInt:T?0:+selScr.value,nextScr:+selScr.value?rnd(120,600):1e9,real:selTraffic.value==='real'&&rtAvailable(),rtNext:1e9,caps:[],capInt:+selCap.value,nextCap:+selCap.value?rnd(20,300):1e9,trainInt:+selTrain.value,nextTrain:+selTrain.value?rnd(30,180):1e9,testInt:+selTest.value*(T?1:2),nextTest:+selTest.value?(T?rnd(20,45):rnd(60,240)):1e9});for(const z of TZONES){z.st='off';z.tAct=0;z.ai=false;z.owner=''}SIM.nextConv=SIM.convInt?rnd(60,150):1e9;
+ const cfg=CONFIGS.find(q=>q.id===selCfg.value);setupVolume(cfg);saveSettings();const T=!!(cfg.test||cfg.cordo),C=!!cfg.cordo;
+ Object.assign(SIM,{t:0,acs:[],score:0,done:0,sepLoss:0,pen:[],sepPairs:new Map(),stca:new Set(),acc:0,last1s:0,lastRadar:-99,queue:[],lambda:+selDen.value,voice:chkVoice.checked,running:true,mil:[],alerts:[],nordoRate:T?0:+selNordo.value,convInt:T?0:+selConv.value,coords:[],coordRate:T?0:+selCoord.value,emRate:T?0:+selEmerg.value,scrInt:T?0:+selScr.value,nextScr:+selScr.value?rnd(120,600):1e9,real:selTraffic.value==='real'&&rtAvailable(),rtNext:1e9,caps:[],capInt:C?0:+selCap.value,nextCap:+selCap.value&&!C?rnd(20,300):1e9,trainInt:C?0:+selTrain.value,nextTrain:+selTrain.value&&!C?rnd(30,180):1e9,testInt:C?0:+selTest.value*(T?1:2),nextTest:+selTest.value?(T?rnd(20,45):rnd(60,240)):1e9});for(const z of TZONES){z.st='off';z.tAct=0;z.ai=false;z.owner=''}SIM.nextConv=SIM.convInt?rnd(60,150):1e9;if(C)cfInit();
  SIM.startUTC=SIM.real?(()=>{const d=new Date();return d.getUTCHours()*3600+d.getUTCMinutes()*60+d.getUTCSeconds()})():(Math.floor(rnd(7,19))*3600+Math.floor(rnd(0,59))*60);
  WX.on=chkWind.checked;WX.dir=Math.round(rnd(250,300));WX.jet=Math.round(rnd(45,115));
  const w=windAt(35000);document.getElementById('hdWind').innerHTML='<span class="k">Vent FL350</span>'+(WX.on?pad3(w.dir)+'°/'+Math.round(w.spd)+' kt':'calme');
- document.getElementById('hdSector').textContent='LFBB_'+(cfg.test?'ESS':cfg.id.replace(/\W/g,''))+'_CTR · '+VOL.freq+' · FL'+cfg.floor+'–'+(cfg.ceil>=660?'660':cfg.ceil);document.getElementById('hdSector').title=cfg.name;
- logEl.innerHTML='';selectAc(null);if(actEl){actEl.innerHTML='';renderAct.k=''}
+ document.getElementById('hdSector').textContent='LFBB_'+(cfg.test?'ESS':cfg.cordo?'CORDO':cfg.id.replace(/\W/g,''))+'_CTR · '+VOL.freq+' · FL'+cfg.floor+'–'+(cfg.ceil>=660?'660':cfg.ceil);document.getElementById('hdSector').title=cfg.name;
+ logEl.innerHTML='';selectAc(null);if(actEl){actEl.innerHTML='';renderAct.k=''}renderAtc.k='';if(C)toggleWin('atc',true);
  resize();fitSector();
  // trafic initial : relève en cours (réel en direct, ou généré)
  if(SIM.real){log('sys','Trafic réel : chargement de l\'état du ciel au-dessus de LFBB (OpenSky Network)…');rtChip();
